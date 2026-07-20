@@ -87,4 +87,5 @@ Validar a persistência de `0.3.0-beta.1` no NinjaTrader antes de alterar qualqu
 - [Registro cronológico do trabalho](docs/worklog.md)
 - [Auditoria inicial dos CSVs v2](docs/data-audits/2026-07-20-initial-v2-audit.md)
 - [Auditoria dos CSVs v2 regenerados](docs/data-audits/2026-07-20-regenerated-v2-audit.md)
+- [Análise de risco e alcance dos alvos](docs/data-audits/2026-07-20-risk-target-analysis.md)
 - [Histórico de versões](CHANGELOG.md)

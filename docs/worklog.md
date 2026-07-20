@@ -79,3 +79,12 @@
 - confirmados 78 sinais encerrados com os mesmos resultados da auditoria anterior;
 - identificados dois sinais ativos, um por instrumento;
 - conclusão registrada em `docs/data-audits/2026-07-20-regenerated-v2-audit.md`.
+
+### Análise do risco e alcance do MNQ
+
+- confirmada a origem do exemplo de aproximadamente 77 pontos de stop e 154 pontos de alvo;
+- calculada mediana de risco de USD 100,00 e média de USD 111,24 no MNQ;
+- simulada a quantidade de sinais permitidos por limites entre USD 50 e USD 150;
+- identificado que nenhum sinal de MNQ alcançou 2R no acompanhamento atual;
+- recomendada rejeição por risco em vez de redução automática do stop técnico;
+- proposta registrada em `docs/data-audits/2026-07-20-risk-target-analysis.md`.
