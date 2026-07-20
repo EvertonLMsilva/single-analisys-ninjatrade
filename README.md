@@ -48,7 +48,11 @@ NinjaTrader/
         └── Indicators/
             └── TradeAnalysisAssistant.cs
 docs/
-└── architecture.md
+├── architecture.md
+├── development-process.md
+├── roadmap.md
+├── validation-protocol.md
+└── worklog.md
 ```
 
 ## Instalação no NinjaTrader 8
@@ -63,11 +67,15 @@ Os parâmetros de EMA, ATR, risco/retorno, validade e aparência podem ser alter
 
 As métricas do painel existem apenas durante a execução atual do indicador. O histórico em CSV permanece salvo em `Documents/NinjaTrader 8/TradeAssistant/Data` e pode ser desligado pela propriedade **Salvar histórico CSV**.
 
-## Próximas etapas sugeridas
+## Próximo marco
 
-1. validar o desenho em Playback/Market Replay;
-2. migrar uma única regra real do projeto antigo;
-3. registrar o desfecho hipotético de cada sinal;
-4. adicionar métricas somente depois que o primeiro setup estiver validado.
+Validar a persistência de `0.3.0-beta.1` no NinjaTrader antes de alterar qualquer regra de entrada. O roteiro e os critérios estão documentados em [docs/roadmap.md](docs/roadmap.md) e [docs/validation-protocol.md](docs/validation-protocol.md).
 
-Consulte [docs/architecture.md](docs/architecture.md) para os limites desta base.
+## Documentação
+
+- [Arquitetura e limites](docs/architecture.md)
+- [Processo obrigatório de desenvolvimento](docs/development-process.md)
+- [Roteiro priorizado](docs/roadmap.md)
+- [Protocolo de validação](docs/validation-protocol.md)
+- [Registro cronológico do trabalho](docs/worklog.md)
+- [Histórico de versões](CHANGELOG.md)

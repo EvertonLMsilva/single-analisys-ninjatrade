@@ -1,0 +1,43 @@
+# Registro de trabalho
+
+## 2026-07-20
+
+### Preparação do repositório
+
+- validada a branch padrão `master`;
+- criada e utilizada a branch `agent/initial-trade-assistant`;
+- aberto o pull request em modo rascunho `#2`;
+- mantida uma pasta oficial do projeto e uma cópia instalada no NinjaTrader.
+
+### Base do assistente
+
+- criado indicador exclusivamente visual;
+- adicionada regra demonstrativa por cruzamento de EMA;
+- adicionados entrada hipotética, stop por ATR e alvo por risco/retorno;
+- confirmada ausência de execução automática e acesso à conta.
+
+### Acompanhamento e visual
+
+- adicionados alvo atingido, stop atingido, expiração e resultado ambíguo;
+- adicionadas métricas em R, MFE e MAE;
+- redesenhados painel, linhas, setas e zonas de risco e retorno;
+- corrigida a referência de `DashStyleHelper` para compilação no NinjaTrader;
+- adicionada a versão no cabeçalho do indicador.
+
+### Histórico persistente
+
+- criada gravação CSV por dia, ativo e período gráfico;
+- implementada atualização de uma única linha durante o ciclo do sinal;
+- adicionada proteção contra duplicação ao recarregar o gráfico;
+- versão elevada para `0.3.0-beta.1`;
+- testes do núcleo e do CSV passaram;
+- compilação estrutural passou com zero erros e zero avisos;
+- dez arquivos da instalação foram conferidos por SHA-256 após a cópia;
+- commit `5316843` enviado para a branch de trabalho.
+
+### Validação manual pendente
+
+- compilar `0.3.0-beta.1` no NinjaScript Editor;
+- confirmar `Histórico CSV: ATIVO`;
+- gerar e encerrar um sinal em Playback;
+- conferir criação, atualização e não duplicação do primeiro CSV.
