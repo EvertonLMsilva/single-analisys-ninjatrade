@@ -99,5 +99,6 @@ Compilar `0.6.0-beta.1` no NinjaTrader e coletar os setups `TrendPullback` e `Em
 - [Análise de risco e alcance dos alvos](docs/data-audits/2026-07-20-risk-target-analysis.md)
 - [Plano provisório de risco para Take Profit Trader 25k](docs/risk-plans/takeprofit-25k.md)
 - [Diagnóstico do filtro de risco no MNQ](docs/data-audits/2026-07-20-mnq-risk-filter-behavior.md)
+- [Validação do pullback v4 no MNQ](docs/data-audits/2026-07-20-mnq-pullback-v4-validation.md)
 - [Decisão de testar pullback no MNQ](docs/decisions/0001-test-mnq-pullback.md)
 - [Histórico de versões](CHANGELOG.md)

@@ -147,3 +147,15 @@
 - código sincronizado com a pasta oficial e com a instalação do NinjaTrader;
 - os 12 arquivos instalados foram conferidos por SHA-256, sem divergências;
 - compilação com F5 e validação visual no NinjaTrader permanecem como etapa manual seguinte.
+
+### Validação da versão 0.6 no MNQ
+
+- localizados 6 arquivos MNQ no formato CSV v4, com 205 registros;
+- confirmada a versão `0.6.0-beta.1` em todos os registros;
+- confirmada separação entre 161 sinais `TrendPullback` e 44 sinais `EmaCrossBaseline`;
+- confirmados tick de 0,25, valor do ponto de USD 2 e limite de USD 75;
+- entre os pullbacks, 102 ficaram dentro do limite e 59 foram rejeitados;
+- resultados iniciais dos pullbacks: 15 alvos, 46 stops, 39 expirados e 2 ambíguos;
+- taxa entre resultados decididos de 24,59% e total de -16R;
+- validação detalhada registrada em `docs/data-audits/2026-07-20-mnq-pullback-v4-validation.md`;
+- mantida a situação experimental, sem aprovação para operação real.
