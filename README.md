@@ -13,6 +13,10 @@ Base mínima de um assistente visual de análise para NinjaTrader 8. O código i
 - validade visual configurável em candles;
 - painel fixo indicando `ANALYSIS ONLY`;
 - análise, modelo de sinal e renderização separados.
+- acompanhamento hipotético de alvo, stop, expiração e casos ambíguos;
+- métricas em `R` exibidas no painel;
+- zonas transparentes de risco e retorno;
+- opção para limitar ou ocultar sinais antigos.
 
 ## Estrutura
 
@@ -24,7 +28,12 @@ NinjaTrader/
         │   └── SignalAnalyzer.cs
         ├── Models/
         │   ├── SignalDirection.cs
+        │   ├── SignalStatus.cs
+        │   ├── SignalStatistics.cs
+        │   ├── TrackedSignal.cs
         │   └── TradeSignal.cs
+        ├── Tracking/
+        │   └── SignalTracker.cs
         └── Indicators/
             └── TradeAnalysisAssistant.cs
 docs/
@@ -39,7 +48,9 @@ docs/
 4. Em um gráfico, adicione o indicador **Trade Analysis Assistant**.
 5. Mantenha-a em ambiente simulado enquanto valida os sinais e os parâmetros.
 
-Os parâmetros de EMA, ATR, risco/retorno e validade do sinal podem ser alterados na tela de propriedades da estratégia.
+Os parâmetros de EMA, ATR, risco/retorno, validade e aparência podem ser alterados na tela de propriedades do indicador.
+
+As métricas existem apenas durante a execução atual do indicador. Recarregar o gráfico reinicia a contagem.
 
 ## Próximas etapas sugeridas
 

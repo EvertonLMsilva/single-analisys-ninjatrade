@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Windows.Media;
@@ -18,6 +19,8 @@ namespace NinjaTrader.NinjaScript.Indicators
         private ATR atr;
         private EMA fastEma;
         private EMA slowEma;
+        private HashSet<string> visibleSignalIds;
+        private Queue<string> visualSignalIds;
         private SignalAnalyzer signalAnalyzer;
         private SignalTracker signalTracker;
 
@@ -29,7 +32,9 @@ namespace NinjaTrader.NinjaScript.Indicators
                 Name = "Trade Analysis Assistant";
                 Calculate = Calculate.OnBarClose;
                 IsOverlay = true;
+                IsChartOnly = true;
                 DisplayInDataBox = false;
+                DrawOnPricePanel = true;
 
                 EnableLongSignals = true;
                 EnableShortSignals = true;
@@ -39,6 +44,9 @@ namespace NinjaTrader.NinjaScript.Indicators
                 StopAtrMultiplier = 1.5;
                 RiskRewardRatio = 2.0;
                 ValidForBars = 3;
+                ShowHistoricalSignals = false;
+                MaxHistoricalSignals = 5;
+                ZoneOpacity = 14;
             }
             else if (State == State.DataLoaded)
             {
@@ -47,6 +55,8 @@ namespace NinjaTrader.NinjaScript.Indicators
                 atr = ATR(AtrPeriod);
                 signalAnalyzer = new SignalAnalyzer();
                 signalTracker = new SignalTracker();
+                visibleSignalIds = new HashSet<string>();
+                visualSignalIds = new Queue<string>();
             }
         }
 
@@ -95,9 +105,19 @@ namespace NinjaTrader.NinjaScript.Indicators
             string currentStatus = lastSignal == null
                 ? "AGUARDANDO SINAL"
                 : GetStatusText(lastSignal);
+            string signalDetails = lastSignal == null
+                ? "Nenhum sinal registrado"
+                : string.Format(
+                    "{0}\nEntrada: {1}\nStop: {2}\nAlvo: {3}\nR:R: {4:N2}",
+                    lastSignal.Signal.Direction == SignalDirection.Long ? "COMPRA" : "VENDA",
+                    FormatPrice(lastSignal.Signal.EntryPrice),
+                    FormatPrice(lastSignal.Signal.StopPrice),
+                    FormatPrice(lastSignal.Signal.TargetPrice),
+                    lastSignal.Signal.RiskRewardRatio);
             string panelText = string.Format(
-                "ANALYSIS ONLY\nStatus: {0}\n\nSinais: {1} | Ativos: {2}\nAlvos: {3} | Stops: {4}\nExpirados: {5} | Ambiguos: {6}\nAcerto: {7:N1}%\nResultado: {8:+0.00;-0.00;0.00} R",
+                "ASSISTENTE | ANALYSIS ONLY\nStatus: {0}\n\n{1}\n\nSinais: {2} | Ativos: {3}\nAlvos: {4} | Stops: {5}\nExpirados: {6} | Ambíguos: {7}\nAcerto: {8:N1}% | Total: {9:+0.00;-0.00;0.00} R",
                 currentStatus,
+                signalDetails,
                 statistics.Total,
                 statistics.Active,
                 statistics.TargetHits,
@@ -112,15 +132,18 @@ namespace NinjaTrader.NinjaScript.Indicators
                 "TradeAssistant.Mode",
                 panelText,
                 TextPosition.TopRight,
-                Brushes.DimGray,
-                new SimpleFont("Segoe UI", 12),
-                Brushes.Transparent,
                 Brushes.WhiteSmoke,
-                70);
+                new SimpleFont("Segoe UI Semibold", 12),
+                Brushes.SlateGray,
+                Brushes.Black,
+                78);
         }
 
         private void RenderOutcome(TrackedSignal trackedSignal)
         {
+            if (!visibleSignalIds.Contains(trackedSignal.Signal.Id))
+                return;
+
             string text;
             Brush brush;
             double price;
@@ -183,35 +206,67 @@ namespace NinjaTrader.NinjaScript.Indicators
         private void RenderSignal(TradeSignal signal)
         {
             bool isLong = signal.Direction == SignalDirection.Long;
-            Brush directionBrush = isLong ? Brushes.ForestGreen : Brushes.Firebrick;
-            string directionText = isLong ? "COMPRA POSSÍVEL" : "VENDA POSSÍVEL";
+            Brush directionBrush = isLong ? Brushes.DeepSkyBlue : Brushes.DarkOrange;
             double markerPrice = isLong
                 ? Low[0] - (TickSize * 2)
                 : High[0] + (TickSize * 2);
             string tagPrefix = "TradeAssistant." + signal.Id;
+
+            PrepareVisualHistory(signal.Id);
 
             if (isLong)
                 Draw.ArrowUp(this, tagPrefix + ".Arrow", false, 0, markerPrice, directionBrush);
             else
                 Draw.ArrowDown(this, tagPrefix + ".Arrow", false, 0, markerPrice, directionBrush);
 
-            Draw.Line(this, tagPrefix + ".Entry", false, 0, signal.EntryPrice, -signal.ValidForBars, signal.EntryPrice, Brushes.SteelBlue, DashStyleHelper.Solid, 2);
-            Draw.Line(this, tagPrefix + ".Stop", false, 0, signal.StopPrice, -signal.ValidForBars, signal.StopPrice, Brushes.Firebrick, DashStyleHelper.Dash, 2);
-            Draw.Line(this, tagPrefix + ".Target", false, 0, signal.TargetPrice, -signal.ValidForBars, signal.TargetPrice, Brushes.ForestGreen, DashStyleHelper.Dash, 2);
+            Draw.Rectangle(this, tagPrefix + ".RiskZone", false, 0, signal.EntryPrice, -signal.ValidForBars, signal.StopPrice, Brushes.Transparent, Brushes.IndianRed, ZoneOpacity);
+            Draw.Rectangle(this, tagPrefix + ".RewardZone", false, 0, signal.EntryPrice, -signal.ValidForBars, signal.TargetPrice, Brushes.Transparent, Brushes.MediumSeaGreen, ZoneOpacity);
 
-            string label = string.Format(
-                "{0}\nEntrada: {1:N2}\nStop: {2:N2}\nAlvo: {3:N2}\nR:R: {4:N2}\n{5}",
-                directionText,
-                signal.EntryPrice,
-                signal.StopPrice,
-                signal.TargetPrice,
-                signal.RiskRewardRatio,
-                signal.Reason);
+            Draw.Line(this, tagPrefix + ".Entry", false, 0, signal.EntryPrice, -signal.ValidForBars, signal.EntryPrice, Brushes.DodgerBlue, DashStyleHelper.Solid, 2);
+            Draw.Line(this, tagPrefix + ".Stop", false, 0, signal.StopPrice, -signal.ValidForBars, signal.StopPrice, Brushes.IndianRed, DashStyleHelper.Dash, 2);
+            Draw.Line(this, tagPrefix + ".Target", false, 0, signal.TargetPrice, -signal.ValidForBars, signal.TargetPrice, Brushes.MediumSeaGreen, DashStyleHelper.Dash, 2);
 
-            double textPrice = isLong
-                ? markerPrice - (TickSize * 6)
-                : markerPrice + (TickSize * 6);
-            Draw.Text(this, tagPrefix + ".Label", label, 0, textPrice, directionBrush);
+            Draw.Text(this, tagPrefix + ".EntryLabel", "ENTRADA " + FormatPrice(signal.EntryPrice), -signal.ValidForBars, signal.EntryPrice, Brushes.DodgerBlue);
+            Draw.Text(this, tagPrefix + ".StopLabel", "STOP " + FormatPrice(signal.StopPrice), -signal.ValidForBars, signal.StopPrice, Brushes.IndianRed);
+            Draw.Text(this, tagPrefix + ".TargetLabel", "ALVO " + FormatPrice(signal.TargetPrice), -signal.ValidForBars, signal.TargetPrice, Brushes.MediumSeaGreen);
+        }
+
+        private string FormatPrice(double price)
+        {
+            return Bars.Instrument.MasterInstrument.FormatPrice(price);
+        }
+
+        private void PrepareVisualHistory(string signalId)
+        {
+            visualSignalIds.Enqueue(signalId);
+            visibleSignalIds.Add(signalId);
+
+            int visualLimit = ShowHistoricalSignals ? MaxHistoricalSignals : 1;
+            while (visualSignalIds.Count > visualLimit)
+                RemoveSignalVisuals(visualSignalIds.Dequeue());
+        }
+
+        private void RemoveSignalVisuals(string signalId)
+        {
+            string tagPrefix = "TradeAssistant." + signalId;
+            string[] suffixes =
+            {
+                ".Arrow",
+                ".RiskZone",
+                ".RewardZone",
+                ".Entry",
+                ".Stop",
+                ".Target",
+                ".EntryLabel",
+                ".StopLabel",
+                ".TargetLabel",
+                ".Outcome"
+            };
+
+            foreach (string suffix in suffixes)
+                RemoveDrawObject(tagPrefix + suffix);
+
+            visibleSignalIds.Remove(signalId);
         }
 
         #region Properties
@@ -253,6 +308,20 @@ namespace NinjaTrader.NinjaScript.Indicators
         [Range(1, 20)]
         [Display(Name = "Validade em candles", GroupName = "Sinais", Order = 3)]
         public int ValidForBars { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Exibir sinais anteriores", GroupName = "Visual", Order = 1)]
+        public bool ShowHistoricalSignals { get; set; }
+
+        [NinjaScriptProperty]
+        [Range(1, 20)]
+        [Display(Name = "Máximo de sinais no gráfico", GroupName = "Visual", Order = 2)]
+        public int MaxHistoricalSignals { get; set; }
+
+        [NinjaScriptProperty]
+        [Range(0, 100)]
+        [Display(Name = "Opacidade das zonas", GroupName = "Visual", Order = 3)]
+        public int ZoneOpacity { get; set; }
 
         #endregion
     }
