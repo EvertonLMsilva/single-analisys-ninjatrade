@@ -10,9 +10,23 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Tracking
 
         public TrackedSignal Register(TradeSignal signal, int currentBar)
         {
+            if (HasActiveSignal())
+                return null;
+
             TrackedSignal trackedSignal = new TrackedSignal(signal, currentBar);
             signals.Add(trackedSignal);
             return trackedSignal;
+        }
+
+        public bool HasActiveSignal()
+        {
+            foreach (TrackedSignal trackedSignal in signals)
+            {
+                if (trackedSignal.IsActive)
+                    return true;
+            }
+
+            return false;
         }
 
         public IList<TrackedSignal> Update(double high, double low, DateTime time, int currentBar)

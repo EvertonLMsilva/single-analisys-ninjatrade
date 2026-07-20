@@ -2,6 +2,14 @@
 
 Todas as mudanças relevantes do projeto são registradas neste arquivo. Enquanto o indicador estiver em validação, as versões usarão o sufixo `beta`.
 
+## 0.3.1-beta.1 — 2026-07-20
+
+- corrigida a criação de operações hipotéticas sobrepostas;
+- enquanto existir um sinal ativo, novos cruzamentos são ignorados;
+- um novo sinal volta a ser permitido depois de alvo, stop, expiração ou resultado ambíguo;
+- adicionada proteção tanto no indicador quanto no rastreador;
+- adicionado teste automatizado específico para o bloqueio e a liberação do próximo sinal.
+
 ## 0.3.0-beta.1 — 2026-07-20
 
 - adicionada gravação persistente dos sinais hipotéticos em CSV;

@@ -30,6 +30,8 @@ Dados do candle e indicadores
 
 O sinal começa a ser avaliado no candle seguinte ao cruzamento. O primeiro toque em alvo ou stop encerra o acompanhamento. Se ambos forem tocados no mesmo candle, o resultado é classificado como ambíguo e não entra na taxa de acerto. Se nenhum nível for tocado dentro da validade configurada, o sinal expira.
 
+Somente uma operação hipotética pode permanecer ativa. Cruzamentos ocorridos durante esse acompanhamento são ignorados e não entram nas métricas nem no CSV. Um novo sinal pode ser criado a partir do candle em que o anterior já estiver encerrado.
+
 ## Limite de segurança
 
 O componente é um indicador exclusivamente visual. Ele não contém métodos de envio, cancelamento ou gerenciamento de ordens e nenhuma conta é acessada.

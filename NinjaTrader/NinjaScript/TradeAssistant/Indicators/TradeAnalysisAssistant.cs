@@ -93,7 +93,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                 RenderOutcome(closedSignal);
             }
 
-            if (EnableLongSignals && CrossAbove(fastEma, slowEma, 1))
+            if (!signalTracker.HasActiveSignal() && EnableLongSignals && CrossAbove(fastEma, slowEma, 1))
                 RegisterAndRenderSignal(signalAnalyzer.Create(
                     SignalDirection.Long,
                     Close[0],
@@ -103,7 +103,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                     Time[0],
                     ValidForBars));
 
-            if (EnableShortSignals && CrossBelow(fastEma, slowEma, 1))
+            else if (!signalTracker.HasActiveSignal() && EnableShortSignals && CrossBelow(fastEma, slowEma, 1))
                 RegisterAndRenderSignal(signalAnalyzer.Create(
                     SignalDirection.Short,
                     Close[0],
@@ -119,6 +119,9 @@ namespace NinjaTrader.NinjaScript.Indicators
         private void RegisterAndRenderSignal(TradeSignal signal)
         {
             TrackedSignal trackedSignal = signalTracker.Register(signal, CurrentBar);
+            if (trackedSignal == null)
+                return;
+
             RecordSignal(trackedSignal);
             RenderSignal(signal);
         }

@@ -6,7 +6,7 @@ Base mínima de um assistente visual de análise para NinjaTrader 8. O código i
 
 ## Versão
 
-Versão atual: `0.3.0-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
+Versão atual: `0.3.1-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
 
 ## Primeira entrega
 
@@ -24,6 +24,7 @@ Versão atual: `0.3.0-beta.1`. A versão em execução aparece no cabeçalho do 
 - histórico automático em CSV, separado por ativo, período gráfico e dia;
 - atualização do mesmo registro quando o sinal atinge alvo, stop ou expira;
 - chave estável para evitar sinais duplicados ao recarregar o gráfico.
+- bloqueio de novos sinais enquanto houver uma operação hipotética ativa.
 
 ## Estrutura
 

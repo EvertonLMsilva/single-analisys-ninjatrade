@@ -41,3 +41,12 @@
 - confirmar `Histórico CSV: ATIVO`;
 - gerar e encerrar um sinal em Playback;
 - conferir criação, atualização e não duplicação do primeiro CSV.
+
+### Correção de sinais sobrepostos
+
+- observado no gráfico que um novo sinal podia aparecer durante uma operação hipotética ativa;
+- definido o comportamento de no máximo uma operação ativa por vez;
+- novos cruzamentos passam a ser ignorados até o encerramento do sinal atual;
+- adicionada defesa no `SignalTracker` e no indicador;
+- adicionado teste de rejeição do sinal sobreposto e aceitação após o encerramento;
+- versão elevada para `0.3.1-beta.1`.
