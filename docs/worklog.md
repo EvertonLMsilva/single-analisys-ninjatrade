@@ -50,3 +50,13 @@
 - adicionada defesa no `SignalTracker` e no indicador;
 - adicionado teste de rejeição do sinal sobreposto e aceitação após o encerramento;
 - versão elevada para `0.3.1-beta.1`.
+
+### Risco específico por instrumento
+
+- analisada a diferença entre preço do índice, volatilidade em pontos e valor financeiro do contrato;
+- decidido usar os metadados do instrumento carregado, sem valores fixos para MNQ ou MES;
+- adicionados tick, valor do ponto, moeda, distância, risco e alvo financeiro;
+- adicionado limite máximo por contrato, desativado por padrão até configuração do usuário;
+- criado formato CSV v2 para preservar os arquivos anteriores;
+- adicionados testes de arredondamento e de risco com valores de ponto diferentes;
+- versão elevada para `0.4.0-beta.1`.

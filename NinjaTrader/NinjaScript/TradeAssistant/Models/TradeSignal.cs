@@ -10,6 +10,8 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Models
             double entryPrice,
             double stopPrice,
             double targetPrice,
+            double tickSize,
+            double pointValue,
             DateTime createdAt,
             int validForBars,
             int score,
@@ -20,6 +22,8 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Models
             EntryPrice = entryPrice;
             StopPrice = stopPrice;
             TargetPrice = targetPrice;
+            TickSize = tickSize;
+            PointValue = pointValue;
             CreatedAt = createdAt;
             ValidForBars = validForBars;
             Score = score;
@@ -31,6 +35,8 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Models
         public double EntryPrice { get; private set; }
         public double StopPrice { get; private set; }
         public double TargetPrice { get; private set; }
+        public double TickSize { get; private set; }
+        public double PointValue { get; private set; }
         public DateTime CreatedAt { get; private set; }
         public int ValidForBars { get; private set; }
         public int Score { get; private set; }
@@ -44,6 +50,21 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Models
         public double RiskRewardRatio
         {
             get { return Risk == 0 ? 0 : Math.Abs(TargetPrice - EntryPrice) / Risk; }
+        }
+
+        public double RiskTicks
+        {
+            get { return TickSize <= 0 ? 0 : Risk / TickSize; }
+        }
+
+        public double RiskCurrency
+        {
+            get { return Risk * PointValue; }
+        }
+
+        public double RewardCurrency
+        {
+            get { return Math.Abs(TargetPrice - EntryPrice) * PointValue; }
         }
     }
 }

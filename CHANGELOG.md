@@ -2,6 +2,16 @@
 
 Todas as mudanças relevantes do projeto são registradas neste arquivo. Enquanto o indicador estiver em validação, as versões usarão o sufixo `beta`.
 
+## 0.4.0-beta.1 — 2026-07-20
+
+- adicionada leitura dinâmica de tick, valor do ponto e moeda do ativo no NinjaTrader;
+- entrada, stop e alvo passam a respeitar o tick válido do instrumento;
+- adicionados distância em pontos e ticks, risco e alvo financeiro para um contrato;
+- adicionado limite financeiro configurável, inicialmente desativado com valor `0`;
+- adicionadas situações `DENTRO DO LIMITE`, `ACIMA DO LIMITE` e `NÃO CONFIGURADO`;
+- ampliado o CSV com os dados financeiros e criada a versão 2 do formato sem alterar arquivos antigos;
+- adicionados testes comparando o cálculo financeiro com valores de ponto diferentes.
+
 ## 0.3.1-beta.1 — 2026-07-20
 
 - corrigida a criação de operações hipotéticas sobrepostas;

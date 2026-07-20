@@ -20,6 +20,9 @@ namespace NinjaTrader.NinjaScript.Indicators
     {
         private ATR atr;
         private EMA fastEma;
+        private string instrumentCurrency;
+        private double instrumentPointValue;
+        private double instrumentTickSize;
         private EMA slowEma;
         private HashSet<string> visibleSignalIds;
         private Queue<string> visualSignalIds;
@@ -51,12 +54,16 @@ namespace NinjaTrader.NinjaScript.Indicators
                 MaxHistoricalSignals = 5;
                 ZoneOpacity = 14;
                 EnableCsvJournal = true;
+                MaximumRiskPerContract = 0;
             }
             else if (State == State.DataLoaded)
             {
                 fastEma = EMA(FastEmaPeriod);
                 slowEma = EMA(SlowEmaPeriod);
                 atr = ATR(AtrPeriod);
+                instrumentCurrency = GetCurrencyCode(Bars.Instrument.MasterInstrument.Currency.ToString());
+                instrumentPointValue = Bars.Instrument.MasterInstrument.PointValue;
+                instrumentTickSize = Bars.Instrument.MasterInstrument.TickSize;
                 signalAnalyzer = new SignalAnalyzer();
                 signalTracker = new SignalTracker();
                 if (EnableCsvJournal)
@@ -74,7 +81,9 @@ namespace NinjaTrader.NinjaScript.Indicators
                         FastEmaPeriod,
                         SlowEmaPeriod,
                         AtrPeriod,
-                        StopAtrMultiplier);
+                        StopAtrMultiplier,
+                        instrumentCurrency,
+                        MaximumRiskPerContract);
                 }
                 visibleSignalIds = new HashSet<string>();
                 visualSignalIds = new Queue<string>();
@@ -100,6 +109,8 @@ namespace NinjaTrader.NinjaScript.Indicators
                     atr[0],
                     StopAtrMultiplier,
                     RiskRewardRatio,
+                    instrumentTickSize,
+                    instrumentPointValue,
                     Time[0],
                     ValidForBars));
 
@@ -110,6 +121,8 @@ namespace NinjaTrader.NinjaScript.Indicators
                     atr[0],
                     StopAtrMultiplier,
                     RiskRewardRatio,
+                    instrumentTickSize,
+                    instrumentPointValue,
                     Time[0],
                     ValidForBars));
 
@@ -145,11 +158,16 @@ namespace NinjaTrader.NinjaScript.Indicators
             string signalDetails = lastSignal == null
                 ? "Nenhum sinal registrado"
                 : string.Format(
-                    "{0}\nEntrada: {1}\nStop: {2}\nAlvo: {3}\nR:R: {4:N2}",
+                    "{0}\nEntrada: {1}\nStop: {2}\nAlvo: {3}\nDistância: {4:N2} pts | {5:N0} ticks\nRisco 1 contrato (sem custos): {6}\nAlvo 1 contrato (sem custos): {7}\nLimite: {8}\nR:R: {9:N2}",
                     lastSignal.Signal.Direction == SignalDirection.Long ? "COMPRA" : "VENDA",
                     FormatPrice(lastSignal.Signal.EntryPrice),
                     FormatPrice(lastSignal.Signal.StopPrice),
                     FormatPrice(lastSignal.Signal.TargetPrice),
+                    lastSignal.Signal.Risk,
+                    lastSignal.Signal.RiskTicks,
+                    FormatCurrency(lastSignal.Signal.RiskCurrency),
+                    FormatCurrency(lastSignal.Signal.RewardCurrency),
+                    GetRiskLimitStatus(lastSignal.Signal),
                     lastSignal.Signal.RiskRewardRatio);
             string panelText = string.Format(
                 "TRADE ASSISTANT v" + TradeAssistantVersion.Current + " | ANALYSIS ONLY\nStatus: {0}\nHistórico CSV: {10}\n\n{1}\n\nSinais: {2} | Ativos: {3}\nAlvos: {4} | Stops: {5}\nExpirados: {6} | Ambíguos: {7}\nAcerto: {8:N1}% | Total: {9:+0.00;-0.00;0.00} R",
@@ -184,6 +202,40 @@ namespace NinjaTrader.NinjaScript.Indicators
             if (signalJournal == null)
                 return "INDISPONÍVEL";
             return string.IsNullOrEmpty(signalJournal.LastError) ? "ATIVO" : "ERRO";
+        }
+
+        private string GetRiskLimitStatus(TradeSignal signal)
+        {
+            if (MaximumRiskPerContract <= 0)
+                return "NÃO CONFIGURADO";
+
+            return signal.RiskCurrency <= MaximumRiskPerContract
+                ? "DENTRO DO LIMITE"
+                : "ACIMA DO LIMITE";
+        }
+
+        private string FormatCurrency(double value)
+        {
+            return instrumentCurrency + " " + value.ToString("N2");
+        }
+
+        private static string GetCurrencyCode(string currencyName)
+        {
+            switch (currencyName)
+            {
+                case "UsDollar":
+                    return "USD";
+                case "Euro":
+                    return "EUR";
+                case "BritishPound":
+                    return "GBP";
+                case "JapaneseYen":
+                    return "JPY";
+                case "SwissFranc":
+                    return "CHF";
+                default:
+                    return currencyName;
+            }
         }
 
         private void RenderOutcome(TrackedSignal trackedSignal)
@@ -350,6 +402,11 @@ namespace NinjaTrader.NinjaScript.Indicators
         [Range(0.1, double.MaxValue)]
         [Display(Name = "Relação risco/retorno", GroupName = "Risco", Order = 3)]
         public double RiskRewardRatio { get; set; }
+
+        [NinjaScriptProperty]
+        [Range(0, double.MaxValue)]
+        [Display(Name = "Risco máximo por contrato", Description = "Use 0 para não configurar limite financeiro.", GroupName = "Risco", Order = 4)]
+        public double MaximumRiskPerContract { get; set; }
 
         [NinjaScriptProperty]
         [Range(1, 20)]

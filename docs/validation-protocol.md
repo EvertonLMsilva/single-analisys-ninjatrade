@@ -28,6 +28,9 @@ Esses parâmetros também acompanham cada linha do CSV quando se aplicam ao cál
 5. avançar até o encerramento e confirmar que a mesma linha mudou de situação;
 6. recarregar o gráfico e confirmar que a quantidade de linhas não aumentou indevidamente;
 7. comparar entrada, stop e alvo do CSV com o gráfico.
+8. confirmar que tick, valor do ponto e moeda correspondem ao instrumento carregado;
+9. conferir manualmente `risco em pontos × valor do ponto = risco financeiro`;
+10. configurar um limite abaixo e acima do risco calculado e conferir a mudança de situação.
 
 ## 3. Coleta da linha de base
 

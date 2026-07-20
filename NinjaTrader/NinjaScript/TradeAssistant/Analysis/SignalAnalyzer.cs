@@ -11,16 +11,29 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Analysis
             double atr,
             double stopAtrMultiplier,
             double riskRewardRatio,
+            double tickSize,
+            double pointValue,
             DateTime createdAt,
             int validForBars)
         {
+            double normalizedTickSize = tickSize > 0 ? tickSize : 1;
+            double normalizedEntryPrice = RoundToTickSize(entryPrice, normalizedTickSize);
             double risk = atr * stopAtrMultiplier;
             double stopPrice = direction == SignalDirection.Long
-                ? entryPrice - risk
-                : entryPrice + risk;
+                ? normalizedEntryPrice - risk
+                : normalizedEntryPrice + risk;
+            stopPrice = RoundToTickSize(stopPrice, normalizedTickSize);
+
+            if (direction == SignalDirection.Long && stopPrice >= normalizedEntryPrice)
+                stopPrice = normalizedEntryPrice - normalizedTickSize;
+            else if (direction == SignalDirection.Short && stopPrice <= normalizedEntryPrice)
+                stopPrice = normalizedEntryPrice + normalizedTickSize;
+
+            double normalizedRisk = Math.Abs(normalizedEntryPrice - stopPrice);
             double targetPrice = direction == SignalDirection.Long
-                ? entryPrice + (risk * riskRewardRatio)
-                : entryPrice - (risk * riskRewardRatio);
+                ? normalizedEntryPrice + (normalizedRisk * riskRewardRatio)
+                : normalizedEntryPrice - (normalizedRisk * riskRewardRatio);
+            targetPrice = RoundToTickSize(targetPrice, normalizedTickSize);
 
             string reason = direction == SignalDirection.Long
                 ? "EMA rápida cruzou acima da EMA lenta"
@@ -29,13 +42,20 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Analysis
             return new TradeSignal(
                 Guid.NewGuid().ToString("N"),
                 direction,
-                entryPrice,
+                normalizedEntryPrice,
                 stopPrice,
                 targetPrice,
+                normalizedTickSize,
+                pointValue,
                 createdAt,
                 validForBars,
                 1,
                 reason);
+        }
+
+        private static double RoundToTickSize(double price, double tickSize)
+        {
+            return Math.Round(price / tickSize, MidpointRounding.AwayFromZero) * tickSize;
         }
     }
 }

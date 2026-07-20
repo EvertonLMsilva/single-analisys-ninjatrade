@@ -9,7 +9,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
 {
     public sealed class CsvSignalJournal
     {
-        private const string Header = "RecordKey,SignalId,SignalTime,ClosedAt,Instrument,BarsPeriod,Version,Direction,EntryPrice,StopPrice,TargetPrice,RiskReward,ValidForBars,FastEmaPeriod,SlowEmaPeriod,AtrPeriod,StopAtrMultiplier,Status,ResultR,MfeR,MaeR,BarsElapsed,Reason";
+        private const string Header = "RecordKey,SignalId,SignalTime,ClosedAt,Instrument,BarsPeriod,Version,Direction,EntryPrice,StopPrice,TargetPrice,TickSize,PointValue,Currency,RiskPoints,RiskTicks,RiskCurrency,RewardCurrency,MaximumRiskPerContract,RiskLimitStatus,RiskReward,ValidForBars,FastEmaPeriod,SlowEmaPeriod,AtrPeriod,StopAtrMultiplier,Status,ResultR,MfeR,MaeR,BarsElapsed,Reason";
         private static readonly object FileLock = new object();
 
         private readonly int atrPeriod;
@@ -17,6 +17,8 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
         private readonly string directory;
         private readonly int fastEmaPeriod;
         private readonly string instrument;
+        private readonly string currency;
+        private readonly double maximumRiskPerContract;
         private readonly int slowEmaPeriod;
         private readonly double stopAtrMultiplier;
         private readonly string version;
@@ -29,7 +31,9 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
             int fastEmaPeriod,
             int slowEmaPeriod,
             int atrPeriod,
-            double stopAtrMultiplier)
+            double stopAtrMultiplier,
+            string currency,
+            double maximumRiskPerContract)
         {
             this.directory = directory;
             this.instrument = instrument;
@@ -39,6 +43,8 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
             this.slowEmaPeriod = slowEmaPeriod;
             this.atrPeriod = atrPeriod;
             this.stopAtrMultiplier = stopAtrMultiplier;
+            this.currency = currency;
+            this.maximumRiskPerContract = maximumRiskPerContract;
         }
 
         public string LastError { get; private set; }
@@ -83,6 +89,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 slowEmaPeriod.ToString(CultureInfo.InvariantCulture),
                 atrPeriod.ToString(CultureInfo.InvariantCulture),
                 stopAtrMultiplier.ToString("R", CultureInfo.InvariantCulture),
+                maximumRiskPerContract.ToString("R", CultureInfo.InvariantCulture),
                 signal.RiskRewardRatio.ToString("R", CultureInfo.InvariantCulture),
                 signal.ValidForBars.ToString(CultureInfo.InvariantCulture));
         }
@@ -107,6 +114,15 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 Number(signal.EntryPrice),
                 Number(signal.StopPrice),
                 Number(signal.TargetPrice),
+                Number(signal.TickSize),
+                Number(signal.PointValue),
+                Csv(currency),
+                Number(signal.Risk),
+                Number(signal.RiskTicks),
+                Number(signal.RiskCurrency),
+                Number(signal.RewardCurrency),
+                Number(maximumRiskPerContract),
+                Csv(GetRiskLimitStatus(signal)),
                 Number(signal.RiskRewardRatio),
                 signal.ValidForBars.ToString(CultureInfo.InvariantCulture),
                 fastEmaPeriod.ToString(CultureInfo.InvariantCulture),
@@ -125,11 +141,21 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
         {
             string fileName = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}_{1}_{2}.csv",
+                "{0}_{1}_{2}_v2.csv",
                 signalTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 Sanitize(instrument),
                 Sanitize(barsPeriod));
             return Path.Combine(directory, fileName);
+        }
+
+        private string GetRiskLimitStatus(TradeSignal signal)
+        {
+            if (maximumRiskPerContract <= 0)
+                return "NotConfigured";
+
+            return signal.RiskCurrency <= maximumRiskPerContract
+                ? "WithinLimit"
+                : "AboveLimit";
         }
 
         private static void UpsertRow(string filePath, string recordKey, string row)
