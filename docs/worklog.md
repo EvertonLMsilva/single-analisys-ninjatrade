@@ -70,3 +70,12 @@
 - identificado que 62 de 78 sinais expiraram;
 - arquivos v1 foram preservados, mas excluídos da comparação financeira;
 - conclusão registrada em `docs/data-audits/2026-07-20-initial-v2-audit.md`.
+
+### Auditoria após regeneração dos CSVs
+
+- confirmada a presença exclusiva de 10 arquivos v2;
+- analisados 80 registros, sendo 40 de MNQ e 40 de MES;
+- confirmada ausência de duplicações, campos numéricos inválidos e inconsistências matemáticas;
+- confirmados 78 sinais encerrados com os mesmos resultados da auditoria anterior;
+- identificados dois sinais ativos, um por instrumento;
+- conclusão registrada em `docs/data-audits/2026-07-20-regenerated-v2-audit.md`.
