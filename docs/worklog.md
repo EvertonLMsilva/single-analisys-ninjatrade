@@ -60,3 +60,13 @@
 - criado formato CSV v2 para preservar os arquivos anteriores;
 - adicionados testes de arredondamento e de risco com valores de ponto diferentes;
 - versão elevada para `0.4.0-beta.1`.
+
+### Primeira auditoria dos dados v2
+
+- inspecionados 10 arquivos e 78 registros entre 2026-07-15 e 2026-07-20;
+- confirmada separação de 39 sinais para MNQ e 39 para MES;
+- não foram encontradas chaves vazias ou duplicadas;
+- confirmado risco médio de USD 110,14 no MNQ e USD 37,72 no MES;
+- identificado que 62 de 78 sinais expiraram;
+- arquivos v1 foram preservados, mas excluídos da comparação financeira;
+- conclusão registrada em `docs/data-audits/2026-07-20-initial-v2-audit.md`.
