@@ -88,3 +88,12 @@
 - identificado que nenhum sinal de MNQ alcançou 2R no acompanhamento atual;
 - recomendada rejeição por risco em vez de redução automática do stop técnico;
 - proposta registrada em `docs/data-audits/2026-07-20-risk-target-analysis.md`.
+
+### Plano provisório para Take Profit Trader 25k
+
+- confirmados drawdown informado de USD 1.500 e limite diário pessoal de USD 300;
+- verificadas as diferenças entre trailing de avaliação e trailing intradiário da conta PRO;
+- comparados limites de risco entre USD 50 e USD 100 sobre os logs atuais;
+- recomendado provisoriamente USD 75 por operação, 1 micro e parada diária pessoal em USD 225;
+- pendente confirmação do tipo de conta e da origem do limite diário;
+- plano registrado em `docs/risk-plans/takeprofit-25k.md`.
