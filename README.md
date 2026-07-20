@@ -92,4 +92,5 @@ Validar a persistência de `0.3.0-beta.1` no NinjaTrader antes de alterar qualqu
 - [Auditoria dos CSVs v2 regenerados](docs/data-audits/2026-07-20-regenerated-v2-audit.md)
 - [Análise de risco e alcance dos alvos](docs/data-audits/2026-07-20-risk-target-analysis.md)
 - [Plano provisório de risco para Take Profit Trader 25k](docs/risk-plans/takeprofit-25k.md)
+- [Diagnóstico do filtro de risco no MNQ](docs/data-audits/2026-07-20-mnq-risk-filter-behavior.md)
 - [Histórico de versões](CHANGELOG.md)

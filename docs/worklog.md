@@ -114,3 +114,12 @@
 - adicionada contagem no painel e marcação visual discreta;
 - criado formato CSV v3 para registrar a política utilizada;
 - versão elevada para `0.5.0-beta.1`.
+
+### Diagnóstico da ausência de operações no MNQ
+
+- analisados os CSVs v3 gerados com limite de USD 75;
+- confirmadas 44 oportunidades, sendo 37 descartadas por risco;
+- entre as 7 aceitas, ocorreram 5 expirações e 2 stops;
+- confirmado que tendência sem novo cruzamento de EMA não gera sinal;
+- descartada a hipótese de falha no filtro ou na gravação;
+- diagnóstico registrado em `docs/data-audits/2026-07-20-mnq-risk-filter-behavior.md`.
