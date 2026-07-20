@@ -10,7 +10,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Tracking
 
         public TrackedSignal Register(TradeSignal signal, int currentBar)
         {
-            if (HasActiveSignal())
+            if (HasActiveSignal(signal.Setup))
                 return null;
 
             TrackedSignal trackedSignal = new TrackedSignal(signal, currentBar);
@@ -23,6 +23,17 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Tracking
             foreach (TrackedSignal trackedSignal in signals)
             {
                 if (trackedSignal.IsActive)
+                    return true;
+            }
+
+            return false;
+        }
+
+        public bool HasActiveSignal(SignalSetup setup)
+        {
+            foreach (TrackedSignal trackedSignal in signals)
+            {
+                if (trackedSignal.IsActive && trackedSignal.Signal.Setup == setup)
                     return true;
             }
 
@@ -71,13 +82,37 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Tracking
             return signals.Count == 0 ? null : signals[signals.Count - 1];
         }
 
+        public TrackedSignal GetLastSignal(SignalSetup setup)
+        {
+            for (int index = signals.Count - 1; index >= 0; index--)
+            {
+                if (signals[index].Signal.Setup == setup)
+                    return signals[index];
+            }
+
+            return null;
+        }
+
         public SignalStatistics GetStatistics()
         {
+            return GetStatistics(null);
+        }
+
+        public SignalStatistics GetStatistics(SignalSetup setup)
+        {
+            return GetStatistics((SignalSetup?)setup);
+        }
+
+        private SignalStatistics GetStatistics(SignalSetup? setup)
+        {
             SignalStatistics statistics = new SignalStatistics();
-            statistics.Total = signals.Count;
 
             foreach (TrackedSignal trackedSignal in signals)
             {
+                if (setup.HasValue && trackedSignal.Signal.Setup != setup.Value)
+                    continue;
+
+                statistics.Total++;
                 switch (trackedSignal.Status)
                 {
                     case SignalStatus.Active:

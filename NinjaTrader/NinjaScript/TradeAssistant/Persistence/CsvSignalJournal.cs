@@ -9,7 +9,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
 {
     public sealed class CsvSignalJournal
     {
-        private const string Header = "RecordKey,SignalId,SignalTime,ClosedAt,Instrument,BarsPeriod,Version,Direction,EntryPrice,StopPrice,TargetPrice,TickSize,PointValue,Currency,RiskPoints,RiskTicks,RiskCurrency,RewardCurrency,MaximumRiskPerContract,RiskLimitMode,RiskLimitStatus,RiskReward,ValidForBars,FastEmaPeriod,SlowEmaPeriod,AtrPeriod,StopAtrMultiplier,Status,ResultR,MfeR,MaeR,BarsElapsed,Reason";
+        private const string Header = "RecordKey,SignalId,SignalTime,ClosedAt,Instrument,BarsPeriod,Version,Setup,Direction,EntryPrice,StopPrice,TargetPrice,TickSize,PointValue,Currency,RiskPoints,RiskTicks,RiskCurrency,RewardCurrency,MaximumRiskPerContract,RiskLimitMode,RiskLimitStatus,RiskReward,ValidForBars,FastEmaPeriod,SlowEmaPeriod,AtrPeriod,StopAtrMultiplier,Status,ResultR,MfeR,MaeR,BarsElapsed,Reason";
         private static readonly object FileLock = new object();
 
         private readonly int atrPeriod;
@@ -86,6 +86,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
             return string.Join(
                 "_",
                 signal.CreatedAt.ToString("yyyyMMddHHmmssfffffff", CultureInfo.InvariantCulture),
+                signal.Setup.ToString(),
                 signal.Direction.ToString(),
                 Sanitize(version),
                 fastEmaPeriod.ToString(CultureInfo.InvariantCulture),
@@ -114,6 +115,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 Csv(instrument),
                 Csv(barsPeriod),
                 Csv(version),
+                Csv(signal.Setup.ToString()),
                 Csv(signal.Direction.ToString()),
                 Number(signal.EntryPrice),
                 Number(signal.StopPrice),
@@ -146,7 +148,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
         {
             string fileName = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}_{1}_{2}_v3.csv",
+                "{0}_{1}_{2}_v4.csv",
                 signalTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 Sanitize(instrument),
                 Sanitize(barsPeriod));

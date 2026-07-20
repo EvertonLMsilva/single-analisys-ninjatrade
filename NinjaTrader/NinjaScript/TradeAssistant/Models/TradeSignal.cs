@@ -6,6 +6,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Models
     {
         public TradeSignal(
             string id,
+            SignalSetup setup,
             SignalDirection direction,
             double entryPrice,
             double stopPrice,
@@ -18,6 +19,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Models
             string reason)
         {
             Id = id;
+            Setup = setup;
             Direction = direction;
             EntryPrice = entryPrice;
             StopPrice = stopPrice;
@@ -31,6 +33,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Models
         }
 
         public string Id { get; private set; }
+        public SignalSetup Setup { get; private set; }
         public SignalDirection Direction { get; private set; }
         public double EntryPrice { get; private set; }
         public double StopPrice { get; private set; }

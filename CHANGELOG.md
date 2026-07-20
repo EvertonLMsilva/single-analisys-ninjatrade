@@ -2,6 +2,19 @@
 
 Todas as mudanças relevantes do projeto são registradas neste arquivo. Enquanto o indicador estiver em validação, as versões usarão o sufixo `beta`.
 
+## 0.6.0-beta.1 — 2026-07-20
+
+- implementado setup experimental `TrendPullback` a favor da tendência das EMAs;
+- exigidos retorno à região da EMA rápida e candle de confirmação;
+- stop do pullback definido além do extremo técnico do candle, sem aproximação artificial;
+- adicionadas tolerância em ATR e espera mínima entre candidatos da mesma direção;
+- mantido `EmaCrossBaseline` em paralelo apenas para comparação no CSV;
+- permitido um sinal ativo por setup, com acompanhamento independente;
+- painel e elementos do gráfico passam a mostrar somente o experimento de pullback;
+- criado CSV v4 com a coluna `Setup` e chave estável que também inclui o setup;
+- mantidos o limite padrão de USD 75 por contrato e o bloqueio de sinais acima dele;
+- adicionados testes de cálculo do pullback, isolamento dos setups e persistência v4.
+
 ## 0.5.0-beta.1 — 2026-07-20
 
 - criado perfil inicial de risco para a avaliação Take Profit Trader 25k;

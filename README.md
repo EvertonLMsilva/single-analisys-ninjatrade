@@ -1,12 +1,12 @@
 # Single Analysis NinjaTrader
 
-Base mínima de um assistente visual de análise para NinjaTrader 8. O código identifica cruzamentos de médias, calcula níveis hipotéticos com ATR e desenha entrada, stop e alvo no gráfico.
+Assistente visual de análise para NinjaTrader 8. A versão experimental identifica pullbacks a favor da tendência, calcula níveis hipotéticos e desenha entrada, stop e alvo no gráfico. O cruzamento de médias anterior continua registrado apenas como linha de comparação.
 
 > **Segurança:** este projeto não envia ordens. Não existem chamadas de entrada, saída ou alteração de posições.
 
 ## Versão
 
-Versão atual: `0.5.0-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
+Versão atual: `0.6.0-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
 
 ## Primeira entrega
 
@@ -32,6 +32,11 @@ Versão atual: `0.5.0-beta.1`. A versão em execução aparece no cabeçalho do 
 - política configurável para avisar ou descartar sinais acima do risco máximo;
 - perfil inicial da avaliação Take Profit Trader 25k com limite de USD 75;
 - registro de sinais descartados no CSV sem tratá-los como operações ativas.
+- setup experimental de pullback com confirmação por candle e stop no extremo técnico;
+- tolerância até a EMA rápida e intervalo mínimo entre candidatos configuráveis;
+- linha de base por cruzamento de EMA executada em paralelo, sem poluir o gráfico;
+- acompanhamento independente para cada setup;
+- formato CSV v4 com identificação do setup em cada registro.
 
 ## Estrutura
 
@@ -45,6 +50,7 @@ NinjaTrader/
         │   └── TradeAssistantVersion.cs
         ├── Models/
         │   ├── SignalDirection.cs
+        │   ├── SignalSetup.cs
         │   ├── SignalStatus.cs
         │   ├── SignalStatistics.cs
         │   ├── TrackedSignal.cs
@@ -71,7 +77,7 @@ docs/
 4. Em um gráfico, adicione o indicador **Trade Analysis Assistant**.
 5. Mantenha-a em ambiente simulado enquanto valida os sinais e os parâmetros.
 
-Os parâmetros de EMA, ATR, risco/retorno, validade e aparência podem ser alterados na tela de propriedades do indicador.
+Os parâmetros de EMA, tolerância do pullback, intervalo entre candidatos, ATR, risco/retorno, validade e aparência podem ser alterados na tela de propriedades do indicador. Os valores experimentais iniciais são `0,1 ATR` de tolerância e `3 candles` de intervalo mínimo por direção.
 
 As métricas do painel existem apenas durante a execução atual do indicador. O histórico em CSV permanece salvo em `Documents/NinjaTrader 8/TradeAssistant/Data` e pode ser desligado pela propriedade **Salvar histórico CSV**. A propriedade **Risco máximo por contrato** aceita um valor na moeda do ativo; use `0` para manter o limite desativado. A propriedade **Política do limite** define se o indicador apenas avisa ou descarta o sinal acima desse valor.
 
@@ -79,7 +85,7 @@ Os valores financeiros são estimativas para um contrato baseadas na distância 
 
 ## Próximo marco
 
-Validar a persistência de `0.3.0-beta.1` no NinjaTrader antes de alterar qualquer regra de entrada. O roteiro e os critérios estão documentados em [docs/roadmap.md](docs/roadmap.md) e [docs/validation-protocol.md](docs/validation-protocol.md).
+Compilar `0.6.0-beta.1` no NinjaTrader e coletar os setups `TrendPullback` e `EmaCrossBaseline` sobre os mesmos dias. Nenhuma conclusão operacional deve ser tomada antes da amostra mínima definida no protocolo.
 
 ## Documentação
 

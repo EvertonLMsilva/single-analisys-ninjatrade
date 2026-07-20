@@ -130,3 +130,20 @@
 - mantidos limite de USD 75, referência de 1 micro e modo exclusivamente analítico;
 - definidos critérios mínimos de comparação e validação em Playback;
 - decisão registrada em `docs/decisions/0001-test-mnq-pullback.md`.
+
+### Implementação do experimento de pullback
+
+- criada a identidade de setup `TrendPullback` e `EmaCrossBaseline` no modelo do sinal;
+- implementado pullback a favor da tendência com toque na região da EMA rápida, candle de confirmação e stop técnico;
+- configurados valores iniciais de `0,1 ATR` para tolerância e 3 candles de intervalo mínimo por direção;
+- mantido o cruzamento de EMA em paralelo apenas no CSV, sem elementos visuais;
+- alterado o rastreador para permitir uma operação ativa por setup, preservando o bloqueio de sobreposição dentro do mesmo setup;
+- painel passa a resumir exclusivamente os resultados do pullback;
+- criado formato CSV v4 com coluna `Setup` e chave estável por setup;
+- versão elevada para `0.6.0-beta.1`;
+- testes do núcleo e do CSV passaram;
+- compilação estrutural passou com zero erros e zero avisos;
+- confirmada novamente a ausência de chamadas de execução de ordens.
+- código sincronizado com a pasta oficial e com a instalação do NinjaTrader;
+- os 12 arquivos instalados foram conferidos por SHA-256, sem divergências;
+- compilação com F5 e validação visual no NinjaTrader permanecem como etapa manual seguinte.

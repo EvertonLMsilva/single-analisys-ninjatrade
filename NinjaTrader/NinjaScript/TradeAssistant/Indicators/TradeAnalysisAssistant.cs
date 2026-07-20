@@ -23,6 +23,8 @@ namespace NinjaTrader.NinjaScript.Indicators
         private string instrumentCurrency;
         private double instrumentPointValue;
         private double instrumentTickSize;
+        private int lastLongPullbackBar;
+        private int lastShortPullbackBar;
         private EMA slowEma;
         private HashSet<string> visibleSignalIds;
         private Queue<string> visualSignalIds;
@@ -44,9 +46,13 @@ namespace NinjaTrader.NinjaScript.Indicators
 
                 EnableLongSignals = true;
                 EnableShortSignals = true;
+                EnablePullbackSignals = true;
+                EnableBaselineComparison = true;
                 FastEmaPeriod = 9;
                 SlowEmaPeriod = 21;
                 AtrPeriod = 14;
+                PullbackToleranceAtr = 0.1;
+                PullbackCooldownBars = 3;
                 StopAtrMultiplier = 1.5;
                 RiskRewardRatio = 2.0;
                 ValidForBars = 3;
@@ -67,6 +73,8 @@ namespace NinjaTrader.NinjaScript.Indicators
                 instrumentTickSize = Bars.Instrument.MasterInstrument.TickSize;
                 signalAnalyzer = new SignalAnalyzer();
                 signalTracker = new SignalTracker();
+                lastLongPullbackBar = -1000000;
+                lastShortPullbackBar = -1000000;
                 if (EnableCsvJournal)
                 {
                     string journalDirectory = System.IO.Path.Combine(
@@ -104,8 +112,77 @@ namespace NinjaTrader.NinjaScript.Indicators
                 RenderOutcome(closedSignal);
             }
 
-            if (!signalTracker.HasActiveSignal() && EnableLongSignals && CrossAbove(fastEma, slowEma, 1))
-                RegisterAndRenderSignal(signalAnalyzer.Create(
+            EvaluatePullbackSetup();
+            EvaluateBaselineSetup();
+
+            RenderModePanel();
+        }
+
+        private void EvaluatePullbackSetup()
+        {
+            if (!EnablePullbackSignals || signalTracker.HasActiveSignal(SignalSetup.TrendPullback))
+                return;
+
+            double tolerance = atr[0] * PullbackToleranceAtr;
+            bool longTrend = fastEma[0] > slowEma[0]
+                && fastEma[0] > fastEma[1]
+                && slowEma[0] >= slowEma[1];
+            bool longConfirmation = Low[0] <= fastEma[0] + tolerance
+                && Close[0] > fastEma[0]
+                && Close[0] > Open[0];
+
+            if (EnableLongSignals
+                && longTrend
+                && longConfirmation
+                && CurrentBar - lastLongPullbackBar >= PullbackCooldownBars)
+            {
+                lastLongPullbackBar = CurrentBar;
+                RegisterAndRenderSignal(signalAnalyzer.CreatePullback(
+                    SignalDirection.Long,
+                    Close[0],
+                    Low[0] - instrumentTickSize,
+                    RiskRewardRatio,
+                    instrumentTickSize,
+                    instrumentPointValue,
+                    Time[0],
+                    ValidForBars),
+                    true);
+                return;
+            }
+
+            bool shortTrend = fastEma[0] < slowEma[0]
+                && fastEma[0] < fastEma[1]
+                && slowEma[0] <= slowEma[1];
+            bool shortConfirmation = High[0] >= fastEma[0] - tolerance
+                && Close[0] < fastEma[0]
+                && Close[0] < Open[0];
+
+            if (EnableShortSignals
+                && shortTrend
+                && shortConfirmation
+                && CurrentBar - lastShortPullbackBar >= PullbackCooldownBars)
+            {
+                lastShortPullbackBar = CurrentBar;
+                RegisterAndRenderSignal(signalAnalyzer.CreatePullback(
+                    SignalDirection.Short,
+                    Close[0],
+                    High[0] + instrumentTickSize,
+                    RiskRewardRatio,
+                    instrumentTickSize,
+                    instrumentPointValue,
+                    Time[0],
+                    ValidForBars),
+                    true);
+            }
+        }
+
+        private void EvaluateBaselineSetup()
+        {
+            if (!EnableBaselineComparison || signalTracker.HasActiveSignal(SignalSetup.EmaCrossBaseline))
+                return;
+
+            if (EnableLongSignals && CrossAbove(fastEma, slowEma, 1))
+                RegisterAndRenderSignal(signalAnalyzer.CreateEmaCross(
                     SignalDirection.Long,
                     Close[0],
                     atr[0],
@@ -114,10 +191,11 @@ namespace NinjaTrader.NinjaScript.Indicators
                     instrumentTickSize,
                     instrumentPointValue,
                     Time[0],
-                    ValidForBars));
+                    ValidForBars),
+                    false);
 
-            else if (!signalTracker.HasActiveSignal() && EnableShortSignals && CrossBelow(fastEma, slowEma, 1))
-                RegisterAndRenderSignal(signalAnalyzer.Create(
+            else if (EnableShortSignals && CrossBelow(fastEma, slowEma, 1))
+                RegisterAndRenderSignal(signalAnalyzer.CreateEmaCross(
                     SignalDirection.Short,
                     Close[0],
                     atr[0],
@@ -126,18 +204,18 @@ namespace NinjaTrader.NinjaScript.Indicators
                     instrumentTickSize,
                     instrumentPointValue,
                     Time[0],
-                    ValidForBars));
-
-            RenderModePanel();
+                    ValidForBars),
+                    false);
         }
 
-        private void RegisterAndRenderSignal(TradeSignal signal)
+        private void RegisterAndRenderSignal(TradeSignal signal, bool renderOnChart)
         {
             if (ShouldRejectByRisk(signal))
             {
                 TrackedSignal rejectedSignal = signalTracker.RejectByRisk(signal, CurrentBar);
                 RecordSignal(rejectedSignal);
-                RenderRejectedSignal(signal);
+                if (renderOnChart)
+                    RenderRejectedSignal(signal);
                 return;
             }
 
@@ -146,7 +224,8 @@ namespace NinjaTrader.NinjaScript.Indicators
                 return;
 
             RecordSignal(trackedSignal);
-            RenderSignal(signal);
+            if (renderOnChart)
+                RenderSignal(signal);
         }
 
         private bool ShouldRejectByRisk(TradeSignal signal)
@@ -167,8 +246,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         private void RenderModePanel()
         {
-            SignalStatistics statistics = signalTracker.GetStatistics();
-            TrackedSignal lastSignal = signalTracker.GetLastSignal();
+            SignalStatistics statistics = signalTracker.GetStatistics(SignalSetup.TrendPullback);
+            TrackedSignal lastSignal = signalTracker.GetLastSignal(SignalSetup.TrendPullback);
             string currentStatus = lastSignal == null
                 ? "AGUARDANDO SINAL"
                 : GetStatusText(lastSignal);
@@ -187,7 +266,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                     GetRiskLimitStatus(lastSignal.Signal),
                     lastSignal.Signal.RiskRewardRatio);
             string panelText = string.Format(
-                "TRADE ASSISTANT v" + TradeAssistantVersion.Current + " | ANALYSIS ONLY\nStatus: {0}\nHistórico CSV: {11}\n\n{1}\n\nSinais: {2} | Ativos: {3}\nAlvos: {4} | Stops: {5}\nExpirados: {6} | Ambíguos: {7}\nDescartados por risco: {10}\nAcerto: {8:N1}% | Total: {9:+0.00;-0.00;0.00} R",
+                "TRADE ASSISTANT v" + TradeAssistantVersion.Current + " | PULLBACK EXPERIMENTAL\nStatus: {0}\nHistórico CSV: {11} | Baseline no CSV: " + (EnableBaselineComparison ? "SIM" : "NÃO") + "\n\n{1}\n\nPullbacks: {2} | Ativos: {3}\nAlvos: {4} | Stops: {5}\nExpirados: {6} | Ambíguos: {7}\nDescartados por risco: {10}\nAcerto: {8:N1}% | Total: {9:+0.00;-0.00;0.00} R",
                 currentStatus,
                 signalDetails,
                 statistics.Total,
@@ -419,6 +498,14 @@ namespace NinjaTrader.NinjaScript.Indicators
         public bool EnableShortSignals { get; set; }
 
         [NinjaScriptProperty]
+        [Display(Name = "Ativar pullback experimental", Description = "Exibe e acompanha sinais de pullback a favor da tendência.", GroupName = "Sinais", Order = 3)]
+        public bool EnablePullbackSignals { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Registrar comparação EMA", Description = "Registra o cruzamento de EMA somente no CSV, sem desenhar no gráfico.", GroupName = "Sinais", Order = 4)]
+        public bool EnableBaselineComparison { get; set; }
+
+        [NinjaScriptProperty]
         [Range(2, int.MaxValue)]
         [Display(Name = "EMA rápida", GroupName = "Análise", Order = 1)]
         public int FastEmaPeriod { get; set; }
@@ -427,6 +514,16 @@ namespace NinjaTrader.NinjaScript.Indicators
         [Range(3, int.MaxValue)]
         [Display(Name = "EMA lenta", GroupName = "Análise", Order = 2)]
         public int SlowEmaPeriod { get; set; }
+
+        [NinjaScriptProperty]
+        [Range(0, 2)]
+        [Display(Name = "Tolerância do pullback (ATR)", Description = "Distância máxima da EMA rápida como fração do ATR.", GroupName = "Análise", Order = 3)]
+        public double PullbackToleranceAtr { get; set; }
+
+        [NinjaScriptProperty]
+        [Range(1, 50)]
+        [Display(Name = "Intervalo entre pullbacks", Description = "Quantidade mínima de candles entre candidatos da mesma direção.", GroupName = "Análise", Order = 4)]
+        public int PullbackCooldownBars { get; set; }
 
         [NinjaScriptProperty]
         [Range(2, int.MaxValue)]
@@ -454,7 +551,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         [NinjaScriptProperty]
         [Range(1, 20)]
-        [Display(Name = "Validade em candles", GroupName = "Sinais", Order = 3)]
+        [Display(Name = "Validade em candles", GroupName = "Sinais", Order = 5)]
         public int ValidForBars { get; set; }
 
         [NinjaScriptProperty]

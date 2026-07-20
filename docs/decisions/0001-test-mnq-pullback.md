@@ -56,3 +56,19 @@ Os detalhes exatos de distância até as médias e candle de confirmação devem
 ## Resultado esperado desta etapa
 
 O objetivo não é aumentar o número de operações a qualquer custo. O objetivo é descobrir se existe uma entrada tecnicamente justificável no MNQ que respeite o orçamento financeiro da conta Test 25k.
+
+## Implementação inicial
+
+Implementado em `0.6.0-beta.1` com os seguintes valores de partida:
+
+- setup identificado como `TrendPullback`;
+- tolerância configurável, inicialmente `0,1 ATR`, em torno da EMA rápida;
+- confirmação pela cor e pelo fechamento do candle além da EMA rápida;
+- direção e inclinação das EMAs rápida e lenta alinhadas;
+- stop um tick além do extremo do candle de confirmação;
+- espera mínima configurável de 3 candles por direção;
+- alvo configurado pela relação risco/retorno existente;
+- rejeição mantida acima de USD 75 por contrato;
+- `EmaCrossBaseline` preservado de forma invisível no gráfico e identificado separadamente no CSV v4.
+
+Esta implementação inicia a coleta; ela não confirma vantagem estatística nem autoriza uso em conta real.

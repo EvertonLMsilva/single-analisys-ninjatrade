@@ -16,6 +16,9 @@ Antes de iniciar o Playback, registrar:
 - período do ATR e multiplicador do stop;
 - relação risco/retorno;
 - validade do sinal em candles.
+- tolerância do pullback em ATR;
+- intervalo mínimo entre pullbacks da mesma direção;
+- situação das opções de pullback e comparação EMA.
 
 Esses parâmetros também acompanham cada linha do CSV quando se aplicam ao cálculo do sinal.
 
@@ -32,7 +35,9 @@ Esses parâmetros também acompanham cada linha do CSV quando se aplicam ao cál
 9. conferir manualmente `risco em pontos × valor do ponto = risco financeiro`;
 10. configurar um limite abaixo e acima do risco calculado e conferir a mudança de situação.
 11. no modo `DescartarAcimaDoLimite`, confirmar que o sinal acima do limite aparece como descartado, não cria zonas operacionais e não bloqueia o próximo sinal;
-12. confirmar no CSV v3 os campos `RiskLimitMode`, `RiskLimitStatus` e `Status=RiskRejected`.
+12. confirmar no CSV v4 os campos `Setup`, `RiskLimitMode`, `RiskLimitStatus` e `Status=RiskRejected`;
+13. confirmar que apenas `TrendPullback` é desenhado no gráfico e que `EmaCrossBaseline` aparece somente no CSV;
+14. confirmar que os dois setups podem estar ativos ao mesmo tempo, mas não existem duas operações ativas do mesmo setup.
 
 ## 3. Coleta da linha de base
 
@@ -73,3 +78,5 @@ Uma nova regra ou configuração deve ser avaliada sobre o mesmo conjunto de dia
 - decisão: aceitar, ajustar ou descartar.
 
 Não alterar vários componentes da regra na mesma comparação.
+
+Na primeira rodada da versão 0.6, manter `Tolerância do pullback = 0,1 ATR`, `Intervalo entre pullbacks = 3`, risco máximo de USD 75 e um microcontrato de referência. Separar MNQ e MES na análise e comparar os setups pela coluna `Setup`.

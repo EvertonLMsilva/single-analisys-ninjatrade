@@ -32,7 +32,7 @@ O indicador também lê do instrumento carregado o tamanho do tick, o valor mone
 
 O sinal começa a ser avaliado no candle seguinte ao cruzamento. O primeiro toque em alvo ou stop encerra o acompanhamento. Se ambos forem tocados no mesmo candle, o resultado é classificado como ambíguo e não entra na taxa de acerto. Se nenhum nível for tocado dentro da validade configurada, o sinal expira.
 
-Somente uma operação hipotética pode permanecer ativa. Cruzamentos ocorridos durante esse acompanhamento são ignorados e não entram nas métricas nem no CSV. Um novo sinal pode ser criado a partir do candle em que o anterior já estiver encerrado.
+Somente uma operação hipotética de cada setup pode permanecer ativa. `TrendPullback` e `EmaCrossBaseline` podem ser acompanhados ao mesmo tempo para permitir comparação sobre os mesmos dados, mas um novo sinal do mesmo setup só é aceito depois do encerramento anterior.
 
 Quando a política de risco estiver em `DescartarAcimaDoLimite`, um sinal que ultrapasse o limite financeiro é registrado imediatamente como `RiskRejected`. Ele não se torna ativo, não bloqueia sinais futuros e não participa da taxa de acerto ou do resultado em R.
 
@@ -40,6 +40,8 @@ Quando a política de risco estiver em `DescartarAcimaDoLimite`, um sinal que ul
 
 O componente é um indicador exclusivamente visual. Ele não contém métodos de envio, cancelamento ou gerenciamento de ordens e nenhuma conta é acessada.
 
-## Regra demonstrativa
+## Setups da versão 0.6
 
-O cruzamento de uma EMA rápida com uma EMA lenta existe apenas para validar a integração visual. Ele não representa uma recomendação operacional nem uma estratégia comprovada. A primeira migração do projeto antigo deve substituir essa regra de forma isolada e verificável.
+`TrendPullback` é o experimento visível. Para compra, EMA rápida e lenta devem apontar para cima, o candle deve alcançar a região da EMA rápida dentro da tolerância configurada, fechar acima dela e fechar acima da abertura. A venda usa condições simétricas. A entrada hipotética fica no fechamento e o stop, um tick além do extremo do candle de confirmação. O sinal é rejeitado se esse stop técnico superar o limite financeiro.
+
+`EmaCrossBaseline` conserva a regra anterior de cruzamento e stop por ATR. Ela não é desenhada no gráfico e existe somente para comparação no CSV. Nenhum dos dois setups representa uma estratégia comprovada ou recomendação operacional.
