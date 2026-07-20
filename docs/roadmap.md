@@ -43,6 +43,8 @@ A regra de cruzamento de EMA continua sendo apenas uma demonstração técnica. 
 - comparar as duas regras sobre os mesmos dados;
 - aceitar, ajustar ou descartar a nova regra com justificativa registrada.
 
+Antes da migração do projeto antigo, foi aprovado um experimento controlado de pullback para MNQ. Consulte `docs/decisions/0001-test-mnq-pullback.md`. Ele deve permanecer separado da regra demonstrativa e respeitar o limite de USD 75.
+
 ## Marco 5 — Melhorar a interface
 
 - priorizar entrada, stop, alvo, situação e justificativa;

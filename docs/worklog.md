@@ -123,3 +123,10 @@
 - confirmado que tendência sem novo cruzamento de EMA não gera sinal;
 - descartada a hipótese de falha no filtro ou na gravação;
 - diagnóstico registrado em `docs/data-audits/2026-07-20-mnq-risk-filter-behavior.md`.
+
+### Decisão sobre ajuste do MNQ
+
+- recomendado testar pullback a favor da tendência sem substituir a linha de base;
+- mantidos limite de USD 75, referência de 1 micro e modo exclusivamente analítico;
+- definidos critérios mínimos de comparação e validação em Playback;
+- decisão registrada em `docs/decisions/0001-test-mnq-pullback.md`.
