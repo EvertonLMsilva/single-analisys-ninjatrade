@@ -6,6 +6,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Models
         TargetHit,
         StopHit,
         Expired,
-        Ambiguous
+        Ambiguous,
+        RiskRejected
     }
 }

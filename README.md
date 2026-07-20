@@ -6,7 +6,7 @@ Base mínima de um assistente visual de análise para NinjaTrader 8. O código i
 
 ## Versão
 
-Versão atual: `0.4.0-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
+Versão atual: `0.5.0-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
 
 ## Primeira entrega
 
@@ -29,6 +29,9 @@ Versão atual: `0.4.0-beta.1`. A versão em execução aparece no cabeçalho do 
 - estimativa de risco e alvo financeiro para um contrato;
 - limite financeiro configurável e situação exibida no painel;
 - preços de entrada, stop e alvo ajustados ao tick válido do instrumento.
+- política configurável para avisar ou descartar sinais acima do risco máximo;
+- perfil inicial da avaliação Take Profit Trader 25k com limite de USD 75;
+- registro de sinais descartados no CSV sem tratá-los como operações ativas.
 
 ## Estrutura
 
@@ -70,7 +73,7 @@ docs/
 
 Os parâmetros de EMA, ATR, risco/retorno, validade e aparência podem ser alterados na tela de propriedades do indicador.
 
-As métricas do painel existem apenas durante a execução atual do indicador. O histórico em CSV permanece salvo em `Documents/NinjaTrader 8/TradeAssistant/Data` e pode ser desligado pela propriedade **Salvar histórico CSV**. A propriedade **Risco máximo por contrato** aceita um valor na moeda do ativo; use `0` para manter o limite desativado.
+As métricas do painel existem apenas durante a execução atual do indicador. O histórico em CSV permanece salvo em `Documents/NinjaTrader 8/TradeAssistant/Data` e pode ser desligado pela propriedade **Salvar histórico CSV**. A propriedade **Risco máximo por contrato** aceita um valor na moeda do ativo; use `0` para manter o limite desativado. A propriedade **Política do limite** define se o indicador apenas avisa ou descarta o sinal acima desse valor.
 
 Os valores financeiros são estimativas para um contrato baseadas na distância dos níveis e no valor do ponto. Não incluem comissão, taxas, slippage ou conversão para a moeda da conta.
 

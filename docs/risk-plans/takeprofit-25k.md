@@ -56,7 +56,8 @@ O limite de USD 75 é provisório e não garante cumprimento do trailing, especi
 
 ## Próximas decisões
 
-1. confirmar se a conta é avaliação, PRO ou PRO+;
-2. implementar os modos `Somente avisar` e `Descartar acima do limite`;
-3. validar o filtro sobre os mesmos candles históricos;
-4. somente depois comparar alvos de 1R, 1,5R e 2R.
+Tipo inicial confirmado: conta de avaliação (`Test`).
+
+1. validar o filtro implementado sobre os mesmos candles históricos;
+2. conferir os sinais `RiskRejected` no CSV v3;
+3. somente depois comparar alvos de 1R, 1,5R e 2R.

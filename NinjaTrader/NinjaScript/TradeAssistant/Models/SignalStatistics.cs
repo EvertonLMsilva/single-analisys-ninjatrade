@@ -8,6 +8,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Models
         public int StopHits { get; internal set; }
         public int Expired { get; internal set; }
         public int Ambiguous { get; internal set; }
+        public int RiskRejected { get; internal set; }
         public double TotalR { get; internal set; }
 
         public int Decided

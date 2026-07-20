@@ -104,3 +104,13 @@
 - os USD 300 representam o orçamento máximo pessoal de perda por dia;
 - mantida parada operacional recomendada em USD 225 para preservar USD 75 de margem;
 - removida da documentação a pendência sobre a origem do valor diário.
+
+### Filtro de risco para a avaliação 25k
+
+- confirmado que o primeiro perfil será para conta `Test`;
+- risco máximo padrão definido em USD 75 por contrato;
+- adicionados modos de somente aviso e descarte acima do limite;
+- sinal descartado permanece no CSV como `RiskRejected`, sem se tornar ativo;
+- adicionada contagem no painel e marcação visual discreta;
+- criado formato CSV v3 para registrar a política utilizada;
+- versão elevada para `0.5.0-beta.1`.

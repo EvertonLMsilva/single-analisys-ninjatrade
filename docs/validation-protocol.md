@@ -31,6 +31,8 @@ Esses parâmetros também acompanham cada linha do CSV quando se aplicam ao cál
 8. confirmar que tick, valor do ponto e moeda correspondem ao instrumento carregado;
 9. conferir manualmente `risco em pontos × valor do ponto = risco financeiro`;
 10. configurar um limite abaixo e acima do risco calculado e conferir a mudança de situação.
+11. no modo `DescartarAcimaDoLimite`, confirmar que o sinal acima do limite aparece como descartado, não cria zonas operacionais e não bloqueia o próximo sinal;
+12. confirmar no CSV v3 os campos `RiskLimitMode`, `RiskLimitStatus` e `Status=RiskRejected`.
 
 ## 3. Coleta da linha de base
 

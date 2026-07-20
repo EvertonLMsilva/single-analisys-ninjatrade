@@ -2,6 +2,17 @@
 
 Todas as mudanças relevantes do projeto são registradas neste arquivo. Enquanto o indicador estiver em validação, as versões usarão o sufixo `beta`.
 
+## 0.5.0-beta.1 — 2026-07-20
+
+- criado perfil inicial de risco para a avaliação Take Profit Trader 25k;
+- risco máximo padrão definido em USD 75 por microcontrato;
+- adicionadas políticas `SomenteAvisar` e `DescartarAcimaDoLimite`;
+- sinais acima do limite podem ser registrados como `RiskRejected` sem virar operação ativa;
+- adicionada contagem de descartados por risco no painel;
+- sinais descartados recebem marcação visual discreta, sem linhas de entrada, stop e alvo;
+- criado formato CSV v3 com a política de risco registrada e sem alterar arquivos anteriores;
+- adicionados testes de rejeição, estatísticas e liberação do próximo sinal.
+
 ## 0.4.0-beta.1 — 2026-07-20
 
 - adicionada leitura dinâmica de tick, valor do ponto e moeda do ativo no NinjaTrader;

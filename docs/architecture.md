@@ -34,6 +34,8 @@ O sinal começa a ser avaliado no candle seguinte ao cruzamento. O primeiro toqu
 
 Somente uma operação hipotética pode permanecer ativa. Cruzamentos ocorridos durante esse acompanhamento são ignorados e não entram nas métricas nem no CSV. Um novo sinal pode ser criado a partir do candle em que o anterior já estiver encerrado.
 
+Quando a política de risco estiver em `DescartarAcimaDoLimite`, um sinal que ultrapasse o limite financeiro é registrado imediatamente como `RiskRejected`. Ele não se torna ativo, não bloqueia sinais futuros e não participa da taxa de acerto ou do resultado em R.
+
 ## Limite de segurança
 
 O componente é um indicador exclusivamente visual. Ele não contém métodos de envio, cancelamento ou gerenciamento de ordens e nenhuma conta é acessada.

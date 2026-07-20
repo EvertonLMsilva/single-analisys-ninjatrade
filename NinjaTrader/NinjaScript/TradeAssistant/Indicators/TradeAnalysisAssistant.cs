@@ -54,7 +54,8 @@ namespace NinjaTrader.NinjaScript.Indicators
                 MaxHistoricalSignals = 5;
                 ZoneOpacity = 14;
                 EnableCsvJournal = true;
-                MaximumRiskPerContract = 0;
+                MaximumRiskPerContract = 75;
+                RiskLimitPolicy = RiskLimitMode.DescartarAcimaDoLimite;
             }
             else if (State == State.DataLoaded)
             {
@@ -83,7 +84,8 @@ namespace NinjaTrader.NinjaScript.Indicators
                         AtrPeriod,
                         StopAtrMultiplier,
                         instrumentCurrency,
-                        MaximumRiskPerContract);
+                        MaximumRiskPerContract,
+                        RiskLimitPolicy.ToString());
                 }
                 visibleSignalIds = new HashSet<string>();
                 visualSignalIds = new Queue<string>();
@@ -131,12 +133,27 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         private void RegisterAndRenderSignal(TradeSignal signal)
         {
+            if (ShouldRejectByRisk(signal))
+            {
+                TrackedSignal rejectedSignal = signalTracker.RejectByRisk(signal, CurrentBar);
+                RecordSignal(rejectedSignal);
+                RenderRejectedSignal(signal);
+                return;
+            }
+
             TrackedSignal trackedSignal = signalTracker.Register(signal, CurrentBar);
             if (trackedSignal == null)
                 return;
 
             RecordSignal(trackedSignal);
             RenderSignal(signal);
+        }
+
+        private bool ShouldRejectByRisk(TradeSignal signal)
+        {
+            return RiskLimitPolicy == RiskLimitMode.DescartarAcimaDoLimite
+                && MaximumRiskPerContract > 0
+                && signal.RiskCurrency > MaximumRiskPerContract;
         }
 
         private void RecordSignal(TrackedSignal trackedSignal)
@@ -170,7 +187,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                     GetRiskLimitStatus(lastSignal.Signal),
                     lastSignal.Signal.RiskRewardRatio);
             string panelText = string.Format(
-                "TRADE ASSISTANT v" + TradeAssistantVersion.Current + " | ANALYSIS ONLY\nStatus: {0}\nHistórico CSV: {10}\n\n{1}\n\nSinais: {2} | Ativos: {3}\nAlvos: {4} | Stops: {5}\nExpirados: {6} | Ambíguos: {7}\nAcerto: {8:N1}% | Total: {9:+0.00;-0.00;0.00} R",
+                "TRADE ASSISTANT v" + TradeAssistantVersion.Current + " | ANALYSIS ONLY\nStatus: {0}\nHistórico CSV: {11}\n\n{1}\n\nSinais: {2} | Ativos: {3}\nAlvos: {4} | Stops: {5}\nExpirados: {6} | Ambíguos: {7}\nDescartados por risco: {10}\nAcerto: {8:N1}% | Total: {9:+0.00;-0.00;0.00} R",
                 currentStatus,
                 signalDetails,
                 statistics.Total,
@@ -181,6 +198,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                 statistics.Ambiguous,
                 statistics.WinRate,
                 statistics.TotalR,
+                statistics.RiskRejected,
                 GetJournalStatus());
 
             Draw.TextFixed(
@@ -297,9 +315,30 @@ namespace NinjaTrader.NinjaScript.Indicators
                     return "STOP ATINGIDO";
                 case SignalStatus.Expired:
                     return "SINAL EXPIRADO";
+                case SignalStatus.RiskRejected:
+                    return "DESCARTADO POR RISCO";
                 default:
                     return "RESULTADO AMBIGUO";
             }
+        }
+
+        private void RenderRejectedSignal(TradeSignal signal)
+        {
+            bool isLong = signal.Direction == SignalDirection.Long;
+            double markerPrice = isLong
+                ? Low[0] - (TickSize * 2)
+                : High[0] + (TickSize * 2);
+            string tagPrefix = "TradeAssistant." + signal.Id;
+
+            PrepareVisualHistory(signal.Id);
+
+            Draw.Text(
+                this,
+                tagPrefix + ".Rejected",
+                "DESCARTADO: RISCO " + FormatCurrency(signal.RiskCurrency),
+                0,
+                markerPrice,
+                Brushes.DimGray);
         }
 
         private void RenderSignal(TradeSignal signal)
@@ -359,6 +398,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                 ".EntryLabel",
                 ".StopLabel",
                 ".TargetLabel",
+                ".Rejected",
                 ".Outcome"
             };
 
@@ -407,6 +447,10 @@ namespace NinjaTrader.NinjaScript.Indicators
         [Range(0, double.MaxValue)]
         [Display(Name = "Risco máximo por contrato", Description = "Use 0 para não configurar limite financeiro.", GroupName = "Risco", Order = 4)]
         public double MaximumRiskPerContract { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Política do limite", Description = "Apenas avisa ou descarta sinais acima do limite financeiro.", GroupName = "Risco", Order = 5)]
+        public RiskLimitMode RiskLimitPolicy { get; set; }
 
         [NinjaScriptProperty]
         [Range(1, 20)]

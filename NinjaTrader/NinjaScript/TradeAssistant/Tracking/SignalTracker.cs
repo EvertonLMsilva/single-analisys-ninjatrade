@@ -29,6 +29,15 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Tracking
             return false;
         }
 
+        public TrackedSignal RejectByRisk(TradeSignal signal, int currentBar)
+        {
+            TrackedSignal trackedSignal = new TrackedSignal(signal, currentBar);
+            trackedSignal.Status = SignalStatus.RiskRejected;
+            trackedSignal.ClosedAt = signal.CreatedAt;
+            signals.Add(trackedSignal);
+            return trackedSignal;
+        }
+
         public IList<TrackedSignal> Update(double high, double low, DateTime time, int currentBar)
         {
             List<TrackedSignal> closedSignals = new List<TrackedSignal>();
@@ -87,6 +96,9 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Tracking
                         break;
                     case SignalStatus.Ambiguous:
                         statistics.Ambiguous++;
+                        break;
+                    case SignalStatus.RiskRejected:
+                        statistics.RiskRejected++;
                         break;
                 }
             }

@@ -9,7 +9,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
 {
     public sealed class CsvSignalJournal
     {
-        private const string Header = "RecordKey,SignalId,SignalTime,ClosedAt,Instrument,BarsPeriod,Version,Direction,EntryPrice,StopPrice,TargetPrice,TickSize,PointValue,Currency,RiskPoints,RiskTicks,RiskCurrency,RewardCurrency,MaximumRiskPerContract,RiskLimitStatus,RiskReward,ValidForBars,FastEmaPeriod,SlowEmaPeriod,AtrPeriod,StopAtrMultiplier,Status,ResultR,MfeR,MaeR,BarsElapsed,Reason";
+        private const string Header = "RecordKey,SignalId,SignalTime,ClosedAt,Instrument,BarsPeriod,Version,Direction,EntryPrice,StopPrice,TargetPrice,TickSize,PointValue,Currency,RiskPoints,RiskTicks,RiskCurrency,RewardCurrency,MaximumRiskPerContract,RiskLimitMode,RiskLimitStatus,RiskReward,ValidForBars,FastEmaPeriod,SlowEmaPeriod,AtrPeriod,StopAtrMultiplier,Status,ResultR,MfeR,MaeR,BarsElapsed,Reason";
         private static readonly object FileLock = new object();
 
         private readonly int atrPeriod;
@@ -19,6 +19,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
         private readonly string instrument;
         private readonly string currency;
         private readonly double maximumRiskPerContract;
+        private readonly string riskLimitMode;
         private readonly int slowEmaPeriod;
         private readonly double stopAtrMultiplier;
         private readonly string version;
@@ -33,7 +34,8 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
             int atrPeriod,
             double stopAtrMultiplier,
             string currency,
-            double maximumRiskPerContract)
+            double maximumRiskPerContract,
+            string riskLimitMode)
         {
             this.directory = directory;
             this.instrument = instrument;
@@ -45,6 +47,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
             this.stopAtrMultiplier = stopAtrMultiplier;
             this.currency = currency;
             this.maximumRiskPerContract = maximumRiskPerContract;
+            this.riskLimitMode = riskLimitMode;
         }
 
         public string LastError { get; private set; }
@@ -90,6 +93,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 atrPeriod.ToString(CultureInfo.InvariantCulture),
                 stopAtrMultiplier.ToString("R", CultureInfo.InvariantCulture),
                 maximumRiskPerContract.ToString("R", CultureInfo.InvariantCulture),
+                Sanitize(riskLimitMode),
                 signal.RiskRewardRatio.ToString("R", CultureInfo.InvariantCulture),
                 signal.ValidForBars.ToString(CultureInfo.InvariantCulture));
         }
@@ -122,6 +126,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 Number(signal.RiskCurrency),
                 Number(signal.RewardCurrency),
                 Number(maximumRiskPerContract),
+                Csv(riskLimitMode),
                 Csv(GetRiskLimitStatus(signal)),
                 Number(signal.RiskRewardRatio),
                 signal.ValidForBars.ToString(CultureInfo.InvariantCulture),
@@ -141,7 +146,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
         {
             string fileName = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}_{1}_{2}_v2.csv",
+                "{0}_{1}_{2}_v3.csv",
                 signalTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 Sanitize(instrument),
                 Sanitize(barsPeriod));
