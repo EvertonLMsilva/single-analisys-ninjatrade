@@ -9,6 +9,7 @@ using NinjaTrader.NinjaScript.DrawingTools;
 using NinjaTrader.NinjaScript.Indicators;
 using NinjaTrader.NinjaScript.TradeAssistant.Analysis;
 using NinjaTrader.NinjaScript.TradeAssistant.Models;
+using NinjaTrader.NinjaScript.TradeAssistant.Tracking;
 
 namespace NinjaTrader.NinjaScript.Indicators
 {
@@ -18,6 +19,7 @@ namespace NinjaTrader.NinjaScript.Indicators
         private EMA fastEma;
         private EMA slowEma;
         private SignalAnalyzer signalAnalyzer;
+        private SignalTracker signalTracker;
 
         protected override void OnStateChange()
         {
@@ -44,7 +46,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                 slowEma = EMA(SlowEmaPeriod);
                 atr = ATR(AtrPeriod);
                 signalAnalyzer = new SignalAnalyzer();
-
+                signalTracker = new SignalTracker();
             }
         }
 
@@ -54,10 +56,11 @@ namespace NinjaTrader.NinjaScript.Indicators
             if (CurrentBar < requiredBars)
                 return;
 
-            RenderModePanel();
+            foreach (TrackedSignal closedSignal in signalTracker.Update(High[0], Low[0], Time[0], CurrentBar))
+                RenderOutcome(closedSignal);
 
             if (EnableLongSignals && CrossAbove(fastEma, slowEma, 1))
-                RenderSignal(signalAnalyzer.Create(
+                RegisterAndRenderSignal(signalAnalyzer.Create(
                     SignalDirection.Long,
                     Close[0],
                     atr[0],
@@ -67,7 +70,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                     ValidForBars));
 
             if (EnableShortSignals && CrossBelow(fastEma, slowEma, 1))
-                RenderSignal(signalAnalyzer.Create(
+                RegisterAndRenderSignal(signalAnalyzer.Create(
                     SignalDirection.Short,
                     Close[0],
                     atr[0],
@@ -75,16 +78,34 @@ namespace NinjaTrader.NinjaScript.Indicators
                     RiskRewardRatio,
                     Time[0],
                     ValidForBars));
+
+            RenderModePanel();
+        }
+
+        private void RegisterAndRenderSignal(TradeSignal signal)
+        {
+            signalTracker.Register(signal, CurrentBar);
+            RenderSignal(signal);
         }
 
         private void RenderModePanel()
         {
+            SignalStatistics statistics = signalTracker.GetStatistics();
+            TrackedSignal lastSignal = signalTracker.GetLastSignal();
+            string currentStatus = lastSignal == null
+                ? "AGUARDANDO SINAL"
+                : GetStatusText(lastSignal);
             string panelText = string.Format(
-                "ANALYSIS ONLY\nEMA: {0}/{1}\nATR: {2}\nR:R: {3:N1}",
-                FastEmaPeriod,
-                SlowEmaPeriod,
-                AtrPeriod,
-                RiskRewardRatio);
+                "ANALYSIS ONLY\nStatus: {0}\n\nSinais: {1} | Ativos: {2}\nAlvos: {3} | Stops: {4}\nExpirados: {5} | Ambiguos: {6}\nAcerto: {7:N1}%\nResultado: {8:+0.00;-0.00;0.00} R",
+                currentStatus,
+                statistics.Total,
+                statistics.Active,
+                statistics.TargetHits,
+                statistics.StopHits,
+                statistics.Expired,
+                statistics.Ambiguous,
+                statistics.WinRate,
+                statistics.TotalR);
 
             Draw.TextFixed(
                 this,
@@ -96,6 +117,67 @@ namespace NinjaTrader.NinjaScript.Indicators
                 Brushes.Transparent,
                 Brushes.WhiteSmoke,
                 70);
+        }
+
+        private void RenderOutcome(TrackedSignal trackedSignal)
+        {
+            string text;
+            Brush brush;
+            double price;
+
+            switch (trackedSignal.Status)
+            {
+                case SignalStatus.TargetHit:
+                    text = "ALVO";
+                    brush = Brushes.ForestGreen;
+                    price = trackedSignal.Signal.TargetPrice;
+                    break;
+                case SignalStatus.StopHit:
+                    text = "STOP";
+                    brush = Brushes.Firebrick;
+                    price = trackedSignal.Signal.StopPrice;
+                    break;
+                case SignalStatus.Expired:
+                    text = "EXPIRADO";
+                    brush = Brushes.DimGray;
+                    price = trackedSignal.Signal.EntryPrice;
+                    break;
+                default:
+                    text = "AMBIGUO";
+                    brush = Brushes.DarkOrange;
+                    price = trackedSignal.Signal.EntryPrice;
+                    break;
+            }
+
+            Draw.Text(
+                this,
+                "TradeAssistant." + trackedSignal.Signal.Id + ".Outcome",
+                text,
+                0,
+                price,
+                brush);
+        }
+
+        private static string GetStatusText(TrackedSignal trackedSignal)
+        {
+            if (trackedSignal.Status == SignalStatus.Active)
+            {
+                string direction = trackedSignal.Signal.Direction == SignalDirection.Long ? "COMPRA" : "VENDA";
+                int remainingBars = Math.Max(0, trackedSignal.Signal.ValidForBars - trackedSignal.BarsElapsed);
+                return direction + " ATIVA (" + remainingBars + " candles)";
+            }
+
+            switch (trackedSignal.Status)
+            {
+                case SignalStatus.TargetHit:
+                    return "ALVO ATINGIDO";
+                case SignalStatus.StopHit:
+                    return "STOP ATINGIDO";
+                case SignalStatus.Expired:
+                    return "SINAL EXPIRADO";
+                default:
+                    return "RESULTADO AMBIGUO";
+            }
         }
 
         private void RenderSignal(TradeSignal signal)
