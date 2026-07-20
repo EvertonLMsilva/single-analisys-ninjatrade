@@ -4,6 +4,10 @@ Base mínima de um assistente visual de análise para NinjaTrader 8. O código i
 
 > **Segurança:** este projeto não envia ordens. Não existem chamadas de entrada, saída ou alteração de posições.
 
+## Versão
+
+Versão atual: `0.2.0-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
+
 ## Primeira entrega
 
 - sinais visuais de compra e venda por cruzamento de EMA;
@@ -26,6 +30,8 @@ NinjaTrader/
     └── TradeAssistant/
         ├── Analysis/
         │   └── SignalAnalyzer.cs
+        ├── Configuration/
+        │   └── TradeAssistantVersion.cs
         ├── Models/
         │   ├── SignalDirection.cs
         │   ├── SignalStatus.cs

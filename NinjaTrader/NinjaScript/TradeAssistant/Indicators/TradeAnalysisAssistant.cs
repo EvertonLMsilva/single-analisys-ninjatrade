@@ -9,6 +9,7 @@ using NinjaTrader.Gui.Tools;
 using NinjaTrader.NinjaScript.DrawingTools;
 using NinjaTrader.NinjaScript.Indicators;
 using NinjaTrader.NinjaScript.TradeAssistant.Analysis;
+using NinjaTrader.NinjaScript.TradeAssistant.Configuration;
 using NinjaTrader.NinjaScript.TradeAssistant.Models;
 using NinjaTrader.NinjaScript.TradeAssistant.Tracking;
 
@@ -28,7 +29,7 @@ namespace NinjaTrader.NinjaScript.Indicators
         {
             if (State == State.SetDefaults)
             {
-                Description = "Indicador visual de análise sem execução automática de ordens.";
+                Description = "Indicador visual de análise sem execução automática de ordens. Versão " + TradeAssistantVersion.Current + ".";
                 Name = "Trade Analysis Assistant";
                 Calculate = Calculate.OnBarClose;
                 IsOverlay = true;
@@ -115,7 +116,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                     FormatPrice(lastSignal.Signal.TargetPrice),
                     lastSignal.Signal.RiskRewardRatio);
             string panelText = string.Format(
-                "ASSISTENTE | ANALYSIS ONLY\nStatus: {0}\n\n{1}\n\nSinais: {2} | Ativos: {3}\nAlvos: {4} | Stops: {5}\nExpirados: {6} | Ambíguos: {7}\nAcerto: {8:N1}% | Total: {9:+0.00;-0.00;0.00} R",
+                "TRADE ASSISTANT v" + TradeAssistantVersion.Current + " | ANALYSIS ONLY\nStatus: {0}\n\n{1}\n\nSinais: {2} | Ativos: {3}\nAlvos: {4} | Stops: {5}\nExpirados: {6} | Ambíguos: {7}\nAcerto: {8:N1}% | Total: {9:+0.00;-0.00;0.00} R",
                 currentStatus,
                 signalDetails,
                 statistics.Total,
