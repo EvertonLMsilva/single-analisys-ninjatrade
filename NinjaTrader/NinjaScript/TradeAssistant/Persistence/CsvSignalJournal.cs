@@ -1,0 +1,185 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Text;
+using NinjaTrader.NinjaScript.TradeAssistant.Models;
+
+namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
+{
+    public sealed class CsvSignalJournal
+    {
+        private const string Header = "RecordKey,SignalId,SignalTime,ClosedAt,Instrument,BarsPeriod,Version,Direction,EntryPrice,StopPrice,TargetPrice,RiskReward,ValidForBars,FastEmaPeriod,SlowEmaPeriod,AtrPeriod,StopAtrMultiplier,Status,ResultR,MfeR,MaeR,BarsElapsed,Reason";
+        private static readonly object FileLock = new object();
+
+        private readonly int atrPeriod;
+        private readonly string barsPeriod;
+        private readonly string directory;
+        private readonly int fastEmaPeriod;
+        private readonly string instrument;
+        private readonly int slowEmaPeriod;
+        private readonly double stopAtrMultiplier;
+        private readonly string version;
+
+        public CsvSignalJournal(
+            string directory,
+            string instrument,
+            string barsPeriod,
+            string version,
+            int fastEmaPeriod,
+            int slowEmaPeriod,
+            int atrPeriod,
+            double stopAtrMultiplier)
+        {
+            this.directory = directory;
+            this.instrument = instrument;
+            this.barsPeriod = barsPeriod;
+            this.version = version;
+            this.fastEmaPeriod = fastEmaPeriod;
+            this.slowEmaPeriod = slowEmaPeriod;
+            this.atrPeriod = atrPeriod;
+            this.stopAtrMultiplier = stopAtrMultiplier;
+        }
+
+        public string LastError { get; private set; }
+
+        public bool Record(TrackedSignal trackedSignal)
+        {
+            try
+            {
+                string filePath = GetFilePath(trackedSignal.Signal.CreatedAt);
+                string recordKey = BuildRecordKey(trackedSignal.Signal);
+                string row = BuildRow(recordKey, trackedSignal);
+
+                lock (FileLock)
+                {
+                    Directory.CreateDirectory(directory);
+                    UpsertRow(filePath, recordKey, row);
+                }
+
+                LastError = null;
+                return true;
+            }
+            catch (Exception exception)
+            {
+                LastError = exception.Message;
+                return false;
+            }
+        }
+
+        public string GetDirectory()
+        {
+            return directory;
+        }
+
+        private string BuildRecordKey(TradeSignal signal)
+        {
+            return string.Join(
+                "_",
+                signal.CreatedAt.ToString("yyyyMMddHHmmssfffffff", CultureInfo.InvariantCulture),
+                signal.Direction.ToString(),
+                Sanitize(version),
+                fastEmaPeriod.ToString(CultureInfo.InvariantCulture),
+                slowEmaPeriod.ToString(CultureInfo.InvariantCulture),
+                atrPeriod.ToString(CultureInfo.InvariantCulture),
+                stopAtrMultiplier.ToString("R", CultureInfo.InvariantCulture),
+                signal.RiskRewardRatio.ToString("R", CultureInfo.InvariantCulture),
+                signal.ValidForBars.ToString(CultureInfo.InvariantCulture));
+        }
+
+        private string BuildRow(string recordKey, TrackedSignal trackedSignal)
+        {
+            TradeSignal signal = trackedSignal.Signal;
+            string closedAt = trackedSignal.ClosedAt.HasValue
+                ? trackedSignal.ClosedAt.Value.ToString("O", CultureInfo.InvariantCulture)
+                : string.Empty;
+
+            return string.Join(
+                ",",
+                Csv(recordKey),
+                Csv(signal.Id),
+                Csv(signal.CreatedAt.ToString("O", CultureInfo.InvariantCulture)),
+                Csv(closedAt),
+                Csv(instrument),
+                Csv(barsPeriod),
+                Csv(version),
+                Csv(signal.Direction.ToString()),
+                Number(signal.EntryPrice),
+                Number(signal.StopPrice),
+                Number(signal.TargetPrice),
+                Number(signal.RiskRewardRatio),
+                signal.ValidForBars.ToString(CultureInfo.InvariantCulture),
+                fastEmaPeriod.ToString(CultureInfo.InvariantCulture),
+                slowEmaPeriod.ToString(CultureInfo.InvariantCulture),
+                atrPeriod.ToString(CultureInfo.InvariantCulture),
+                Number(stopAtrMultiplier),
+                Csv(trackedSignal.Status.ToString()),
+                Number(trackedSignal.ResultR),
+                Number(trackedSignal.MaximumFavorableExcursionR),
+                Number(trackedSignal.MaximumAdverseExcursionR),
+                trackedSignal.BarsElapsed.ToString(CultureInfo.InvariantCulture),
+                Csv(signal.Reason));
+        }
+
+        private string GetFilePath(DateTime signalTime)
+        {
+            string fileName = string.Format(
+                CultureInfo.InvariantCulture,
+                "{0}_{1}_{2}.csv",
+                signalTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                Sanitize(instrument),
+                Sanitize(barsPeriod));
+            return Path.Combine(directory, fileName);
+        }
+
+        private static void UpsertRow(string filePath, string recordKey, string row)
+        {
+            List<string> lines = File.Exists(filePath)
+                ? new List<string>(File.ReadAllLines(filePath, Encoding.UTF8))
+                : new List<string>();
+            string prefix = Csv(recordKey) + ",";
+            int existingIndex = -1;
+
+            for (int index = 1; index < lines.Count; index++)
+            {
+                if (lines[index].StartsWith(prefix, StringComparison.Ordinal))
+                {
+                    existingIndex = index;
+                    break;
+                }
+            }
+
+            if (lines.Count == 0)
+                lines.Add(Header);
+
+            if (existingIndex >= 0)
+                lines[existingIndex] = row;
+            else
+                lines.Add(row);
+
+            File.WriteAllLines(filePath, lines.ToArray(), new UTF8Encoding(true));
+        }
+
+        private static string Csv(string value)
+        {
+            string safeValue = value ?? string.Empty;
+            if (safeValue.IndexOfAny(new[] { ',', '"', '\r', '\n' }) < 0)
+                return safeValue;
+
+            return "\"" + safeValue.Replace("\"", "\"\"") + "\"";
+        }
+
+        private static string Number(double value)
+        {
+            return value.ToString("R", CultureInfo.InvariantCulture);
+        }
+
+        private static string Sanitize(string value)
+        {
+            StringBuilder builder = new StringBuilder();
+            foreach (char character in value ?? string.Empty)
+                builder.Append(char.IsLetterOrDigit(character) || character == '-' ? character : '_');
+            return builder.Length == 0 ? "unknown" : builder.ToString();
+        }
+    }
+}

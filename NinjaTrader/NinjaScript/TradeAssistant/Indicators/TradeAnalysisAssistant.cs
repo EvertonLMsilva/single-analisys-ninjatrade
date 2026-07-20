@@ -11,6 +11,7 @@ using NinjaTrader.NinjaScript.Indicators;
 using NinjaTrader.NinjaScript.TradeAssistant.Analysis;
 using NinjaTrader.NinjaScript.TradeAssistant.Configuration;
 using NinjaTrader.NinjaScript.TradeAssistant.Models;
+using NinjaTrader.NinjaScript.TradeAssistant.Persistence;
 using NinjaTrader.NinjaScript.TradeAssistant.Tracking;
 
 namespace NinjaTrader.NinjaScript.Indicators
@@ -23,6 +24,7 @@ namespace NinjaTrader.NinjaScript.Indicators
         private HashSet<string> visibleSignalIds;
         private Queue<string> visualSignalIds;
         private SignalAnalyzer signalAnalyzer;
+        private CsvSignalJournal signalJournal;
         private SignalTracker signalTracker;
 
         protected override void OnStateChange()
@@ -48,6 +50,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                 ShowHistoricalSignals = false;
                 MaxHistoricalSignals = 5;
                 ZoneOpacity = 14;
+                EnableCsvJournal = true;
             }
             else if (State == State.DataLoaded)
             {
@@ -56,6 +59,23 @@ namespace NinjaTrader.NinjaScript.Indicators
                 atr = ATR(AtrPeriod);
                 signalAnalyzer = new SignalAnalyzer();
                 signalTracker = new SignalTracker();
+                if (EnableCsvJournal)
+                {
+                    string journalDirectory = System.IO.Path.Combine(
+                        NinjaTrader.Core.Globals.UserDataDir,
+                        "TradeAssistant",
+                        "Data");
+                    string barsPeriodDescription = BarsPeriod.BarsPeriodType + "-" + BarsPeriod.Value;
+                    signalJournal = new CsvSignalJournal(
+                        journalDirectory,
+                        Bars.Instrument.FullName,
+                        barsPeriodDescription,
+                        TradeAssistantVersion.Current,
+                        FastEmaPeriod,
+                        SlowEmaPeriod,
+                        AtrPeriod,
+                        StopAtrMultiplier);
+                }
                 visibleSignalIds = new HashSet<string>();
                 visualSignalIds = new Queue<string>();
             }
@@ -68,7 +88,10 @@ namespace NinjaTrader.NinjaScript.Indicators
                 return;
 
             foreach (TrackedSignal closedSignal in signalTracker.Update(High[0], Low[0], Time[0], CurrentBar))
+            {
+                RecordSignal(closedSignal);
                 RenderOutcome(closedSignal);
+            }
 
             if (EnableLongSignals && CrossAbove(fastEma, slowEma, 1))
                 RegisterAndRenderSignal(signalAnalyzer.Create(
@@ -95,8 +118,18 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         private void RegisterAndRenderSignal(TradeSignal signal)
         {
-            signalTracker.Register(signal, CurrentBar);
+            TrackedSignal trackedSignal = signalTracker.Register(signal, CurrentBar);
+            RecordSignal(trackedSignal);
             RenderSignal(signal);
+        }
+
+        private void RecordSignal(TrackedSignal trackedSignal)
+        {
+            if (signalJournal == null)
+                return;
+
+            if (!signalJournal.Record(trackedSignal))
+                Print("Trade Assistant: não foi possível gravar o histórico CSV. " + signalJournal.LastError);
         }
 
         private void RenderModePanel()
@@ -116,7 +149,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                     FormatPrice(lastSignal.Signal.TargetPrice),
                     lastSignal.Signal.RiskRewardRatio);
             string panelText = string.Format(
-                "TRADE ASSISTANT v" + TradeAssistantVersion.Current + " | ANALYSIS ONLY\nStatus: {0}\n\n{1}\n\nSinais: {2} | Ativos: {3}\nAlvos: {4} | Stops: {5}\nExpirados: {6} | Ambíguos: {7}\nAcerto: {8:N1}% | Total: {9:+0.00;-0.00;0.00} R",
+                "TRADE ASSISTANT v" + TradeAssistantVersion.Current + " | ANALYSIS ONLY\nStatus: {0}\nHistórico CSV: {10}\n\n{1}\n\nSinais: {2} | Ativos: {3}\nAlvos: {4} | Stops: {5}\nExpirados: {6} | Ambíguos: {7}\nAcerto: {8:N1}% | Total: {9:+0.00;-0.00;0.00} R",
                 currentStatus,
                 signalDetails,
                 statistics.Total,
@@ -126,7 +159,8 @@ namespace NinjaTrader.NinjaScript.Indicators
                 statistics.Expired,
                 statistics.Ambiguous,
                 statistics.WinRate,
-                statistics.TotalR);
+                statistics.TotalR,
+                GetJournalStatus());
 
             Draw.TextFixed(
                 this,
@@ -138,6 +172,15 @@ namespace NinjaTrader.NinjaScript.Indicators
                 Brushes.SlateGray,
                 Brushes.Black,
                 78);
+        }
+
+        private string GetJournalStatus()
+        {
+            if (!EnableCsvJournal)
+                return "DESLIGADO";
+            if (signalJournal == null)
+                return "INDISPONÍVEL";
+            return string.IsNullOrEmpty(signalJournal.LastError) ? "ATIVO" : "ERRO";
         }
 
         private void RenderOutcome(TrackedSignal trackedSignal)
@@ -323,6 +366,10 @@ namespace NinjaTrader.NinjaScript.Indicators
         [Range(0, 100)]
         [Display(Name = "Opacidade das zonas", GroupName = "Visual", Order = 3)]
         public int ZoneOpacity { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Salvar histórico CSV", GroupName = "Histórico", Order = 1)]
+        public bool EnableCsvJournal { get; set; }
 
         #endregion
     }
