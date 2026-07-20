@@ -7,7 +7,7 @@ Data da análise: 2026-07-20.
 - mesa: Take Profit Trader;
 - conta: USD 25.000;
 - drawdown máximo informado: USD 1.500;
-- limite diário pessoal informado: USD 300;
+- orçamento máximo pessoal de perda por dia: USD 300;
 - risco por operação: ainda não definido.
 
 ## Regras externas verificadas
@@ -16,7 +16,7 @@ Na avaliação de 25k, a Take Profit Trader informa drawdown trailing de fim de 
 
 Na conta PRO, o trailing é intradiário e acompanha o pico do saldo, incluindo ganhos não realizados. O limite para de subir quando alcança o saldo inicial. Atingir o saldo mínimo pode liquidar a conta imediatamente.
 
-A comunicação atual da empresa informa remoção do limite diário obrigatório. Por isso, os USD 300 são tratados neste plano como limite pessoal até confirmação no painel ou contrato do operador.
+A comunicação atual da empresa informa remoção do limite diário obrigatório. O operador confirmou que os USD 300 são seu orçamento máximo pessoal de perda por dia, e não uma regra da mesa.
 
 Referências:
 
@@ -38,8 +38,9 @@ Referências:
 
 - risco máximo técnico por operação: USD 75;
 - quantidade inicial: 1 microcontrato;
-- parada diária pessoal: USD 225 ou 3 stops completos, o que acontecer primeiro;
-- margem restante até USD 300: USD 75 para comissão, taxas, slippage e variações de execução;
+- parada operacional diária: USD 225 ou 3 stops completos, o que acontecer primeiro;
+- teto pessoal absoluto: USD 300;
+- margem entre USD 225 e USD 300: USD 75 para comissão, taxas, slippage e variações de execução; essa margem não deve ser usada para iniciar uma nova operação;
 - sinal acima de USD 75: descartar, sem aproximar artificialmente o stop;
 - sinal descartado: registrar no CSV como `RiskRejected`;
 - não usar o máximo de 30 micros permitido pela mesa como referência de tamanho de posição.
@@ -56,7 +57,6 @@ O limite de USD 75 é provisório e não garante cumprimento do trailing, especi
 ## Próximas decisões
 
 1. confirmar se a conta é avaliação, PRO ou PRO+;
-2. confirmar se USD 300 é regra visível no painel ou limite pessoal;
-3. implementar os modos `Somente avisar` e `Descartar acima do limite`;
-4. validar o filtro sobre os mesmos candles históricos;
-5. somente depois comparar alvos de 1R, 1,5R e 2R.
+2. implementar os modos `Somente avisar` e `Descartar acima do limite`;
+3. validar o filtro sobre os mesmos candles históricos;
+4. somente depois comparar alvos de 1R, 1,5R e 2R.

@@ -97,3 +97,10 @@
 - recomendado provisoriamente USD 75 por operação, 1 micro e parada diária pessoal em USD 225;
 - pendente confirmação do tipo de conta e da origem do limite diário;
 - plano registrado em `docs/risk-plans/takeprofit-25k.md`.
+
+### Correção sobre o limite diário
+
+- esclarecido que a Take Profit Trader não impõe limite diário nessa conta;
+- os USD 300 representam o orçamento máximo pessoal de perda por dia;
+- mantida parada operacional recomendada em USD 225 para preservar USD 75 de margem;
+- removida da documentação a pendência sobre a origem do valor diário.
