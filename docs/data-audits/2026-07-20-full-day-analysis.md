@@ -1,5 +1,7 @@
 # Análise consolidada do dia 2026-07-20
 
+> **Relatório superado:** os arquivos de 2026-07-20 foram regenerados e ampliados em 2026-07-21. As conclusões atualizadas estão em `2026-07-21-v4-log-audit.md`. Este documento permanece preservado para registrar o estado parcial observado anteriormente.
+
 ## Escopo
 
 Foram analisados os arquivos CSV v4 do MNQ 09-26 e MES 09-26 em gráfico de 5 minutos. Os horários citados são os horários gravados pelo gráfico do NinjaTrader; o fuso não foi inferido.

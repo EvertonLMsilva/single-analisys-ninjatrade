@@ -101,5 +101,6 @@ Compilar `0.6.0-beta.1` no NinjaTrader e coletar os setups `TrendPullback` e `Em
 - [Diagnóstico do filtro de risco no MNQ](docs/data-audits/2026-07-20-mnq-risk-filter-behavior.md)
 - [Validação do pullback v4 no MNQ](docs/data-audits/2026-07-20-mnq-pullback-v4-validation.md)
 - [Análise consolidada do dia 20](docs/data-audits/2026-07-20-full-day-analysis.md)
+- [Auditoria atualizada dos CSVs v4 em 21/07](docs/data-audits/2026-07-21-v4-log-audit.md)
 - [Decisão de testar pullback no MNQ](docs/decisions/0001-test-mnq-pullback.md)
 - [Histórico de versões](CHANGELOG.md)

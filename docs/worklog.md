@@ -171,3 +171,18 @@
 - identificado que 5 de 10 expirados do MNQ alcançaram pelo menos 1R de MFE;
 - definida como próxima rodada a medição paralela de 1R, 1,5R e 2R sem alterar a entrada;
 - análise registrada em `docs/data-audits/2026-07-20-full-day-analysis.md`.
+
+## 2026-07-21
+
+### Nova auditoria dos CSVs v4
+
+- analisados 14 arquivos e 494 registros após a regeneração das 09:09;
+- confirmadas versão, cabeçalhos, cálculos financeiros e ausência de duplicações dentro de cada arquivo;
+- identificadas 137 chaves repetidas somente entre ativos diferentes, indicando a necessidade de incluir ativo e período no `RecordKey` consolidado;
+- MNQ pullback acumulado: 192 candidatos, 129 aceitos, 19 alvos, 58 stops, 48 expirados, 3 ambíguos, 1 ativo e -20R;
+- MES pullback acumulado: 202 candidatos, 200 aceitos, 20 alvos, 73 stops, 105 expirados, 2 ambíguos e -33R;
+- parcial de 21/07: -4R no MNQ e -3R no MES;
+- a hipótese de vantagem entre 06:00 e 08:59 no MNQ foi rejeitada no conjunto completo, com -4R;
+- confirmado que 24 de 48 expirados no MNQ e 48 de 105 no MES alcançaram pelo menos 1R de MFE;
+- mantida recomendação de não alterar entrada ou risco antes da medição paralela de 1R, 1,5R e 2R;
+- auditoria registrada em `docs/data-audits/2026-07-21-v4-log-audit.md`.
