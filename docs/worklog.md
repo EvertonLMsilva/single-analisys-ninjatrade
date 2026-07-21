@@ -159,3 +159,15 @@
 - taxa entre resultados decididos de 24,59% e total de -16R;
 - validação detalhada registrada em `docs/data-audits/2026-07-20-mnq-pullback-v4-validation.md`;
 - mantida a situação experimental, sem aprovação para operação real.
+
+### Consolidação do dia 20
+
+- comparados MNQ e MES nos dois setups durante todo o dia registrado;
+- MNQ pullback: 23 aceitos, 12 rejeitados, 3 alvos, 9 stops, 10 expirados, 1 ambíguo e -3R;
+- MES pullback: 39 aceitos, 1 rejeitado, 2 alvos, 12 stops, 25 expirados e -8R;
+- estimado resultado bruto hipotético de -USD 285,50 no MNQ e -USD 198,75 no MES;
+- confirmada utilidade da parada operacional pessoal em USD 225;
+- identificada, sem aprovação, hipótese favorável entre 06:00 e 08:59 no horário do gráfico;
+- identificado que 5 de 10 expirados do MNQ alcançaram pelo menos 1R de MFE;
+- definida como próxima rodada a medição paralela de 1R, 1,5R e 2R sem alterar a entrada;
+- análise registrada em `docs/data-audits/2026-07-20-full-day-analysis.md`.
