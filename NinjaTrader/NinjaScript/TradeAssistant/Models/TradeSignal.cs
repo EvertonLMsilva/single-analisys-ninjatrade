@@ -69,5 +69,32 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Models
         {
             get { return Math.Abs(TargetPrice - EntryPrice) * PointValue; }
         }
+
+        public double TargetOneRPrice
+        {
+            get { return GetTargetPrice(1.0); }
+        }
+
+        public double TargetOnePointFiveRPrice
+        {
+            get { return GetTargetPrice(1.5); }
+        }
+
+        public double TargetTwoRPrice
+        {
+            get { return GetTargetPrice(2.0); }
+        }
+
+        private double GetTargetPrice(double riskMultiple)
+        {
+            double rawPrice = Direction == SignalDirection.Long
+                ? EntryPrice + (Risk * riskMultiple)
+                : EntryPrice - (Risk * riskMultiple);
+
+            if (TickSize <= 0)
+                return rawPrice;
+
+            return Math.Round(rawPrice / TickSize, MidpointRounding.AwayFromZero) * TickSize;
+        }
     }
 }

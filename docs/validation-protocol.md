@@ -35,9 +35,14 @@ Esses parâmetros também acompanham cada linha do CSV quando se aplicam ao cál
 9. conferir manualmente `risco em pontos × valor do ponto = risco financeiro`;
 10. configurar um limite abaixo e acima do risco calculado e conferir a mudança de situação.
 11. no modo `DescartarAcimaDoLimite`, confirmar que o sinal acima do limite aparece como descartado, não cria zonas operacionais e não bloqueia o próximo sinal;
-12. confirmar no CSV v4 os campos `Setup`, `RiskLimitMode`, `RiskLimitStatus` e `Status=RiskRejected`;
+12. confirmar no CSV v5 os campos `Setup`, `RiskLimitMode`, `RiskLimitStatus` e `Status=RiskRejected`;
 13. confirmar que apenas `TrendPullback` é desenhado no gráfico e que `EmaCrossBaseline` aparece somente no CSV;
 14. confirmar que os dois setups podem estar ativos ao mesmo tempo, mas não existem duas operações ativas do mesmo setup.
+15. confirmar `EvaluationType=Hypothetical`, `EntryAssumption=SignalBarClose` e `OutcomeBasis=FollowingBarsHighLow`;
+16. confirmar preços, situações e horários de 1R, 1,5R e 2R;
+17. criar um cenário em que 1R ocorre antes do stop e confirmar `FirstEvent=Target1R`;
+18. criar um cenário em que 1R e stop aparecem no mesmo candle e confirmar `Target1RStatus=Ambiguous`;
+19. confirmar que `RecordKey` começa com ativo e período e não colide entre MNQ e MES.
 
 ## 3. Coleta da linha de base
 
@@ -79,4 +84,4 @@ Uma nova regra ou configuração deve ser avaliada sobre o mesmo conjunto de dia
 
 Não alterar vários componentes da regra na mesma comparação.
 
-Na primeira rodada da versão 0.6, manter `Tolerância do pullback = 0,1 ATR`, `Intervalo entre pullbacks = 3`, risco máximo de USD 75 e um microcontrato de referência. Separar MNQ e MES na análise e comparar os setups pela coluna `Setup`.
+Na primeira rodada da versão 0.7, manter `Tolerância do pullback = 0,1 ATR`, `Intervalo entre pullbacks = 3`, validade de 3 candles, risco máximo de USD 75 e um microcontrato de referência. Separar MNQ e MES e comparar os níveis pelas colunas próprias, sem alterar a entrada durante a coleta.

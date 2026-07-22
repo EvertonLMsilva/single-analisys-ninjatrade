@@ -36,7 +36,7 @@ namespace NinjaTrader.NinjaScript.Indicators
         {
             if (State == State.SetDefaults)
             {
-                Description = "Indicador visual de análise sem execução automática de ordens. Versão " + TradeAssistantVersion.Current + ".";
+                Description = "Indicador visual de análise hipotética sem execução automática de ordens. Versão " + TradeAssistantVersion.Current + ".";
                 Name = "Trade Analysis Assistant";
                 Calculate = Calculate.OnBarClose;
                 IsOverlay = true;
@@ -254,7 +254,7 @@ namespace NinjaTrader.NinjaScript.Indicators
             string signalDetails = lastSignal == null
                 ? "Nenhum sinal registrado"
                 : string.Format(
-                    "{0}\nEntrada: {1}\nStop: {2}\nAlvo: {3}\nDistância: {4:N2} pts | {5:N0} ticks\nRisco 1 contrato (sem custos): {6}\nAlvo 1 contrato (sem custos): {7}\nLimite: {8}\nR:R: {9:N2}",
+                    "{0}\nEntrada: {1}\nStop: {2}\nAlvo: {3}\nDistância: {4:N2} pts | {5:N0} ticks\nRisco 1 contrato (sem custos): {6}\nAlvo 1 contrato (sem custos): {7}\nLimite: {8}\nR:R: {9:N2}\nMedição: 1R {10} | 1,5R {11} | 2R {12}\nPrimeiro evento: {13}",
                     lastSignal.Signal.Direction == SignalDirection.Long ? "COMPRA" : "VENDA",
                     FormatPrice(lastSignal.Signal.EntryPrice),
                     FormatPrice(lastSignal.Signal.StopPrice),
@@ -264,9 +264,13 @@ namespace NinjaTrader.NinjaScript.Indicators
                     FormatCurrency(lastSignal.Signal.RiskCurrency),
                     FormatCurrency(lastSignal.Signal.RewardCurrency),
                     GetRiskLimitStatus(lastSignal.Signal),
-                    lastSignal.Signal.RiskRewardRatio);
+                    lastSignal.Signal.RiskRewardRatio,
+                    GetComparisonStatusText(lastSignal.TargetOneRStatus),
+                    GetComparisonStatusText(lastSignal.TargetOnePointFiveRStatus),
+                    GetComparisonStatusText(lastSignal.TargetTwoRStatus),
+                    GetFirstEventText(lastSignal.FirstEvent));
             string panelText = string.Format(
-                "TRADE ASSISTANT v" + TradeAssistantVersion.Current + " | PULLBACK EXPERIMENTAL\nStatus: {0}\nHistórico CSV: {11} | Baseline no CSV: " + (EnableBaselineComparison ? "SIM" : "NÃO") + "\n\n{1}\n\nPullbacks: {2} | Ativos: {3}\nAlvos: {4} | Stops: {5}\nExpirados: {6} | Ambíguos: {7}\nDescartados por risco: {10}\nAcerto: {8:N1}% | Total: {9:+0.00;-0.00;0.00} R",
+                "TRADE ASSISTANT v" + TradeAssistantVersion.Current + " | RESULTADO HIPOTÉTICO | SEM ORDENS\nSetup: PULLBACK EXPERIMENTAL\nStatus: {0}\nHistórico CSV: {11} | Baseline no CSV: " + (EnableBaselineComparison ? "SIM" : "NÃO") + "\n\n{1}\n\nPullbacks: {2} | Ativos: {3}\nAlvos: {4} | Stops: {5}\nExpirados: {6} | Ambíguos: {7}\nDescartados por risco: {10}\nAcerto: {8:N1}% | Total: {9:+0.00;-0.00;0.00} R",
                 currentStatus,
                 signalDetails,
                 statistics.Total,
@@ -309,6 +313,44 @@ namespace NinjaTrader.NinjaScript.Indicators
             return signal.RiskCurrency <= MaximumRiskPerContract
                 ? "DENTRO DO LIMITE"
                 : "ACIMA DO LIMITE";
+        }
+
+        private static string GetComparisonStatusText(ComparisonStatus status)
+        {
+            switch (status)
+            {
+                case ComparisonStatus.TargetHit:
+                    return "ALVO";
+                case ComparisonStatus.StopHit:
+                    return "STOP";
+                case ComparisonStatus.Expired:
+                    return "EXPIRADO";
+                case ComparisonStatus.Ambiguous:
+                    return "AMBÍGUO";
+                case ComparisonStatus.RiskRejected:
+                    return "DESCARTADO";
+                default:
+                    return "PENDENTE";
+            }
+        }
+
+        private static string GetFirstEventText(FirstOutcomeEvent firstEvent)
+        {
+            switch (firstEvent)
+            {
+                case FirstOutcomeEvent.Target1R:
+                    return "ALVO 1R";
+                case FirstOutcomeEvent.Stop:
+                    return "STOP";
+                case FirstOutcomeEvent.Expired:
+                    return "EXPIRAÇÃO";
+                case FirstOutcomeEvent.Ambiguous:
+                    return "AMBÍGUO";
+                case FirstOutcomeEvent.RiskRejected:
+                    return "DESCARTADO";
+                default:
+                    return "PENDENTE";
+            }
         }
 
         private string FormatCurrency(double value)

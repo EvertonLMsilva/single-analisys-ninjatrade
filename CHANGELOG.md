@@ -2,6 +2,19 @@
 
 Todas as mudanças relevantes do projeto são registradas neste arquivo. Enquanto o indicador estiver em validação, as versões usarão o sufixo `beta`.
 
+## 0.7.0-beta.1 — 2026-07-22
+
+- painel passa a declarar `RESULTADO HIPOTÉTICO | SEM ORDENS`;
+- adicionada medição simultânea de 1R, 1,5R e 2R;
+- registrado o primeiro evento entre 1R, stop, expiração, ambiguidade e rejeição;
+- cada alvo possui preço, situação e horário próprios;
+- toques de alvo e stop no mesmo candle permanecem ambíguos quando a ordem não pode ser conhecida;
+- criado CSV v5 com `EvaluationType`, `EntryAssumption` e `OutcomeBasis`;
+- `RecordKey` passa a incluir instrumento e período, eliminando colisões entre MNQ e MES;
+- entrada, stop técnico, validade, risco e setups foram preservados;
+- adicionados testes de alvo antes do stop, stop antes do alvo e ambiguidade no mesmo candle;
+- mantida ausência total de execução automática e acesso à conta.
+
 ## 0.6.0-beta.1 — 2026-07-20
 
 - implementado setup experimental `TrendPullback` a favor da tendência das EMAs;

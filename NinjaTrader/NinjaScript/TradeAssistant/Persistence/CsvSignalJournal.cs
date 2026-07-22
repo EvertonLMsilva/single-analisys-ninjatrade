@@ -9,7 +9,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
 {
     public sealed class CsvSignalJournal
     {
-        private const string Header = "RecordKey,SignalId,SignalTime,ClosedAt,Instrument,BarsPeriod,Version,Setup,Direction,EntryPrice,StopPrice,TargetPrice,TickSize,PointValue,Currency,RiskPoints,RiskTicks,RiskCurrency,RewardCurrency,MaximumRiskPerContract,RiskLimitMode,RiskLimitStatus,RiskReward,ValidForBars,FastEmaPeriod,SlowEmaPeriod,AtrPeriod,StopAtrMultiplier,Status,ResultR,MfeR,MaeR,BarsElapsed,Reason";
+        private const string Header = "RecordKey,SignalId,SignalTime,ClosedAt,Instrument,BarsPeriod,Version,EvaluationType,EntryAssumption,OutcomeBasis,Setup,Direction,EntryPrice,StopPrice,TargetPrice,TickSize,PointValue,Currency,RiskPoints,RiskTicks,RiskCurrency,RewardCurrency,MaximumRiskPerContract,RiskLimitMode,RiskLimitStatus,RiskReward,ValidForBars,FastEmaPeriod,SlowEmaPeriod,AtrPeriod,StopAtrMultiplier,Status,ResultR,MfeR,MaeR,BarsElapsed,FirstEvent,FirstEventAt,Target1RPrice,Target1RStatus,Target1RAt,Target1_5RPrice,Target1_5RStatus,Target1_5RAt,Target2RPrice,Target2RStatus,Target2RAt,Reason";
         private static readonly object FileLock = new object();
 
         private readonly int atrPeriod;
@@ -85,6 +85,8 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
         {
             return string.Join(
                 "_",
+                Sanitize(instrument),
+                Sanitize(barsPeriod),
                 signal.CreatedAt.ToString("yyyyMMddHHmmssfffffff", CultureInfo.InvariantCulture),
                 signal.Setup.ToString(),
                 signal.Direction.ToString(),
@@ -115,6 +117,9 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 Csv(instrument),
                 Csv(barsPeriod),
                 Csv(version),
+                Csv("Hypothetical"),
+                Csv("SignalBarClose"),
+                Csv("FollowingBarsHighLow"),
                 Csv(signal.Setup.ToString()),
                 Csv(signal.Direction.ToString()),
                 Number(signal.EntryPrice),
@@ -141,6 +146,17 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 Number(trackedSignal.MaximumFavorableExcursionR),
                 Number(trackedSignal.MaximumAdverseExcursionR),
                 trackedSignal.BarsElapsed.ToString(CultureInfo.InvariantCulture),
+                Csv(trackedSignal.FirstEvent.ToString()),
+                Csv(Iso(trackedSignal.FirstEventAt)),
+                Number(signal.TargetOneRPrice),
+                Csv(trackedSignal.TargetOneRStatus.ToString()),
+                Csv(Iso(trackedSignal.TargetOneRAt)),
+                Number(signal.TargetOnePointFiveRPrice),
+                Csv(trackedSignal.TargetOnePointFiveRStatus.ToString()),
+                Csv(Iso(trackedSignal.TargetOnePointFiveRAt)),
+                Number(signal.TargetTwoRPrice),
+                Csv(trackedSignal.TargetTwoRStatus.ToString()),
+                Csv(Iso(trackedSignal.TargetTwoRAt)),
                 Csv(signal.Reason));
         }
 
@@ -148,7 +164,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
         {
             string fileName = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}_{1}_{2}_v4.csv",
+                "{0}_{1}_{2}_v5.csv",
                 signalTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 Sanitize(instrument),
                 Sanitize(barsPeriod));
@@ -205,6 +221,13 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
         private static string Number(double value)
         {
             return value.ToString("R", CultureInfo.InvariantCulture);
+        }
+
+        private static string Iso(DateTime? value)
+        {
+            return value.HasValue
+                ? value.Value.ToString("O", CultureInfo.InvariantCulture)
+                : string.Empty;
         }
 
         private static string Sanitize(string value)

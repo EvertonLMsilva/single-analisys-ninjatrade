@@ -204,3 +204,21 @@
 - simulada parada pessoal de USD 225, que reduziu perdas, mas não tornou o setup positivo;
 - mantida recomendação de alterar apenas a medição de 1R, 1,5R e 2R;
 - relatório registrado em `docs/data-audits/2026-07-22-all-logs-audit.md`.
+
+### Implementação da medição de múltiplos alvos
+
+- mantidas sem alteração as regras de entrada, stop, validade, risco e setups;
+- criada medição independente de 1R, 1,5R e 2R;
+- adicionados preço, situação e horário para cada nível;
+- registrado o primeiro evento observado;
+- preservada ambiguidade quando alvo e stop aparecem no mesmo candle;
+- painel passa a declarar explicitamente `RESULTADO HIPOTÉTICO | SEM ORDENS`;
+- criado CSV v5 com hipótese de entrada e base do cálculo;
+- ativo e período adicionados ao `RecordKey`;
+- versão elevada para `0.7.0-beta.1`;
+- decisão registrada em `docs/decisions/0002-measure-multiple-targets.md`;
+- testes do rastreador e do CSV passaram;
+- compilação estrutural passou com zero erros e zero avisos.
+- código sincronizado com a pasta oficial e com a instalação do NinjaTrader;
+- os 14 arquivos instalados foram conferidos por SHA-256, sem divergências;
+- compilação com F5 e validação visual do primeiro CSV v5 permanecem como etapas manuais.

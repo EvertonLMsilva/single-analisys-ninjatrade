@@ -6,7 +6,7 @@ Assistente visual de análise para NinjaTrader 8. A versão experimental identif
 
 ## Versão
 
-Versão atual: `0.6.0-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
+Versão atual: `0.7.0-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
 
 ## Primeira entrega
 
@@ -36,7 +36,10 @@ Versão atual: `0.6.0-beta.1`. A versão em execução aparece no cabeçalho do 
 - tolerância até a EMA rápida e intervalo mínimo entre candidatos configuráveis;
 - linha de base por cruzamento de EMA executada em paralelo, sem poluir o gráfico;
 - acompanhamento independente para cada setup;
-- formato CSV v4 com identificação do setup em cada registro.
+- formato CSV v5 com identificação explícita de resultado hipotético;
+- acompanhamento paralelo de 1R, 1,5R e 2R, sem mudar a entrada;
+- primeiro evento e horários registrados, com ambiguidade preservada quando stop e alvo aparecem no mesmo candle;
+- chave global por ativo e período, sem colisão entre MNQ e MES.
 
 ## Estrutura
 
@@ -50,6 +53,8 @@ NinjaTrader/
         │   └── TradeAssistantVersion.cs
         ├── Models/
         │   ├── SignalDirection.cs
+        │   ├── ComparisonStatus.cs
+        │   ├── FirstOutcomeEvent.cs
         │   ├── SignalSetup.cs
         │   ├── SignalStatus.cs
         │   ├── SignalStatistics.cs
@@ -85,7 +90,7 @@ Os valores financeiros são estimativas para um contrato baseadas na distância 
 
 ## Próximo marco
 
-Compilar `0.6.0-beta.1` no NinjaTrader e coletar os setups `TrendPullback` e `EmaCrossBaseline` sobre os mesmos dias. Nenhuma conclusão operacional deve ser tomada antes da amostra mínima definida no protocolo.
+Compilar `0.7.0-beta.1` no NinjaTrader, confirmar a criação dos CSVs v5 e comparar 1R, 1,5R e 2R sobre os mesmos sinais. Nenhuma conclusão operacional deve ser tomada antes da amostra mínima definida no protocolo.
 
 ## Documentação
 
@@ -104,4 +109,5 @@ Compilar `0.6.0-beta.1` no NinjaTrader e coletar os setups `TrendPullback` e `Em
 - [Auditoria atualizada dos CSVs v4 em 21/07](docs/data-audits/2026-07-21-v4-log-audit.md)
 - [Auditoria consolidada de todos os logs em 22/07](docs/data-audits/2026-07-22-all-logs-audit.md)
 - [Decisão de testar pullback no MNQ](docs/decisions/0001-test-mnq-pullback.md)
+- [Decisão de medir 1R, 1,5R e 2R](docs/decisions/0002-measure-multiple-targets.md)
 - [Histórico de versões](CHANGELOG.md)

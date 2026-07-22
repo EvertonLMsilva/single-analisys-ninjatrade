@@ -45,6 +45,14 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Tracking
             TrackedSignal trackedSignal = new TrackedSignal(signal, currentBar);
             trackedSignal.Status = SignalStatus.RiskRejected;
             trackedSignal.ClosedAt = signal.CreatedAt;
+            trackedSignal.TargetOneRStatus = ComparisonStatus.RiskRejected;
+            trackedSignal.TargetOneRAt = signal.CreatedAt;
+            trackedSignal.TargetOnePointFiveRStatus = ComparisonStatus.RiskRejected;
+            trackedSignal.TargetOnePointFiveRAt = signal.CreatedAt;
+            trackedSignal.TargetTwoRStatus = ComparisonStatus.RiskRejected;
+            trackedSignal.TargetTwoRAt = signal.CreatedAt;
+            trackedSignal.FirstEvent = FirstOutcomeEvent.RiskRejected;
+            trackedSignal.FirstEventAt = signal.CreatedAt;
             signals.Add(trackedSignal);
             return trackedSignal;
         }
@@ -63,6 +71,9 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Tracking
 
                 bool targetHit = IsTargetHit(trackedSignal.Signal, high, low);
                 bool stopHit = IsStopHit(trackedSignal.Signal, high, low);
+                bool expired = trackedSignal.BarsElapsed >= trackedSignal.Signal.ValidForBars;
+
+                UpdateComparativeOutcomes(trackedSignal, high, low, stopHit, expired, time);
 
                 if (targetHit && stopHit)
                     Close(trackedSignal, SignalStatus.Ambiguous, 0, time, closedSignals);
@@ -70,7 +81,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Tracking
                     Close(trackedSignal, SignalStatus.TargetHit, trackedSignal.Signal.RiskRewardRatio, time, closedSignals);
                 else if (stopHit)
                     Close(trackedSignal, SignalStatus.StopHit, -1, time, closedSignals);
-                else if (trackedSignal.BarsElapsed >= trackedSignal.Signal.ValidForBars)
+                else if (expired)
                     Close(trackedSignal, SignalStatus.Expired, 0, time, closedSignals);
             }
 
@@ -170,6 +181,99 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Tracking
             return signal.Direction == SignalDirection.Long
                 ? high >= signal.TargetPrice
                 : low <= signal.TargetPrice;
+        }
+
+        private static void UpdateComparativeOutcomes(
+            TrackedSignal trackedSignal,
+            double high,
+            double low,
+            bool stopHit,
+            bool expired,
+            DateTime time)
+        {
+            bool targetOneRHit = IsPriceTargetHit(trackedSignal.Signal, trackedSignal.Signal.TargetOneRPrice, high, low);
+            bool targetOnePointFiveRHit = IsPriceTargetHit(trackedSignal.Signal, trackedSignal.Signal.TargetOnePointFiveRPrice, high, low);
+            bool targetTwoRHit = IsPriceTargetHit(trackedSignal.Signal, trackedSignal.Signal.TargetTwoRPrice, high, low);
+
+            if (trackedSignal.FirstEvent == FirstOutcomeEvent.Pending)
+            {
+                if (targetOneRHit && stopHit)
+                    SetFirstEvent(trackedSignal, FirstOutcomeEvent.Ambiguous, time);
+                else if (targetOneRHit)
+                    SetFirstEvent(trackedSignal, FirstOutcomeEvent.Target1R, time);
+                else if (stopHit)
+                    SetFirstEvent(trackedSignal, FirstOutcomeEvent.Stop, time);
+                else if (expired)
+                    SetFirstEvent(trackedSignal, FirstOutcomeEvent.Expired, time);
+            }
+
+            UpdateComparison(
+                trackedSignal.TargetOneRStatus,
+                targetOneRHit,
+                stopHit,
+                expired,
+                time,
+                delegate(ComparisonStatus status, DateTime at)
+                {
+                    trackedSignal.TargetOneRStatus = status;
+                    trackedSignal.TargetOneRAt = at;
+                });
+            UpdateComparison(
+                trackedSignal.TargetOnePointFiveRStatus,
+                targetOnePointFiveRHit,
+                stopHit,
+                expired,
+                time,
+                delegate(ComparisonStatus status, DateTime at)
+                {
+                    trackedSignal.TargetOnePointFiveRStatus = status;
+                    trackedSignal.TargetOnePointFiveRAt = at;
+                });
+            UpdateComparison(
+                trackedSignal.TargetTwoRStatus,
+                targetTwoRHit,
+                stopHit,
+                expired,
+                time,
+                delegate(ComparisonStatus status, DateTime at)
+                {
+                    trackedSignal.TargetTwoRStatus = status;
+                    trackedSignal.TargetTwoRAt = at;
+                });
+        }
+
+        private static void UpdateComparison(
+            ComparisonStatus currentStatus,
+            bool targetHit,
+            bool stopHit,
+            bool expired,
+            DateTime time,
+            Action<ComparisonStatus, DateTime> update)
+        {
+            if (currentStatus != ComparisonStatus.Pending)
+                return;
+
+            if (targetHit && stopHit)
+                update(ComparisonStatus.Ambiguous, time);
+            else if (targetHit)
+                update(ComparisonStatus.TargetHit, time);
+            else if (stopHit)
+                update(ComparisonStatus.StopHit, time);
+            else if (expired)
+                update(ComparisonStatus.Expired, time);
+        }
+
+        private static bool IsPriceTargetHit(TradeSignal signal, double targetPrice, double high, double low)
+        {
+            return signal.Direction == SignalDirection.Long
+                ? high >= targetPrice
+                : low <= targetPrice;
+        }
+
+        private static void SetFirstEvent(TrackedSignal trackedSignal, FirstOutcomeEvent firstEvent, DateTime time)
+        {
+            trackedSignal.FirstEvent = firstEvent;
+            trackedSignal.FirstEventAt = time;
         }
 
         private static bool IsStopHit(TradeSignal signal, double high, double low)
