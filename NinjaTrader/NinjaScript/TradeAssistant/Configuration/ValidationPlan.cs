@@ -8,6 +8,17 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Configuration
         public const string RoundId = "forward-2026-07-v1";
         public const int MinimumSessions = 5;
         public const int MinimumDecidedSignals = 30;
+        public static readonly DateTime ForwardStartDate = new DateTime(2026, 7, 23);
+
+        public static bool IsForwardSample(DateTime signalTime)
+        {
+            return signalTime.Date >= ForwardStartDate.Date;
+        }
+
+        public static string GetSamplePhase(DateTime signalTime)
+        {
+            return IsForwardSample(signalTime) ? "Forward" : "HistoricalReference";
+        }
 
         public static ValidationProfile GetProfile(
             string instrument,

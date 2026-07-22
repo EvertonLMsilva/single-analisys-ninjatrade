@@ -12,6 +12,7 @@ Todas as mudanças relevantes do projeto são registradas neste arquivo. Enquant
 - painel passa a mostrar setup, etapa, alvo, resultado diário em R e moeda, sequência de stops e drawdown;
 - criado CSV bruto v6 com rodada, etapa, alvo e parâmetros completos do pullback;
 - criado resumo diário automático por ativo, período e setup em `TradeAssistant/Summaries`;
+- registros anteriores a 23/07 são marcados como referência histórica e ficam inelegíveis para a revisão prospectiva;
 - resumo inclui alvos, stops, expirados, ambíguos, rejeitados, taxa de acerto, resultado, risco médio, sequência de perdas e drawdown;
 - custos continuam explicitamente excluídos e nenhuma execução automática foi adicionada.
 

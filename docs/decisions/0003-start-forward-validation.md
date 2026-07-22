@@ -21,4 +21,6 @@ As configurações da rodada são EMA 9/21, ATR 14, stop ATR 1,5, tolerância do
 
 A primeira revisão ocorre somente depois de cinco sessões completas e pelo menos 30 resultados decididos por candidato. A avaliação deve considerar simultaneamente R, dólares por um contrato, concentração do resultado por dia, sequência de perdas, drawdown, expirados, ambíguos e custos estimados.
 
+A data de corte é 23/07/2026. Qualquer recálculo anterior é identificado como referência histórica e não é elegível para a revisão.
+
 Esta rodada não autoriza uso com dinheiro real.

@@ -39,6 +39,8 @@ internal static class Program
         ValidationProfile mnqPullback = ValidationPlan.GetProfile("MNQ 09-26", SignalSetup.TrendPullback, 2);
         Assert(mnqPullback.Stage == ValidationStage.Observation, "MNQ pullback must remain under observation.");
         Assert(mnqPullback.RenderOnChart && mnqPullback.TargetR == 1.5, "MNQ pullback must render at 1.5R.");
+        Assert(!ValidationPlan.IsForwardSample(new DateTime(2026, 7, 22)), "Selection dates must remain historical reference.");
+        Assert(ValidationPlan.IsForwardSample(new DateTime(2026, 7, 23)), "Forward sample must start on July 23.");
     }
 
     private static void ValidateFrozenConfiguration()
@@ -96,8 +98,8 @@ internal static class Program
             string[] rawFiles = Directory.GetFiles(dataDirectory, "*_v6.csv");
             Assert(rawFiles.Length == 1, "CSV v6 was not created.");
             string raw = File.ReadAllText(rawFiles[0]);
-            Assert(raw.Contains("ValidationRound,ValidationStage,ValidationTargetR"), "CSV v6 validation columns are missing.");
-            Assert(raw.Contains(ValidationPlan.RoundId + ",Candidate,1"), "CSV v6 profile was not recorded.");
+            Assert(raw.Contains("ValidationRound,ValidationStage,ValidationTargetR,ValidationSample"), "CSV v6 validation columns are missing.");
+            Assert(raw.Contains(ValidationPlan.RoundId + ",Candidate,1,HistoricalReference"), "CSV v6 profile was not recorded.");
 
             CsvValidationSummaryJournal summary = new CsvValidationSummaryJournal(
                 summaryDirectory, "MES 09-26", "Minute-5", "0.8.0-beta.1", "USD", 2);
@@ -107,6 +109,7 @@ internal static class Program
             Assert(summaryFiles.Length == 1, "Daily summary was not created.");
             string summaryText = File.ReadAllText(summaryFiles[0]);
             Assert(summaryText.Contains("MaximumConsecutiveLosses,MaximumDrawdownR,MaximumDrawdownCurrency"), "Summary risk metrics are missing.");
+            Assert(summaryText.Contains("HistoricalReference,No,EmaCrossBaseline"), "Historical summary must be ineligible.");
             Assert(summaryText.Contains("EmaCrossBaseline,Candidate,1"), "Candidate summary row is missing.");
         }
         finally

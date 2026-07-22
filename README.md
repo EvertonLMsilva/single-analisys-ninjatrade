@@ -91,6 +91,8 @@ O **Modo de validação 0.8** vem ativado. Durante a rodada `forward-2026-07-v1`
 
 O histórico bruto CSV v6 permanece salvo em `Documents/NinjaTrader 8/TradeAssistant/Data`. Os resumos diários ficam em `Documents/NinjaTrader 8/TradeAssistant/Summaries`, separados por ativo, período e dia. A propriedade **Risco máximo por contrato** aceita um valor na moeda do ativo; use `0` apenas fora da rodada congelada. A propriedade **Política do limite** define se o indicador apenas avisa ou descarta o sinal acima desse valor.
 
+A amostra prospectiva começa em `2026-07-23`. Se o NinjaTrader recalcular dias anteriores, eles serão marcados como `HistoricalReference` e `EligibleForReview=No`; não devem entrar na decisão da rodada.
+
 Os valores financeiros são estimativas para um contrato baseadas na distância dos níveis e no valor do ponto. Não incluem comissão, taxas, slippage ou conversão para a moeda da conta.
 
 ## Próximo marco

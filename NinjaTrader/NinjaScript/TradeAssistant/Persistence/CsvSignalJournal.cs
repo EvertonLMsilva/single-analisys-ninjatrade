@@ -10,7 +10,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
 {
     public sealed class CsvSignalJournal
     {
-        private const string Header = "RecordKey,SignalId,SignalTime,ClosedAt,Instrument,BarsPeriod,Version,EvaluationType,EntryAssumption,OutcomeBasis,ValidationRound,ValidationStage,ValidationTargetR,Setup,Direction,EntryPrice,StopPrice,TargetPrice,TickSize,PointValue,Currency,RiskPoints,RiskTicks,RiskCurrency,RewardCurrency,MaximumRiskPerContract,RiskLimitMode,RiskLimitStatus,RiskReward,ValidForBars,FastEmaPeriod,SlowEmaPeriod,AtrPeriod,StopAtrMultiplier,PullbackToleranceAtr,PullbackCooldownBars,Status,ResultR,MfeR,MaeR,BarsElapsed,FirstEvent,FirstEventAt,Target1RPrice,Target1RStatus,Target1RAt,Target1_5RPrice,Target1_5RStatus,Target1_5RAt,Target2RPrice,Target2RStatus,Target2RAt,Reason";
+        private const string Header = "RecordKey,SignalId,SignalTime,ClosedAt,Instrument,BarsPeriod,Version,EvaluationType,EntryAssumption,OutcomeBasis,ValidationRound,ValidationStage,ValidationTargetR,ValidationSample,Setup,Direction,EntryPrice,StopPrice,TargetPrice,TickSize,PointValue,Currency,RiskPoints,RiskTicks,RiskCurrency,RewardCurrency,MaximumRiskPerContract,RiskLimitMode,RiskLimitStatus,RiskReward,ValidForBars,FastEmaPeriod,SlowEmaPeriod,AtrPeriod,StopAtrMultiplier,PullbackToleranceAtr,PullbackCooldownBars,Status,ResultR,MfeR,MaeR,BarsElapsed,FirstEvent,FirstEventAt,Target1RPrice,Target1RStatus,Target1RAt,Target1_5RPrice,Target1_5RStatus,Target1_5RAt,Target2RPrice,Target2RStatus,Target2RAt,Reason";
         private static readonly object FileLock = new object();
 
         private readonly int atrPeriod;
@@ -136,6 +136,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 Csv(ValidationPlan.RoundId),
                 Csv(validationProfile.Stage.ToString()),
                 Number(validationProfile.TargetR),
+                Csv(ValidationPlan.GetSamplePhase(signal.CreatedAt)),
                 Csv(signal.Setup.ToString()),
                 Csv(signal.Direction.ToString()),
                 Number(signal.EntryPrice),

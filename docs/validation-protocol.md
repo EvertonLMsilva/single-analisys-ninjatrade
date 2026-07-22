@@ -95,6 +95,8 @@ Na primeira rodada da versão 0.7, manter `Tolerância do pullback = 0,1 ATR`, `
 
 A rodada `forward-2026-07-v1` começa na primeira sessão completa após a instalação da versão `0.8.0-beta.1`. Não misturar os resultados anteriores com a decisão prospectiva.
 
+Para esta rodada, a data de corte registrada no código é `2026-07-23`. Registros anteriores recebem `ValidationSample=HistoricalReference`; no resumo, recebem `EligibleForReview=No`. Somente linhas `ValidationSample=Forward` podem participar da revisão.
+
 - manter cinco sessões completas sem alteração de parâmetros;
 - exigir pelo menos 30 resultados decididos por candidato para a primeira revisão;
 - MES `EmaCrossBaseline`: candidato em 1R;

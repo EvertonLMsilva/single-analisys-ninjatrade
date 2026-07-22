@@ -310,6 +310,9 @@ namespace NinjaTrader.NinjaScript.Indicators
                 : validationConfigurationMatches
                     ? "CONGELADA / VÁLIDA"
                     : "DIVERGENTE - NOVOS SINAIS BLOQUEADOS";
+            string sampleStatus = ValidationPlan.IsForwardSample(Time[0])
+                ? "AMOSTRA PROSPECTIVA"
+                : "REFERÊNCIA HISTÓRICA - REVISÃO INICIA 23/07";
             string signalDetails = lastSignal == null
                 ? "Nenhum sinal registrado"
                 : string.Format(
@@ -329,7 +332,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                     GetComparisonStatusText(lastSignal.TargetTwoRStatus),
                     GetFirstEventText(lastSignal.FirstEvent));
             string panelText = string.Format(
-                "TRADE ASSISTANT v" + TradeAssistantVersion.Current + " | RESULTADO HIPOTÉTICO | SEM ORDENS\nRodada: " + ValidationPlan.RoundId + "\nSetup: {12} | Etapa: {13} | Alvo: {14:N1}R\nConfiguração: {15}\nStatus: {0}\nHistórico e resumo: {11}\n\n{1}\n\nHoje: {2} sinais | {3} ativos | {16} decididos\nAlvos: {4} | Stops: {5}\nExpirados: {6} | Ambíguos: {7}\nDescartados por risco: {10}\nAcerto: {8:N1}% | Resultado: {9:+0.00;-0.00;0.00} R | {17}\nSequência máx. de stops: {18} | Drawdown: {19:N2} R / {20}",
+                "TRADE ASSISTANT v" + TradeAssistantVersion.Current + " | RESULTADO HIPOTÉTICO | SEM ORDENS\nRodada: " + ValidationPlan.RoundId + " | {21}\nSetup: {12} | Etapa: {13} | Alvo: {14:N1}R\nConfiguração: {15}\nStatus: {0}\nHistórico e resumo: {11}\n\n{1}\n\nHoje: {2} sinais | {3} ativos | {16} decididos\nAlvos: {4} | Stops: {5}\nExpirados: {6} | Ambíguos: {7}\nDescartados por risco: {10}\nAcerto: {8:N1}% | Resultado: {9:+0.00;-0.00;0.00} R | {17}\nSequência máx. de stops: {18} | Drawdown: {19:N2} R / {20}",
                 currentStatus,
                 signalDetails,
                 statistics.Total,
@@ -350,7 +353,8 @@ namespace NinjaTrader.NinjaScript.Indicators
                 FormatCurrency(statistics.ResultCurrency),
                 statistics.MaximumConsecutiveLosses,
                 statistics.MaximumDrawdownR,
-                FormatCurrency(statistics.MaximumDrawdownCurrency));
+                FormatCurrency(statistics.MaximumDrawdownCurrency),
+                sampleStatus);
 
             Draw.TextFixed(
                 this,

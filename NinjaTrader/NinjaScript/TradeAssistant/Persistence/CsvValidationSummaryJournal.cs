@@ -11,7 +11,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
 {
     public sealed class CsvValidationSummaryJournal
     {
-        private const string Header = "Date,Instrument,BarsPeriod,Version,ValidationRound,Setup,ValidationStage,ValidationTargetR,MinimumSessions,MinimumDecidedSignals,Total,Active,Targets,Stops,Expired,Ambiguous,RiskRejected,Decided,WinRate,ResultR,ResultCurrency,Currency,AverageWinnerRiskCurrency,AverageLoserRiskCurrency,MaximumConsecutiveLosses,MaximumDrawdownR,MaximumDrawdownCurrency,CostsIncluded";
+        private const string Header = "Date,Instrument,BarsPeriod,Version,ValidationRound,ValidationSample,EligibleForReview,Setup,ValidationStage,ValidationTargetR,MinimumSessions,MinimumDecidedSignals,Total,Active,Targets,Stops,Expired,Ambiguous,RiskRejected,Decided,WinRate,ResultR,ResultCurrency,Currency,AverageWinnerRiskCurrency,AverageLoserRiskCurrency,MaximumConsecutiveLosses,MaximumDrawdownR,MaximumDrawdownCurrency,CostsIncluded";
         private static readonly object FileLock = new object();
 
         private readonly string barsPeriod;
@@ -113,6 +113,8 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 Csv(barsPeriod),
                 Csv(version),
                 Csv(ValidationPlan.RoundId),
+                Csv(ValidationPlan.GetSamplePhase(day)),
+                Csv(ValidationPlan.IsForwardSample(day) ? "Yes" : "No"),
                 Csv(profile.Setup.ToString()),
                 Csv(profile.Stage.ToString()),
                 Number(profile.TargetR),

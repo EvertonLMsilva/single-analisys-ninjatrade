@@ -233,6 +233,7 @@
 - painel adaptado ao setup principal de cada ativo e às métricas diárias do alvo escolhido;
 - criado CSV bruto v6 com contexto completo da validação;
 - criado resumo diário automático com resultado em R e moeda, riscos médios, sequência de stops e drawdown;
+- definida data de corte em 23/07; recálculos anteriores são marcados como referência histórica e inelegíveis;
 - adicionados testes executáveis do núcleo para perfis, configuração congelada, métricas e persistência;
 - versão elevada para `0.8.0-beta.1`;
 - decisão registrada em `docs/decisions/0003-start-forward-validation.md`;
