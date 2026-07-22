@@ -1,0 +1,11 @@
+# NinjaTrader generated output and local settings
+bin/
+obj/
+artifacts/
+.vs/
+*.user
+*.suo
+
+# Logs and exports
+*.log
+*.csv
