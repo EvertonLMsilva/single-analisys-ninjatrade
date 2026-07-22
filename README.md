@@ -6,7 +6,7 @@ Assistente visual de análise para NinjaTrader 8. A versão experimental identif
 
 ## Versão
 
-Versão atual: `0.7.0-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
+Versão atual: `0.8.0-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
 
 ## Primeira entrega
 
@@ -40,6 +40,11 @@ Versão atual: `0.7.0-beta.1`. A versão em execução aparece no cabeçalho do 
 - acompanhamento paralelo de 1R, 1,5R e 2R, sem mudar a entrada;
 - primeiro evento e horários registrados, com ambiguidade preservada quando stop e alvo aparecem no mesmo candle;
 - chave global por ativo e período, sem colisão entre MNQ e MES.
+- rodada de validação `forward-2026-07-v1` com parâmetros congelados;
+- MES com `EmaCrossBaseline` candidato visível em 1R e pullback pausado visualmente;
+- MNQ com pullback visível em observação no alvo de 1,5R;
+- resumo diário automático em CSV com resultado em R e moeda, sequência de stops e drawdown;
+- bloqueio de novos sinais quando os parâmetros divergem da rodada congelada.
 
 ## Estrutura
 
@@ -82,15 +87,15 @@ docs/
 4. Em um gráfico, adicione o indicador **Trade Analysis Assistant**.
 5. Mantenha-a em ambiente simulado enquanto valida os sinais e os parâmetros.
 
-Os parâmetros de EMA, tolerância do pullback, intervalo entre candidatos, ATR, risco/retorno, validade e aparência podem ser alterados na tela de propriedades do indicador. Os valores experimentais iniciais são `0,1 ATR` de tolerância e `3 candles` de intervalo mínimo por direção.
+O **Modo de validação 0.8** vem ativado. Durante a rodada `forward-2026-07-v1`, mantenha EMA 9/21, ATR 14, stop 1,5 ATR, tolerância 0,1 ATR, intervalo de 3 candles, validade de 3 candles, risco/retorno configurado em 2R, risco máximo de USD 75 e política de descarte acima do limite. Se qualquer um desses parâmetros divergir, o painel avisa e bloqueia novos sinais para não misturar amostras.
 
-As métricas do painel existem apenas durante a execução atual do indicador. O histórico em CSV permanece salvo em `Documents/NinjaTrader 8/TradeAssistant/Data` e pode ser desligado pela propriedade **Salvar histórico CSV**. A propriedade **Risco máximo por contrato** aceita um valor na moeda do ativo; use `0` para manter o limite desativado. A propriedade **Política do limite** define se o indicador apenas avisa ou descarta o sinal acima desse valor.
+O histórico bruto CSV v6 permanece salvo em `Documents/NinjaTrader 8/TradeAssistant/Data`. Os resumos diários ficam em `Documents/NinjaTrader 8/TradeAssistant/Summaries`, separados por ativo, período e dia. A propriedade **Risco máximo por contrato** aceita um valor na moeda do ativo; use `0` apenas fora da rodada congelada. A propriedade **Política do limite** define se o indicador apenas avisa ou descarta o sinal acima desse valor.
 
 Os valores financeiros são estimativas para um contrato baseadas na distância dos níveis e no valor do ponto. Não incluem comissão, taxas, slippage ou conversão para a moeda da conta.
 
 ## Próximo marco
 
-Compilar `0.7.0-beta.1` no NinjaTrader, confirmar a criação dos CSVs v5 e comparar 1R, 1,5R e 2R sobre os mesmos sinais. Nenhuma conclusão operacional deve ser tomada antes da amostra mínima definida no protocolo.
+Compilar `0.8.0-beta.1` no NinjaTrader e executar cinco sessões completas sem mudar os parâmetros. A primeira revisão exige também pelo menos 30 resultados decididos por candidato. Nenhuma conclusão operacional deve ser tomada antes da amostra mínima definida no protocolo.
 
 ## Documentação
 
@@ -108,6 +113,8 @@ Compilar `0.7.0-beta.1` no NinjaTrader, confirmar a criação dos CSVs v5 e comp
 - [Análise consolidada do dia 20](docs/data-audits/2026-07-20-full-day-analysis.md)
 - [Auditoria atualizada dos CSVs v4 em 21/07](docs/data-audits/2026-07-21-v4-log-audit.md)
 - [Auditoria consolidada de todos os logs em 22/07](docs/data-audits/2026-07-22-all-logs-audit.md)
+- [Seleção da rodada prospectiva a partir dos CSVs v5](docs/data-audits/2026-07-22-v5-forward-selection.md)
 - [Decisão de testar pullback no MNQ](docs/decisions/0001-test-mnq-pullback.md)
 - [Decisão de medir 1R, 1,5R e 2R](docs/decisions/0002-measure-multiple-targets.md)
+- [Decisão de iniciar a validação prospectiva](docs/decisions/0003-start-forward-validation.md)
 - [Histórico de versões](CHANGELOG.md)

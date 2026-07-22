@@ -2,6 +2,19 @@
 
 Todas as mudanças relevantes do projeto são registradas neste arquivo. Enquanto o indicador estiver em validação, as versões usarão o sufixo `beta`.
 
+## 0.8.0-beta.1 — 2026-07-22
+
+- iniciada a rodada congelada `forward-2026-07-v1`;
+- MES `EmaCrossBaseline` passa a ser o candidato visível em 1R;
+- MES `TrendPullback` fica pausado visualmente, mas continua registrado para comparação;
+- MNQ `TrendPullback` permanece visível em observação com alvo de validação em 1,5R;
+- configurações divergentes da rodada bloqueiam novos sinais e geram aviso no painel;
+- painel passa a mostrar setup, etapa, alvo, resultado diário em R e moeda, sequência de stops e drawdown;
+- criado CSV bruto v6 com rodada, etapa, alvo e parâmetros completos do pullback;
+- criado resumo diário automático por ativo, período e setup em `TradeAssistant/Summaries`;
+- resumo inclui alvos, stops, expirados, ambíguos, rejeitados, taxa de acerto, resultado, risco médio, sequência de perdas e drawdown;
+- custos continuam explicitamente excluídos e nenhuma execução automática foi adicionada.
+
 ## 0.7.0-beta.1 — 2026-07-22
 
 - painel passa a declarar `RESULTADO HIPOTÉTICO | SEM ORDENS`;

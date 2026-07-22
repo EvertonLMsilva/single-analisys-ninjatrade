@@ -35,7 +35,7 @@ Esses parâmetros também acompanham cada linha do CSV quando se aplicam ao cál
 9. conferir manualmente `risco em pontos × valor do ponto = risco financeiro`;
 10. configurar um limite abaixo e acima do risco calculado e conferir a mudança de situação.
 11. no modo `DescartarAcimaDoLimite`, confirmar que o sinal acima do limite aparece como descartado, não cria zonas operacionais e não bloqueia o próximo sinal;
-12. confirmar no CSV v5 os campos `Setup`, `RiskLimitMode`, `RiskLimitStatus` e `Status=RiskRejected`;
+12. confirmar no CSV v6 os campos `Setup`, `RiskLimitMode`, `RiskLimitStatus` e `Status=RiskRejected`;
 13. confirmar que apenas `TrendPullback` é desenhado no gráfico e que `EmaCrossBaseline` aparece somente no CSV;
 14. confirmar que os dois setups podem estar ativos ao mesmo tempo, mas não existem duas operações ativas do mesmo setup.
 15. confirmar `EvaluationType=Hypothetical`, `EntryAssumption=SignalBarClose` e `OutcomeBasis=FollowingBarsHighLow`;
@@ -43,6 +43,11 @@ Esses parâmetros também acompanham cada linha do CSV quando se aplicam ao cál
 17. criar um cenário em que 1R ocorre antes do stop e confirmar `FirstEvent=Target1R`;
 18. criar um cenário em que 1R e stop aparecem no mesmo candle e confirmar `Target1RStatus=Ambiguous`;
 19. confirmar que `RecordKey` começa com ativo e período e não colide entre MNQ e MES.
+20. confirmar `ValidationRound=forward-2026-07-v1`, etapa e alvo de validação;
+21. confirmar que o MES mostra o cruzamento EMA em 1R e não desenha o pullback;
+22. confirmar que o MNQ mostra o pullback em 1,5R e mantém o cruzamento somente no CSV;
+23. confirmar a criação do resumo em `TradeAssistant/Summaries`;
+24. alterar temporariamente um parâmetro e confirmar o aviso de configuração divergente e o bloqueio de novos sinais; depois restaurar o valor congelado.
 
 ## 3. Coleta da linha de base
 
@@ -85,3 +90,19 @@ Uma nova regra ou configuração deve ser avaliada sobre o mesmo conjunto de dia
 Não alterar vários componentes da regra na mesma comparação.
 
 Na primeira rodada da versão 0.7, manter `Tolerância do pullback = 0,1 ATR`, `Intervalo entre pullbacks = 3`, validade de 3 candles, risco máximo de USD 75 e um microcontrato de referência. Separar MNQ e MES e comparar os níveis pelas colunas próprias, sem alterar a entrada durante a coleta.
+
+## 6. Rodada prospectiva 0.8
+
+A rodada `forward-2026-07-v1` começa na primeira sessão completa após a instalação da versão `0.8.0-beta.1`. Não misturar os resultados anteriores com a decisão prospectiva.
+
+- manter cinco sessões completas sem alteração de parâmetros;
+- exigir pelo menos 30 resultados decididos por candidato para a primeira revisão;
+- MES `EmaCrossBaseline`: candidato em 1R;
+- MES `TrendPullback`: pausado visualmente, coleta silenciosa em 1R;
+- MNQ `TrendPullback`: observação em 1,5R;
+- MNQ `EmaCrossBaseline`: referência silenciosa em 1R;
+- avaliar R e dólares em conjunto;
+- rejeitar conclusão sustentada por apenas um dia;
+- estimar comissão e slippage antes de qualquer etapa posterior.
+
+Mesmo que a primeira revisão seja favorável, o objetivo maior permanece 20 sessões e 100 oportunidades antes de considerar encerrada a validação. Nenhum desses critérios autoriza automaticamente operação real.

@@ -222,3 +222,23 @@
 - código sincronizado com a pasta oficial e com a instalação do NinjaTrader;
 - os 14 arquivos instalados foram conferidos por SHA-256, sem divergências;
 - compilação com F5 e validação visual do primeiro CSV v5 permanecem como etapas manuais.
+
+### Início da validação prospectiva 0.8
+
+- encerrada a etapa de descoberta com 540 registros v5 entre 15 e 22/07;
+- selecionado MES `EmaCrossBaseline` em 1R como candidato;
+- mantido MNQ `TrendPullback` em 1,5R apenas em observação;
+- pausado visualmente MES `TrendPullback`, sem interromper sua coleta silenciosa;
+- criada rodada congelada `forward-2026-07-v1` com bloqueio de novos sinais em configuração divergente;
+- painel adaptado ao setup principal de cada ativo e às métricas diárias do alvo escolhido;
+- criado CSV bruto v6 com contexto completo da validação;
+- criado resumo diário automático com resultado em R e moeda, riscos médios, sequência de stops e drawdown;
+- adicionados testes executáveis do núcleo para perfis, configuração congelada, métricas e persistência;
+- versão elevada para `0.8.0-beta.1`;
+- decisão registrada em `docs/decisions/0003-start-forward-validation.md`;
+- análise que sustentou a seleção registrada em `docs/data-audits/2026-07-22-v5-forward-selection.md`;
+- testes do núcleo concluídos com sucesso;
+- projeto real `NinjaTrader.Custom` compilado pelo terminal com zero erros; os avisos exibidos pertencem ao conjunto geral de scripts já instalado;
+- código sincronizado com o repositório oficial e com a pasta `bin/Custom/TradeAssistant`;
+- mantida ausência total de ordens e acesso à conta;
+- validação visual no gráfico e confirmação dos primeiros CSVs v6/resumos permanecem como etapa manual.

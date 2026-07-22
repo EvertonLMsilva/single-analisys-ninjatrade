@@ -104,6 +104,11 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Tracking
             return null;
         }
 
+        public IList<TrackedSignal> GetSignals()
+        {
+            return new List<TrackedSignal>(signals);
+        }
+
         public SignalStatistics GetStatistics()
         {
             return GetStatistics(null);

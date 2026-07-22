@@ -19,11 +19,15 @@ Nenhuma regra de entrada será alterada antes desse marco.
 
 ## Marco 2 — Relatório e qualidade dos dados
 
+Situação: implementado na versão `0.8.0-beta.1`; aguardando validação real no NinjaTrader.
+
 - gerar resumo diário a partir dos arquivos registrados;
 - detectar arquivos inválidos ou registros incompletos;
 - permitir filtrar versão, ativo, período, horário e direção;
 - separar claramente alvo, stop, expirado e ambíguo;
 - mostrar expectativa em R, MFE e MAE sem esconder a quantidade da amostra.
+
+O resumo diário automático cobre resultado em R e moeda, riscos médios, sequência de stops e drawdown. Filtros e consolidação entre vários dias continuam como evolução posterior.
 
 ## Marco 3 — Linha de base da regra demonstrativa
 

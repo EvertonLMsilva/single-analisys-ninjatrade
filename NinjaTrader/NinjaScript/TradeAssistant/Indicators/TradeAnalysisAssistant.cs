@@ -30,7 +30,9 @@ namespace NinjaTrader.NinjaScript.Indicators
         private Queue<string> visualSignalIds;
         private SignalAnalyzer signalAnalyzer;
         private CsvSignalJournal signalJournal;
+        private CsvValidationSummaryJournal validationSummaryJournal;
         private SignalTracker signalTracker;
+        private bool validationConfigurationMatches;
 
         protected override void OnStateChange()
         {
@@ -60,6 +62,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                 MaxHistoricalSignals = 5;
                 ZoneOpacity = 14;
                 EnableCsvJournal = true;
+                EnableValidationMode = true;
                 MaximumRiskPerContract = 75;
                 RiskLimitPolicy = RiskLimitMode.DescartarAcimaDoLimite;
             }
@@ -73,6 +76,17 @@ namespace NinjaTrader.NinjaScript.Indicators
                 instrumentTickSize = Bars.Instrument.MasterInstrument.TickSize;
                 signalAnalyzer = new SignalAnalyzer();
                 signalTracker = new SignalTracker();
+                validationConfigurationMatches = ValidationPlan.MatchesFrozenConfiguration(
+                    FastEmaPeriod,
+                    SlowEmaPeriod,
+                    AtrPeriod,
+                    PullbackToleranceAtr,
+                    PullbackCooldownBars,
+                    StopAtrMultiplier,
+                    RiskRewardRatio,
+                    ValidForBars,
+                    MaximumRiskPerContract,
+                    RiskLimitPolicy);
                 lastLongPullbackBar = -1000000;
                 lastShortPullbackBar = -1000000;
                 if (EnableCsvJournal)
@@ -91,9 +105,21 @@ namespace NinjaTrader.NinjaScript.Indicators
                         SlowEmaPeriod,
                         AtrPeriod,
                         StopAtrMultiplier,
+                        PullbackToleranceAtr,
+                        PullbackCooldownBars,
                         instrumentCurrency,
                         MaximumRiskPerContract,
                         RiskLimitPolicy.ToString());
+                    validationSummaryJournal = new CsvValidationSummaryJournal(
+                        System.IO.Path.Combine(
+                            NinjaTrader.Core.Globals.UserDataDir,
+                            "TradeAssistant",
+                            "Summaries"),
+                        Bars.Instrument.FullName,
+                        barsPeriodDescription,
+                        TradeAssistantVersion.Current,
+                        instrumentCurrency,
+                        RiskRewardRatio);
                 }
                 visibleSignalIds = new HashSet<string>();
                 visualSignalIds = new Queue<string>();
@@ -112,8 +138,11 @@ namespace NinjaTrader.NinjaScript.Indicators
                 RenderOutcome(closedSignal);
             }
 
-            EvaluatePullbackSetup();
-            EvaluateBaselineSetup();
+            if (!EnableValidationMode || validationConfigurationMatches)
+            {
+                EvaluatePullbackSetup();
+                EvaluateBaselineSetup();
+            }
 
             RenderModePanel();
         }
@@ -146,7 +175,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                     instrumentPointValue,
                     Time[0],
                     ValidForBars),
-                    true);
+                    ShouldRenderSetup(SignalSetup.TrendPullback));
                 return;
             }
 
@@ -172,7 +201,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                     instrumentPointValue,
                     Time[0],
                     ValidForBars),
-                    true);
+                    ShouldRenderSetup(SignalSetup.TrendPullback));
             }
         }
 
@@ -192,7 +221,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                     instrumentPointValue,
                     Time[0],
                     ValidForBars),
-                    false);
+                    ShouldRenderSetup(SignalSetup.EmaCrossBaseline));
 
             else if (EnableShortSignals && CrossBelow(fastEma, slowEma, 1))
                 RegisterAndRenderSignal(signalAnalyzer.CreateEmaCross(
@@ -205,7 +234,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                     instrumentPointValue,
                     Time[0],
                     ValidForBars),
-                    false);
+                    ShouldRenderSetup(SignalSetup.EmaCrossBaseline));
         }
 
         private void RegisterAndRenderSignal(TradeSignal signal, bool renderOnChart)
@@ -242,35 +271,65 @@ namespace NinjaTrader.NinjaScript.Indicators
 
             if (!signalJournal.Record(trackedSignal))
                 Print("Trade Assistant: não foi possível gravar o histórico CSV. " + signalJournal.LastError);
+
+            if (validationSummaryJournal != null
+                && !validationSummaryJournal.Record(signalTracker.GetSignals()))
+            {
+                Print("Trade Assistant: não foi possível gravar o resumo diário. "
+                    + validationSummaryJournal.LastError);
+            }
+        }
+
+        private bool ShouldRenderSetup(SignalSetup setup)
+        {
+            if (!EnableValidationMode)
+                return setup == SignalSetup.TrendPullback;
+
+            return ValidationPlan.GetProfile(
+                Bars.Instrument.FullName,
+                setup,
+                RiskRewardRatio).RenderOnChart;
         }
 
         private void RenderModePanel()
         {
-            SignalStatistics statistics = signalTracker.GetStatistics(SignalSetup.TrendPullback);
-            TrackedSignal lastSignal = signalTracker.GetLastSignal(SignalSetup.TrendPullback);
+            ValidationProfile profile = ValidationPlan.GetPrimaryProfile(
+                Bars.Instrument.FullName,
+                RiskRewardRatio);
+            ValidationStatistics statistics = ValidationStatisticsCalculator.Calculate(
+                signalTracker.GetSignals(),
+                profile.Setup,
+                profile.TargetR,
+                Time[0].Date);
+            TrackedSignal lastSignal = signalTracker.GetLastSignal(profile.Setup);
             string currentStatus = lastSignal == null
                 ? "AGUARDANDO SINAL"
-                : GetStatusText(lastSignal);
+                : GetValidationStatusText(lastSignal, profile.TargetR);
+            string configurationStatus = !EnableValidationMode
+                ? "DESLIGADO"
+                : validationConfigurationMatches
+                    ? "CONGELADA / VÁLIDA"
+                    : "DIVERGENTE - NOVOS SINAIS BLOQUEADOS";
             string signalDetails = lastSignal == null
                 ? "Nenhum sinal registrado"
                 : string.Format(
-                    "{0}\nEntrada: {1}\nStop: {2}\nAlvo: {3}\nDistância: {4:N2} pts | {5:N0} ticks\nRisco 1 contrato (sem custos): {6}\nAlvo 1 contrato (sem custos): {7}\nLimite: {8}\nR:R: {9:N2}\nMedição: 1R {10} | 1,5R {11} | 2R {12}\nPrimeiro evento: {13}",
+                    "{0}\nEntrada: {1}\nStop: {2}\nAlvo da validação: {3} ({9:N1}R)\nDistância: {4:N2} pts | {5:N0} ticks\nRisco 1 contrato (sem custos): {6}\nRetorno da validação (sem custos): {7}\nLimite: {8}\nMedição: 1R {10} | 1,5R {11} | 2R {12}\nPrimeiro evento: {13}",
                     lastSignal.Signal.Direction == SignalDirection.Long ? "COMPRA" : "VENDA",
                     FormatPrice(lastSignal.Signal.EntryPrice),
                     FormatPrice(lastSignal.Signal.StopPrice),
-                    FormatPrice(lastSignal.Signal.TargetPrice),
+                    FormatPrice(GetValidationTargetPrice(lastSignal.Signal, profile.TargetR)),
                     lastSignal.Signal.Risk,
                     lastSignal.Signal.RiskTicks,
                     FormatCurrency(lastSignal.Signal.RiskCurrency),
-                    FormatCurrency(lastSignal.Signal.RewardCurrency),
+                    FormatCurrency(lastSignal.Signal.RiskCurrency * profile.TargetR),
                     GetRiskLimitStatus(lastSignal.Signal),
-                    lastSignal.Signal.RiskRewardRatio,
+                    profile.TargetR,
                     GetComparisonStatusText(lastSignal.TargetOneRStatus),
                     GetComparisonStatusText(lastSignal.TargetOnePointFiveRStatus),
                     GetComparisonStatusText(lastSignal.TargetTwoRStatus),
                     GetFirstEventText(lastSignal.FirstEvent));
             string panelText = string.Format(
-                "TRADE ASSISTANT v" + TradeAssistantVersion.Current + " | RESULTADO HIPOTÉTICO | SEM ORDENS\nSetup: PULLBACK EXPERIMENTAL\nStatus: {0}\nHistórico CSV: {11} | Baseline no CSV: " + (EnableBaselineComparison ? "SIM" : "NÃO") + "\n\n{1}\n\nPullbacks: {2} | Ativos: {3}\nAlvos: {4} | Stops: {5}\nExpirados: {6} | Ambíguos: {7}\nDescartados por risco: {10}\nAcerto: {8:N1}% | Total: {9:+0.00;-0.00;0.00} R",
+                "TRADE ASSISTANT v" + TradeAssistantVersion.Current + " | RESULTADO HIPOTÉTICO | SEM ORDENS\nRodada: " + ValidationPlan.RoundId + "\nSetup: {12} | Etapa: {13} | Alvo: {14:N1}R\nConfiguração: {15}\nStatus: {0}\nHistórico e resumo: {11}\n\n{1}\n\nHoje: {2} sinais | {3} ativos | {16} decididos\nAlvos: {4} | Stops: {5}\nExpirados: {6} | Ambíguos: {7}\nDescartados por risco: {10}\nAcerto: {8:N1}% | Resultado: {9:+0.00;-0.00;0.00} R | {17}\nSequência máx. de stops: {18} | Drawdown: {19:N2} R / {20}",
                 currentStatus,
                 signalDetails,
                 statistics.Total,
@@ -280,9 +339,18 @@ namespace NinjaTrader.NinjaScript.Indicators
                 statistics.Expired,
                 statistics.Ambiguous,
                 statistics.WinRate,
-                statistics.TotalR,
+                statistics.ResultR,
                 statistics.RiskRejected,
-                GetJournalStatus());
+                GetJournalStatus(),
+                GetSetupText(profile.Setup),
+                GetValidationStageText(profile.Stage),
+                profile.TargetR,
+                configurationStatus,
+                statistics.Decided,
+                FormatCurrency(statistics.ResultCurrency),
+                statistics.MaximumConsecutiveLosses,
+                statistics.MaximumDrawdownR,
+                FormatCurrency(statistics.MaximumDrawdownCurrency));
 
             Draw.TextFixed(
                 this,
@@ -302,7 +370,41 @@ namespace NinjaTrader.NinjaScript.Indicators
                 return "DESLIGADO";
             if (signalJournal == null)
                 return "INDISPONÍVEL";
-            return string.IsNullOrEmpty(signalJournal.LastError) ? "ATIVO" : "ERRO";
+            bool journalOk = string.IsNullOrEmpty(signalJournal.LastError);
+            bool summaryOk = validationSummaryJournal != null
+                && string.IsNullOrEmpty(validationSummaryJournal.LastError);
+            return journalOk && summaryOk ? "ATIVO" : "ERRO";
+        }
+
+        private static string GetSetupText(SignalSetup setup)
+        {
+            return setup == SignalSetup.EmaCrossBaseline
+                ? "CRUZAMENTO EMA"
+                : "PULLBACK";
+        }
+
+        private static string GetValidationStageText(ValidationStage stage)
+        {
+            switch (stage)
+            {
+                case ValidationStage.Candidate:
+                    return "CANDIDATO EM VALIDAÇÃO";
+                case ValidationStage.Observation:
+                    return "OBSERVAÇÃO";
+                case ValidationStage.Paused:
+                    return "PAUSADO";
+                default:
+                    return "REFERÊNCIA";
+            }
+        }
+
+        private static double GetValidationTargetPrice(TradeSignal signal, double targetR)
+        {
+            if (Math.Abs(targetR - 1.0) < 0.0000001)
+                return signal.TargetOneRPrice;
+            if (Math.Abs(targetR - 1.5) < 0.0000001)
+                return signal.TargetOnePointFiveRPrice;
+            return signal.TargetTwoRPrice;
         }
 
         private string GetRiskLimitStatus(TradeSignal signal)
@@ -382,23 +484,30 @@ namespace NinjaTrader.NinjaScript.Indicators
             if (!visibleSignalIds.Contains(trackedSignal.Signal.Id))
                 return;
 
+            ValidationProfile profile = ValidationPlan.GetProfile(
+                Bars.Instrument.FullName,
+                trackedSignal.Signal.Setup,
+                RiskRewardRatio);
+            ComparisonStatus validationStatus = ValidationStatisticsCalculator.GetStatus(
+                trackedSignal,
+                profile.TargetR);
             string text;
             Brush brush;
             double price;
 
-            switch (trackedSignal.Status)
+            switch (validationStatus)
             {
-                case SignalStatus.TargetHit:
+                case ComparisonStatus.TargetHit:
                     text = "ALVO";
                     brush = Brushes.ForestGreen;
-                    price = trackedSignal.Signal.TargetPrice;
+                    price = GetValidationTargetPrice(trackedSignal.Signal, profile.TargetR);
                     break;
-                case SignalStatus.StopHit:
+                case ComparisonStatus.StopHit:
                     text = "STOP";
                     brush = Brushes.Firebrick;
                     price = trackedSignal.Signal.StopPrice;
                     break;
-                case SignalStatus.Expired:
+                case ComparisonStatus.Expired:
                     text = "EXPIRADO";
                     brush = Brushes.DimGray;
                     price = trackedSignal.Signal.EntryPrice;
@@ -417,6 +526,28 @@ namespace NinjaTrader.NinjaScript.Indicators
                 0,
                 price,
                 brush);
+        }
+
+        private static string GetValidationStatusText(TrackedSignal trackedSignal, double targetR)
+        {
+            ComparisonStatus status = ValidationStatisticsCalculator.GetStatus(trackedSignal, targetR);
+            switch (status)
+            {
+                case ComparisonStatus.TargetHit:
+                    return "ALVO DA VALIDAÇÃO ATINGIDO";
+                case ComparisonStatus.StopHit:
+                    return "STOP ATINGIDO";
+                case ComparisonStatus.Expired:
+                    return "SINAL EXPIRADO";
+                case ComparisonStatus.Ambiguous:
+                    return "RESULTADO AMBÍGUO";
+                case ComparisonStatus.RiskRejected:
+                    return "DESCARTADO POR RISCO";
+                default:
+                    string direction = trackedSignal.Signal.Direction == SignalDirection.Long ? "COMPRA" : "VENDA";
+                    int remainingBars = Math.Max(0, trackedSignal.Signal.ValidForBars - trackedSignal.BarsElapsed);
+                    return direction + " ATIVA (" + remainingBars + " candles)";
+            }
         }
 
         private static string GetStatusText(TrackedSignal trackedSignal)
@@ -464,6 +595,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         private void RenderSignal(TradeSignal signal)
         {
+            ValidationProfile profile = ValidationPlan.GetProfile(
+                Bars.Instrument.FullName,
+                signal.Setup,
+                RiskRewardRatio);
+            double validationTargetPrice = GetValidationTargetPrice(signal, profile.TargetR);
             bool isLong = signal.Direction == SignalDirection.Long;
             Brush directionBrush = isLong ? Brushes.DeepSkyBlue : Brushes.DarkOrange;
             double markerPrice = isLong
@@ -479,15 +615,15 @@ namespace NinjaTrader.NinjaScript.Indicators
                 Draw.ArrowDown(this, tagPrefix + ".Arrow", false, 0, markerPrice, directionBrush);
 
             Draw.Rectangle(this, tagPrefix + ".RiskZone", false, 0, signal.EntryPrice, -signal.ValidForBars, signal.StopPrice, Brushes.Transparent, Brushes.IndianRed, ZoneOpacity);
-            Draw.Rectangle(this, tagPrefix + ".RewardZone", false, 0, signal.EntryPrice, -signal.ValidForBars, signal.TargetPrice, Brushes.Transparent, Brushes.MediumSeaGreen, ZoneOpacity);
+            Draw.Rectangle(this, tagPrefix + ".RewardZone", false, 0, signal.EntryPrice, -signal.ValidForBars, validationTargetPrice, Brushes.Transparent, Brushes.MediumSeaGreen, ZoneOpacity);
 
             Draw.Line(this, tagPrefix + ".Entry", false, 0, signal.EntryPrice, -signal.ValidForBars, signal.EntryPrice, Brushes.DodgerBlue, DashStyleHelper.Solid, 2);
             Draw.Line(this, tagPrefix + ".Stop", false, 0, signal.StopPrice, -signal.ValidForBars, signal.StopPrice, Brushes.IndianRed, DashStyleHelper.Dash, 2);
-            Draw.Line(this, tagPrefix + ".Target", false, 0, signal.TargetPrice, -signal.ValidForBars, signal.TargetPrice, Brushes.MediumSeaGreen, DashStyleHelper.Dash, 2);
+            Draw.Line(this, tagPrefix + ".Target", false, 0, validationTargetPrice, -signal.ValidForBars, validationTargetPrice, Brushes.MediumSeaGreen, DashStyleHelper.Dash, 2);
 
             Draw.Text(this, tagPrefix + ".EntryLabel", "ENTRADA " + FormatPrice(signal.EntryPrice), -signal.ValidForBars, signal.EntryPrice, Brushes.DodgerBlue);
             Draw.Text(this, tagPrefix + ".StopLabel", "STOP " + FormatPrice(signal.StopPrice), -signal.ValidForBars, signal.StopPrice, Brushes.IndianRed);
-            Draw.Text(this, tagPrefix + ".TargetLabel", "ALVO " + FormatPrice(signal.TargetPrice), -signal.ValidForBars, signal.TargetPrice, Brushes.MediumSeaGreen);
+            Draw.Text(this, tagPrefix + ".TargetLabel", "ALVO " + profile.TargetR.ToString("N1") + "R " + FormatPrice(validationTargetPrice), -signal.ValidForBars, validationTargetPrice, Brushes.MediumSeaGreen);
         }
 
         private string FormatPrice(double price)
@@ -613,6 +749,10 @@ namespace NinjaTrader.NinjaScript.Indicators
         [NinjaScriptProperty]
         [Display(Name = "Salvar histórico CSV", GroupName = "Histórico", Order = 1)]
         public bool EnableCsvJournal { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Modo de validação 0.8", Description = "Aplica o plano congelado por ativo e bloqueia novos sinais se a configuração divergir.", GroupName = "Validação", Order = 1)]
+        public bool EnableValidationMode { get; set; }
 
         #endregion
     }

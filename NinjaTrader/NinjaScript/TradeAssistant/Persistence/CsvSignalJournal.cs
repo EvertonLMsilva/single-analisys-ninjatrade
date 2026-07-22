@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using NinjaTrader.NinjaScript.TradeAssistant.Configuration;
 using NinjaTrader.NinjaScript.TradeAssistant.Models;
 
 namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
 {
     public sealed class CsvSignalJournal
     {
-        private const string Header = "RecordKey,SignalId,SignalTime,ClosedAt,Instrument,BarsPeriod,Version,EvaluationType,EntryAssumption,OutcomeBasis,Setup,Direction,EntryPrice,StopPrice,TargetPrice,TickSize,PointValue,Currency,RiskPoints,RiskTicks,RiskCurrency,RewardCurrency,MaximumRiskPerContract,RiskLimitMode,RiskLimitStatus,RiskReward,ValidForBars,FastEmaPeriod,SlowEmaPeriod,AtrPeriod,StopAtrMultiplier,Status,ResultR,MfeR,MaeR,BarsElapsed,FirstEvent,FirstEventAt,Target1RPrice,Target1RStatus,Target1RAt,Target1_5RPrice,Target1_5RStatus,Target1_5RAt,Target2RPrice,Target2RStatus,Target2RAt,Reason";
+        private const string Header = "RecordKey,SignalId,SignalTime,ClosedAt,Instrument,BarsPeriod,Version,EvaluationType,EntryAssumption,OutcomeBasis,ValidationRound,ValidationStage,ValidationTargetR,Setup,Direction,EntryPrice,StopPrice,TargetPrice,TickSize,PointValue,Currency,RiskPoints,RiskTicks,RiskCurrency,RewardCurrency,MaximumRiskPerContract,RiskLimitMode,RiskLimitStatus,RiskReward,ValidForBars,FastEmaPeriod,SlowEmaPeriod,AtrPeriod,StopAtrMultiplier,PullbackToleranceAtr,PullbackCooldownBars,Status,ResultR,MfeR,MaeR,BarsElapsed,FirstEvent,FirstEventAt,Target1RPrice,Target1RStatus,Target1RAt,Target1_5RPrice,Target1_5RStatus,Target1_5RAt,Target2RPrice,Target2RStatus,Target2RAt,Reason";
         private static readonly object FileLock = new object();
 
         private readonly int atrPeriod;
@@ -19,6 +20,8 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
         private readonly string instrument;
         private readonly string currency;
         private readonly double maximumRiskPerContract;
+        private readonly int pullbackCooldownBars;
+        private readonly double pullbackToleranceAtr;
         private readonly string riskLimitMode;
         private readonly int slowEmaPeriod;
         private readonly double stopAtrMultiplier;
@@ -33,6 +36,8 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
             int slowEmaPeriod,
             int atrPeriod,
             double stopAtrMultiplier,
+            double pullbackToleranceAtr,
+            int pullbackCooldownBars,
             string currency,
             double maximumRiskPerContract,
             string riskLimitMode)
@@ -45,6 +50,8 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
             this.slowEmaPeriod = slowEmaPeriod;
             this.atrPeriod = atrPeriod;
             this.stopAtrMultiplier = stopAtrMultiplier;
+            this.pullbackToleranceAtr = pullbackToleranceAtr;
+            this.pullbackCooldownBars = pullbackCooldownBars;
             this.currency = currency;
             this.maximumRiskPerContract = maximumRiskPerContract;
             this.riskLimitMode = riskLimitMode;
@@ -95,6 +102,8 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 slowEmaPeriod.ToString(CultureInfo.InvariantCulture),
                 atrPeriod.ToString(CultureInfo.InvariantCulture),
                 stopAtrMultiplier.ToString("R", CultureInfo.InvariantCulture),
+                pullbackToleranceAtr.ToString("R", CultureInfo.InvariantCulture),
+                pullbackCooldownBars.ToString(CultureInfo.InvariantCulture),
                 maximumRiskPerContract.ToString("R", CultureInfo.InvariantCulture),
                 Sanitize(riskLimitMode),
                 signal.RiskRewardRatio.ToString("R", CultureInfo.InvariantCulture),
@@ -104,6 +113,10 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
         private string BuildRow(string recordKey, TrackedSignal trackedSignal)
         {
             TradeSignal signal = trackedSignal.Signal;
+            ValidationProfile validationProfile = ValidationPlan.GetProfile(
+                instrument,
+                signal.Setup,
+                signal.RiskRewardRatio);
             string closedAt = trackedSignal.ClosedAt.HasValue
                 ? trackedSignal.ClosedAt.Value.ToString("O", CultureInfo.InvariantCulture)
                 : string.Empty;
@@ -120,6 +133,9 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 Csv("Hypothetical"),
                 Csv("SignalBarClose"),
                 Csv("FollowingBarsHighLow"),
+                Csv(ValidationPlan.RoundId),
+                Csv(validationProfile.Stage.ToString()),
+                Number(validationProfile.TargetR),
                 Csv(signal.Setup.ToString()),
                 Csv(signal.Direction.ToString()),
                 Number(signal.EntryPrice),
@@ -141,6 +157,8 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 slowEmaPeriod.ToString(CultureInfo.InvariantCulture),
                 atrPeriod.ToString(CultureInfo.InvariantCulture),
                 Number(stopAtrMultiplier),
+                Number(pullbackToleranceAtr),
+                pullbackCooldownBars.ToString(CultureInfo.InvariantCulture),
                 Csv(trackedSignal.Status.ToString()),
                 Number(trackedSignal.ResultR),
                 Number(trackedSignal.MaximumFavorableExcursionR),
@@ -164,7 +182,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
         {
             string fileName = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}_{1}_{2}_v5.csv",
+                "{0}_{1}_{2}_v6.csv",
                 signalTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 Sanitize(instrument),
                 Sanitize(barsPeriod));
