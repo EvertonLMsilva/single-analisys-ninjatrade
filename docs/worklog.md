@@ -186,3 +186,21 @@
 - confirmado que 24 de 48 expirados no MNQ e 48 de 105 no MES alcançaram pelo menos 1R de MFE;
 - mantida recomendação de não alterar entrada ou risco antes da medição paralela de 1R, 1,5R e 2R;
 - auditoria registrada em `docs/data-audits/2026-07-21-v4-log-audit.md`.
+
+## 2026-07-22
+
+### Auditoria consolidada de todos os logs
+
+- inventariados 36 arquivos: 10 v2, 10 v3 e 16 v4;
+- formatos antigos preservados, mas excluídos do desempenho para evitar múltipla contagem;
+- analisados 595 registros v4, todos na versão `0.6.0-beta.1`;
+- confirmadas integridade interna, uniformidade dos cabeçalhos e exatidão dos cálculos financeiros;
+- identificadas 150 chaves repetidas somente entre ativos diferentes;
+- dias completos: MNQ pullback em -22R e MES pullback em -49R;
+- parcial de 22/07 separado: -1R no MNQ e -2R no MES pullback;
+- nenhuma hipótese de horário ou direção demonstrou robustez;
+- faixa MNQ até USD 25 ficou em +3R, mas concentrada apenas nos dois últimos dias e sem aprovação como filtro;
+- maior sequência observada: 12 stops no MNQ e 18 no MES;
+- simulada parada pessoal de USD 225, que reduziu perdas, mas não tornou o setup positivo;
+- mantida recomendação de alterar apenas a medição de 1R, 1,5R e 2R;
+- relatório registrado em `docs/data-audits/2026-07-22-all-logs-audit.md`.
