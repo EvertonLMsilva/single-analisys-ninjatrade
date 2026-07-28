@@ -46,6 +46,9 @@ Esses parâmetros também acompanham cada linha do CSV quando se aplicam ao cál
 20. confirmar `ValidationRound=forward-2026-07-v1`, etapa e alvo de validação;
 21. confirmar que o MES mostra o cruzamento EMA em 1R e não desenha o pullback;
 22. confirmar que o MNQ mostra o pullback em 1,5R e mantém o cruzamento somente no CSV;
+23. na versão 0.8.1, confirmar a criação do CSV bruto `v7`, do resumo `validation_v2` e da análise `segments_v1`;
+24. recarregar o gráfico e confirmar que a quantidade total do CSV v7 coincide com o resumo do mesmo dia e setup;
+25. confirmar que `TradeAssistant/Analysis` contém segmentos por `Direction`, `Hour` e `RiskBand`;
 23. confirmar a criação do resumo em `TradeAssistant/Summaries`;
 24. alterar temporariamente um parâmetro e confirmar o aviso de configuração divergente e o bloqueio de novos sinais; depois restaurar o valor congelado.
 

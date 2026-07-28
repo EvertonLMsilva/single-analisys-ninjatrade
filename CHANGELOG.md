@@ -1,5 +1,16 @@
 # Histórico de versões
 
+## 0.8.1-beta.1 — 2026-07-28
+
+- encerrada sem aprovação operacional a rodada `forward-2026-07-v1`;
+- iniciada a rodada diagnóstica `diagnostic-2026-07-v2`, sem alterar entradas, stops, alvos ou limite de risco;
+- criado CSV bruto v7 para preservar integralmente os arquivos v6 da rodada encerrada;
+- o CSV bruto passa a substituir o retrato completo do dia durante um reprocessamento, removendo registros órfãos;
+- criado resumo diário `validation_v2`, separado dos resumos anteriores;
+- criada análise automática em `TradeAssistant/Analysis` por direção, hora e faixa de risco;
+- adicionados testes para remoção de registros órfãos e para os novos segmentos;
+- custos permanecem excluídos e nenhuma execução automática foi adicionada.
+
 Todas as mudanças relevantes do projeto são registradas neste arquivo. Enquanto o indicador estiver em validação, as versões usarão o sufixo `beta`.
 
 ## 0.8.0-beta.1 — 2026-07-22

@@ -9,9 +9,9 @@ using NinjaTrader.NinjaScript.TradeAssistant.Models;
 
 namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
 {
-    public sealed class CsvValidationSummaryJournal
+    public sealed class CsvValidationSegmentJournal
     {
-        private const string Header = "Date,Instrument,BarsPeriod,Version,ValidationRound,ValidationSample,EligibleForReview,Setup,ValidationStage,ValidationTargetR,MinimumSessions,MinimumDecidedSignals,Total,Active,Targets,Stops,Expired,Ambiguous,RiskRejected,Decided,WinRate,ResultR,ResultCurrency,Currency,AverageWinnerRiskCurrency,AverageLoserRiskCurrency,MaximumConsecutiveLosses,MaximumDrawdownR,MaximumDrawdownCurrency,CostsIncluded";
+        private const string Header = "Date,Instrument,BarsPeriod,Version,ValidationRound,ValidationSample,EligibleForReview,Setup,ValidationStage,ValidationTargetR,Dimension,Segment,Total,Active,Targets,Stops,Expired,Ambiguous,RiskRejected,Decided,WinRate,ResultR,ResultCurrency,Currency,AverageWinnerRiskCurrency,AverageLoserRiskCurrency,CostsIncluded";
         private static readonly object FileLock = new object();
 
         private readonly string barsPeriod;
@@ -21,7 +21,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
         private readonly double configuredTargetR;
         private readonly string version;
 
-        public CsvValidationSummaryJournal(
+        public CsvValidationSegmentJournal(
             string directory,
             string instrument,
             string barsPeriod,
@@ -64,11 +64,6 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
             }
         }
 
-        public string GetDirectory()
-        {
-            return directory;
-        }
-
         private void WriteDay(DateTime day, IList<TrackedSignal> signals)
         {
             List<string> lines = new List<string>();
@@ -76,37 +71,50 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
 
             foreach (SignalSetup setup in new[] { SignalSetup.EmaCrossBaseline, SignalSetup.TrendPullback })
             {
-                bool hasSetup = false;
-                foreach (TrackedSignal signal in signals)
-                {
-                    if (signal.Signal.Setup == setup && signal.Signal.CreatedAt.Date == day.Date)
-                    {
-                        hasSetup = true;
-                        break;
-                    }
-                }
-
-                if (!hasSetup)
+                List<TrackedSignal> setupSignals = Filter(signals, day, setup, null, null, null);
+                if (setupSignals.Count == 0)
                     continue;
 
                 ValidationProfile profile = ValidationPlan.GetProfile(instrument, setup, configuredTargetR);
-                ValidationStatistics statistics = ValidationStatisticsCalculator.Calculate(
-                    signals,
-                    setup,
-                    profile.TargetR,
-                    day);
-                lines.Add(BuildRow(day, profile, statistics));
+
+                foreach (SignalDirection direction in new[] { SignalDirection.Long, SignalDirection.Short })
+                    AddSegment(lines, day, profile, "Direction", direction.ToString(),
+                        Filter(signals, day, setup, direction, null, null));
+
+                SortedSet<int> hours = new SortedSet<int>();
+                foreach (TrackedSignal signal in setupSignals)
+                    hours.Add(signal.Signal.CreatedAt.Hour);
+                foreach (int hour in hours)
+                    AddSegment(lines, day, profile, "Hour",
+                        hour.ToString("00", CultureInfo.InvariantCulture) + ":00",
+                        Filter(signals, day, setup, null, hour, null));
+
+                foreach (string riskBand in new[] { "0-25", "25-50", "50-75", "75+" })
+                    AddSegment(lines, day, profile, "RiskBand", riskBand,
+                        Filter(signals, day, setup, null, null, riskBand));
             }
 
             File.WriteAllLines(GetFilePath(day), lines.ToArray(), new UTF8Encoding(true));
         }
 
-        private string BuildRow(
+        private void AddSegment(
+            ICollection<string> lines,
             DateTime day,
             ValidationProfile profile,
-            ValidationStatistics statistics)
+            string dimension,
+            string segment,
+            IList<TrackedSignal> signals)
         {
-            return string.Join(
+            if (signals.Count == 0)
+                return;
+
+            ValidationStatistics statistics = ValidationStatisticsCalculator.Calculate(
+                signals,
+                profile.Setup,
+                profile.TargetR,
+                day);
+
+            lines.Add(string.Join(
                 ",",
                 Csv(day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
                 Csv(instrument),
@@ -118,8 +126,8 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 Csv(profile.Setup.ToString()),
                 Csv(profile.Stage.ToString()),
                 Number(profile.TargetR),
-                ValidationPlan.MinimumSessions.ToString(CultureInfo.InvariantCulture),
-                ValidationPlan.MinimumDecidedSignals.ToString(CultureInfo.InvariantCulture),
+                Csv(dimension),
+                Csv(segment),
                 statistics.Total.ToString(CultureInfo.InvariantCulture),
                 statistics.Active.ToString(CultureInfo.InvariantCulture),
                 statistics.TargetHits.ToString(CultureInfo.InvariantCulture),
@@ -134,21 +142,53 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 Csv(currency),
                 Number(statistics.AverageWinnerRiskCurrency),
                 Number(statistics.AverageLoserRiskCurrency),
-                statistics.MaximumConsecutiveLosses.ToString(CultureInfo.InvariantCulture),
-                Number(statistics.MaximumDrawdownR),
-                Number(statistics.MaximumDrawdownCurrency),
-                Csv("No"));
+                Csv("No")));
+        }
+
+        private static List<TrackedSignal> Filter(
+            IEnumerable<TrackedSignal> signals,
+            DateTime day,
+            SignalSetup setup,
+            SignalDirection? direction,
+            int? hour,
+            string riskBand)
+        {
+            List<TrackedSignal> filtered = new List<TrackedSignal>();
+            foreach (TrackedSignal signal in signals)
+            {
+                if (signal.Signal.CreatedAt.Date != day.Date
+                    || signal.Signal.Setup != setup
+                    || (direction.HasValue && signal.Signal.Direction != direction.Value)
+                    || (hour.HasValue && signal.Signal.CreatedAt.Hour != hour.Value)
+                    || (riskBand != null && GetRiskBand(signal.Signal.RiskCurrency) != riskBand))
+                    continue;
+
+                filtered.Add(signal);
+            }
+
+            return filtered;
         }
 
         private string GetFilePath(DateTime day)
         {
             string fileName = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}_{1}_{2}_validation_v2.csv",
+                "{0}_{1}_{2}_segments_v1.csv",
                 day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 Sanitize(instrument),
                 Sanitize(barsPeriod));
             return Path.Combine(directory, fileName);
+        }
+
+        private static string GetRiskBand(double riskCurrency)
+        {
+            if (riskCurrency <= 25)
+                return "0-25";
+            if (riskCurrency <= 50)
+                return "25-50";
+            if (riskCurrency <= 75)
+                return "50-75";
+            return "75+";
         }
 
         private static string Csv(string value)

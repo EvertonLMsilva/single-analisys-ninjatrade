@@ -30,6 +30,7 @@ namespace NinjaTrader.NinjaScript.Indicators
         private Queue<string> visualSignalIds;
         private SignalAnalyzer signalAnalyzer;
         private CsvSignalJournal signalJournal;
+        private CsvValidationSegmentJournal validationSegmentJournal;
         private CsvValidationSummaryJournal validationSummaryJournal;
         private SignalTracker signalTracker;
         private bool validationConfigurationMatches;
@@ -115,6 +116,16 @@ namespace NinjaTrader.NinjaScript.Indicators
                             NinjaTrader.Core.Globals.UserDataDir,
                             "TradeAssistant",
                             "Summaries"),
+                        Bars.Instrument.FullName,
+                        barsPeriodDescription,
+                        TradeAssistantVersion.Current,
+                        instrumentCurrency,
+                        RiskRewardRatio);
+                    validationSegmentJournal = new CsvValidationSegmentJournal(
+                        System.IO.Path.Combine(
+                            NinjaTrader.Core.Globals.UserDataDir,
+                            "TradeAssistant",
+                            "Analysis"),
                         Bars.Instrument.FullName,
                         barsPeriodDescription,
                         TradeAssistantVersion.Current,
@@ -269,14 +280,22 @@ namespace NinjaTrader.NinjaScript.Indicators
             if (signalJournal == null)
                 return;
 
-            if (!signalJournal.Record(trackedSignal))
+            IList<TrackedSignal> signals = signalTracker.GetSignals();
+            if (!signalJournal.SynchronizeDay(signals, trackedSignal.Signal.CreatedAt.Date))
                 Print("Trade Assistant: não foi possível gravar o histórico CSV. " + signalJournal.LastError);
 
             if (validationSummaryJournal != null
-                && !validationSummaryJournal.Record(signalTracker.GetSignals()))
+                && !validationSummaryJournal.Record(signals))
             {
                 Print("Trade Assistant: não foi possível gravar o resumo diário. "
                     + validationSummaryJournal.LastError);
+            }
+
+            if (validationSegmentJournal != null
+                && !validationSegmentJournal.Record(signals))
+            {
+                Print("Trade Assistant: nao foi possivel gravar a analise segmentada. "
+                    + validationSegmentJournal.LastError);
             }
         }
 
@@ -377,7 +396,9 @@ namespace NinjaTrader.NinjaScript.Indicators
             bool journalOk = string.IsNullOrEmpty(signalJournal.LastError);
             bool summaryOk = validationSummaryJournal != null
                 && string.IsNullOrEmpty(validationSummaryJournal.LastError);
-            return journalOk && summaryOk ? "ATIVO" : "ERRO";
+            bool segmentOk = validationSegmentJournal != null
+                && string.IsNullOrEmpty(validationSegmentJournal.LastError);
+            return journalOk && summaryOk && segmentOk ? "ATIVO" : "ERRO";
         }
 
         private static string GetSetupText(SignalSetup setup)

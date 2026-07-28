@@ -5,10 +5,10 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Configuration
 {
     public static class ValidationPlan
     {
-        public const string RoundId = "forward-2026-07-v1";
+        public const string RoundId = "diagnostic-2026-07-v2";
         public const int MinimumSessions = 5;
         public const int MinimumDecidedSignals = 30;
-        public static readonly DateTime ForwardStartDate = new DateTime(2026, 7, 23);
+        public static readonly DateTime ForwardStartDate = new DateTime(2026, 7, 28);
 
         public static bool IsForwardSample(DateTime signalTime)
         {

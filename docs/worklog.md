@@ -243,3 +243,22 @@
 - código sincronizado com o repositório oficial e com a pasta `bin/Custom/TradeAssistant`;
 - mantida ausência total de ordens e acesso à conta;
 - validação visual no gráfico e confirmação dos primeiros CSVs v6/resumos permanecem como etapa manual.
+
+## 2026-07-28
+
+### Encerramento da rodada v1 e integridade dos logs
+
+- auditados os arquivos v6 de 23 a 28/07 e identificada diferença de cinco registros entre CSVs brutos e resumos atuais;
+- resultado dos perfis principais: MES -1R/-USD 52,50 e MNQ +2R/-USD 105,25, antes de custos;
+- rodada `forward-2026-07-v1` encerrada sem aprovação operacional;
+- criada versão `0.8.1-beta.1` e rodada diagnóstica `diagnostic-2026-07-v2`;
+- preservados os arquivos v6 e `validation_v1`;
+- criado CSV v7 com substituição do retrato diário para remover registros órfãos em reprocessamentos;
+- criado resumo `validation_v2`;
+- criada análise `segments_v1` por direção, hora e faixa de risco;
+- entradas, stops, alvos, validade e limite financeiro permaneceram inalterados;
+- adicionados testes de sincronização e segmentação;
+- testes do núcleo concluídos com sucesso;
+- código sincronizado com `bin/Custom/TradeAssistant`;
+- projeto `NinjaTrader.Custom` compilado pelo terminal com zero erros; os avisos pertencem ao conjunto geral de scripts instalado;
+- validação visual e confirmação dos novos arquivos no NinjaTrader permanecem como etapas manuais.

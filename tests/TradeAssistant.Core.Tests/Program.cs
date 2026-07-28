@@ -39,8 +39,8 @@ internal static class Program
         ValidationProfile mnqPullback = ValidationPlan.GetProfile("MNQ 09-26", SignalSetup.TrendPullback, 2);
         Assert(mnqPullback.Stage == ValidationStage.Observation, "MNQ pullback must remain under observation.");
         Assert(mnqPullback.RenderOnChart && mnqPullback.TargetR == 1.5, "MNQ pullback must render at 1.5R.");
-        Assert(!ValidationPlan.IsForwardSample(new DateTime(2026, 7, 22)), "Selection dates must remain historical reference.");
-        Assert(ValidationPlan.IsForwardSample(new DateTime(2026, 7, 23)), "Forward sample must start on July 23.");
+        Assert(!ValidationPlan.IsForwardSample(new DateTime(2026, 7, 27)), "Closed round dates must remain historical reference.");
+        Assert(ValidationPlan.IsForwardSample(new DateTime(2026, 7, 28)), "Diagnostic sample must start on July 28.");
     }
 
     private static void ValidateFrozenConfiguration()
@@ -91,26 +91,45 @@ internal static class Program
         try
         {
             CsvSignalJournal journal = new CsvSignalJournal(
-                dataDirectory, "MES 09-26", "Minute-5", "0.8.0-beta.1",
+                dataDirectory, "MES 09-26", "Minute-5", TradeAssistantVersion.Current,
                 9, 21, 14, 1.5, 0.1, 3, "USD", 75, "DescartarAcimaDoLimite");
             Assert(journal.Record(signal), "Raw CSV could not be written: " + journal.LastError);
 
-            string[] rawFiles = Directory.GetFiles(dataDirectory, "*_v6.csv");
-            Assert(rawFiles.Length == 1, "CSV v6 was not created.");
+            string[] rawFiles = Directory.GetFiles(dataDirectory, "*_v7.csv");
+            Assert(rawFiles.Length == 1, "CSV v7 was not created.");
             string raw = File.ReadAllText(rawFiles[0]);
             Assert(raw.Contains("ValidationRound,ValidationStage,ValidationTargetR,ValidationSample"), "CSV v6 validation columns are missing.");
             Assert(raw.Contains(ValidationPlan.RoundId + ",Candidate,1,HistoricalReference"), "CSV v6 profile was not recorded.");
 
+            TrackedSignal staleSignal = Tracked("stale", day.AddMinutes(5), 30, ComparisonStatus.StopHit);
+            Assert(journal.Record(staleSignal), "Stale test row could not be written: " + journal.LastError);
+            Assert(File.ReadAllLines(rawFiles[0]).Length == 3, "Stale test row was not added.");
+            Assert(
+                journal.SynchronizeDay(new List<TrackedSignal> { signal }, day),
+                "Daily snapshot could not be synchronized: " + journal.LastError);
+            Assert(File.ReadAllLines(rawFiles[0]).Length == 2, "Daily synchronization did not remove the stale row.");
+
             CsvValidationSummaryJournal summary = new CsvValidationSummaryJournal(
-                summaryDirectory, "MES 09-26", "Minute-5", "0.8.0-beta.1", "USD", 2);
+                summaryDirectory, "MES 09-26", "Minute-5", TradeAssistantVersion.Current, "USD", 2);
             Assert(summary.Record(new List<TrackedSignal> { signal }), "Summary CSV could not be written: " + summary.LastError);
 
-            string[] summaryFiles = Directory.GetFiles(summaryDirectory, "*_validation_v1.csv");
+            string[] summaryFiles = Directory.GetFiles(summaryDirectory, "*_validation_v2.csv");
             Assert(summaryFiles.Length == 1, "Daily summary was not created.");
             string summaryText = File.ReadAllText(summaryFiles[0]);
             Assert(summaryText.Contains("MaximumConsecutiveLosses,MaximumDrawdownR,MaximumDrawdownCurrency"), "Summary risk metrics are missing.");
             Assert(summaryText.Contains("HistoricalReference,No,EmaCrossBaseline"), "Historical summary must be ineligible.");
             Assert(summaryText.Contains("EmaCrossBaseline,Candidate,1"), "Candidate summary row is missing.");
+
+            string analysisDirectory = Path.Combine(directory, "Analysis");
+            CsvValidationSegmentJournal segments = new CsvValidationSegmentJournal(
+                analysisDirectory, "MES 09-26", "Minute-5", TradeAssistantVersion.Current, "USD", 2);
+            Assert(segments.Record(new List<TrackedSignal> { signal }), "Segment CSV could not be written: " + segments.LastError);
+            string[] segmentFiles = Directory.GetFiles(analysisDirectory, "*_segments_v1.csv");
+            Assert(segmentFiles.Length == 1, "Segment CSV was not created.");
+            string segmentText = File.ReadAllText(segmentFiles[0]);
+            Assert(segmentText.Contains("Direction,Long"), "Direction segment is missing.");
+            Assert(segmentText.Contains("Hour,09:00"), "Hour segment is missing.");
+            Assert(segmentText.Contains("RiskBand,0-25"), "Risk band segment is missing.");
         }
         finally
         {

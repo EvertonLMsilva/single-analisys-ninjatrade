@@ -46,6 +46,12 @@ O painel e o CSV identificam os resultados como hipotéticos. A entrada é presu
 
 O CSV v6 preserva os formatos anteriores e adiciona rodada, etapa, alvo selecionado, tolerância e intervalo do pullback. A chave estável inclui todos os parâmetros congelados. Um segundo arquivo em `TradeAssistant/Summaries` consolida cada dia e setup com resultados em R e moeda, riscos médios, sequência de stops e drawdown. Custos permanecem identificados como não incluídos.
 
+## Persistência v7 e diagnóstico
+
+O CSV v7 mantém as colunas do v6, mas grava cada dia como um retrato completo dos sinais existentes na execução atual. Durante uma recarga histórica, o arquivo do dia é substituído pelo conjunto atual, impedindo que sinais que deixaram de ser gerados permaneçam como registros órfãos.
+
+Os arquivos v6 não são alterados. O resumo `validation_v2` e a análise `segments_v1` também usam nomes novos. A análise segmentada agrupa cada setup por direção, hora do gráfico e faixa de risco financeiro (`0-25`, `25-50`, `50-75` e `75+`). Ela é diagnóstica, não altera a criação dos sinais e não representa aprovação operacional.
+
 ## Plano da versão 0.8
 
 `ValidationPlan` mantém a classificação por ativo e setup sem alterar o analisador. `ValidationStatisticsCalculator` calcula as métricas do alvo escolhido, e `CsvValidationSummaryJournal` grava o resumo diário. O sinal bruto continua acompanhando 1R, 1,5R e 2R em paralelo.

@@ -83,6 +83,49 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
             }
         }
 
+        public bool SynchronizeDay(IList<TrackedSignal> signals, DateTime day)
+        {
+            try
+            {
+                List<TrackedSignal> dailySignals = new List<TrackedSignal>();
+                foreach (TrackedSignal trackedSignal in signals)
+                {
+                    if (trackedSignal.Signal.CreatedAt.Date == day.Date)
+                        dailySignals.Add(trackedSignal);
+                }
+
+                dailySignals.Sort(delegate(TrackedSignal left, TrackedSignal right)
+                {
+                    return left.Signal.CreatedAt.CompareTo(right.Signal.CreatedAt);
+                });
+
+                List<string> lines = new List<string>();
+                lines.Add(Header);
+                foreach (TrackedSignal trackedSignal in dailySignals)
+                {
+                    string recordKey = BuildRecordKey(trackedSignal.Signal);
+                    lines.Add(BuildRow(recordKey, trackedSignal));
+                }
+
+                lock (FileLock)
+                {
+                    Directory.CreateDirectory(directory);
+                    File.WriteAllLines(
+                        GetFilePath(day),
+                        lines.ToArray(),
+                        new UTF8Encoding(true));
+                }
+
+                LastError = null;
+                return true;
+            }
+            catch (Exception exception)
+            {
+                LastError = exception.Message;
+                return false;
+            }
+        }
+
         public string GetDirectory()
         {
             return directory;
@@ -183,7 +226,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
         {
             string fileName = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}_{1}_{2}_v6.csv",
+                "{0}_{1}_{2}_v7.csv",
                 signalTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 Sanitize(instrument),
                 Sanitize(barsPeriod));
