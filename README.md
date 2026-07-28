@@ -123,4 +123,5 @@ Compilar `0.8.1-beta.1` no NinjaTrader, confirmar a criação dos arquivos v7, `
 - [Decisão de iniciar a validação prospectiva](docs/decisions/0003-start-forward-validation.md)
 - [Decisão de encerrar a primeira rodada e iniciar o diagnóstico](docs/decisions/0004-close-forward-round.md)
 - [Auditoria da primeira rodada prospectiva](docs/data-audits/2026-07-28-forward-v1-review.md)
+- [Redesenho da operação a partir dos logs v7](docs/data-audits/2026-07-28-v7-strategy-redesign.md)
 - [Histórico de versões](CHANGELOG.md)

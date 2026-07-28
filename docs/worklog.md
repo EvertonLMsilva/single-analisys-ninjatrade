@@ -264,3 +264,16 @@
 - implementação registrada no commit `99a4791`;
 - pull request aberto em `https://github.com/EvertonLMsilva/single-analisys-ninjatrade/pull/3`;
 - validação visual e confirmação dos novos arquivos no NinjaTrader permanecem como etapas manuais.
+
+### Redesenho da hipótese com todos os CSVs v7
+
+- consolidados 16 arquivos v7 e 504 registros entre 20 e 28/07;
+- confirmadas ausência de duplicações e consistência dos cálculos financeiros;
+- rejeitados como candidatos MES pullback, MNQ baseline e MNQ pullback misturando as duas direções;
+- identificado no MNQ pullback em 1R: compras em -12R/-USD 859,50 e vendas em +16R/+USD 528,00;
+- definida como hipótese candidata MNQ vendido, risco máximo de USD 50 e alvo de 1R;
+- candidato diagnóstico: 34 decisões, 24 alvos, 10 stops, +14R, +USD 428,00 e drawdown de USD 124,50;
+- resultado separado em +USD 306,50 antes de 26/07 e +USD 121,50 entre 26 e 28/07;
+- mantida a exigência de nova validação prospectiva porque a regra foi selecionada sobre a própria amostra;
+- auditoria registrada em `docs/data-audits/2026-07-28-v7-strategy-redesign.md`;
+- nenhuma regra do indicador foi alterada nesta etapa.
