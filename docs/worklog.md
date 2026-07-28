@@ -261,4 +261,6 @@
 - testes do núcleo concluídos com sucesso;
 - código sincronizado com `bin/Custom/TradeAssistant`;
 - projeto `NinjaTrader.Custom` compilado pelo terminal com zero erros; os avisos pertencem ao conjunto geral de scripts instalado;
+- implementação registrada no commit `99a4791`;
+- pull request aberto em `https://github.com/EvertonLMsilva/single-analisys-ninjatrade/pull/3`;
 - validação visual e confirmação dos novos arquivos no NinjaTrader permanecem como etapas manuais.
