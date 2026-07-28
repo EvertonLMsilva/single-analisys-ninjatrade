@@ -49,6 +49,13 @@ Esses parâmetros também acompanham cada linha do CSV quando se aplicam ao cál
 23. na versão 0.8.1, confirmar a criação do CSV bruto `v7`, do resumo `validation_v2` e da análise `segments_v1`;
 24. recarregar o gráfico e confirmar que a quantidade total do CSV v7 coincide com o resumo do mesmo dia e setup;
 25. confirmar que `TradeAssistant/Analysis` contém segmentos por `Direction`, `Hour` e `RiskBand`;
+26. na versão 0.9, confirmar a versão `0.9.0-beta.1` e a rodada `context-2026-07-v3`;
+27. confirmar risco máximo de USD 50 e alvo visual de 1R;
+28. confirmar que somente `ContextPullback` é desenhado e que `TrendPullback` permanece no CSV como referência;
+29. confirmar no CSV v8 os campos de VWAP, inclinação, estrutura da sessão, candle, volume e score;
+30. confirmar a criação de `validation_v3` e `segments_v2`;
+31. comparar uma compra aprovada com o gráfico e verificar preço acima da VWAP, VWAP ascendente, EMAs ascendentes, candle forte e distância máxima de 1,25 ATR;
+32. repetir a verificação de forma simétrica para uma venda;
 23. confirmar a criação do resumo em `TradeAssistant/Summaries`;
 24. alterar temporariamente um parâmetro e confirmar o aviso de configuração divergente e o bloqueio de novos sinais; depois restaurar o valor congelado.
 

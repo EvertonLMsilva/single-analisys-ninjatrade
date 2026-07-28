@@ -5,10 +5,12 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Configuration
 {
     public static class ValidationPlan
     {
-        public const string RoundId = "diagnostic-2026-07-v2";
+        public const string RoundId = "context-2026-07-v3";
+        public const int EmaSlopeLookbackBars = 3;
+        public const int VolumeAveragePeriod = 20;
         public const int MinimumSessions = 5;
         public const int MinimumDecidedSignals = 30;
-        public static readonly DateTime ForwardStartDate = new DateTime(2026, 7, 28);
+        public static readonly DateTime ForwardStartDate = new DateTime(2026, 7, 29);
 
         public static bool IsForwardSample(DateTime signalTime)
         {
@@ -29,30 +31,28 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Configuration
 
             if (masterInstrument == "MES")
             {
-                if (setup == SignalSetup.EmaCrossBaseline)
-                    return new ValidationProfile(setup, ValidationStage.Candidate, 1.0, true);
-
-                return new ValidationProfile(setup, ValidationStage.Paused, 1.0, false);
-            }
-
-            if (masterInstrument == "MNQ")
-            {
-                if (setup == SignalSetup.TrendPullback)
-                    return new ValidationProfile(setup, ValidationStage.Observation, 1.5, true);
+                if (setup == SignalSetup.ContextPullback)
+                    return new ValidationProfile(setup, ValidationStage.Observation, 1.0, true);
 
                 return new ValidationProfile(setup, ValidationStage.Reference, 1.0, false);
             }
 
-            return setup == SignalSetup.TrendPullback
-                ? new ValidationProfile(setup, ValidationStage.Observation, configuredTargetR, true)
+            if (masterInstrument == "MNQ")
+            {
+                if (setup == SignalSetup.ContextPullback)
+                    return new ValidationProfile(setup, ValidationStage.Candidate, 1.0, true);
+
+                return new ValidationProfile(setup, ValidationStage.Reference, 1.0, false);
+            }
+
+            return setup == SignalSetup.ContextPullback
+                ? new ValidationProfile(setup, ValidationStage.Observation, 1.0, true)
                 : new ValidationProfile(setup, ValidationStage.Reference, 1.0, false);
         }
 
         public static ValidationProfile GetPrimaryProfile(string instrument, double configuredTargetR)
         {
-            return GetMasterInstrument(instrument) == "MES"
-                ? GetProfile(instrument, SignalSetup.EmaCrossBaseline, configuredTargetR)
-                : GetProfile(instrument, SignalSetup.TrendPullback, configuredTargetR);
+            return GetProfile(instrument, SignalSetup.ContextPullback, configuredTargetR);
         }
 
         public static bool MatchesFrozenConfiguration(
@@ -75,7 +75,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Configuration
                 && NearlyEqual(stopAtrMultiplier, 1.5)
                 && NearlyEqual(configuredTargetR, 2.0)
                 && validForBars == 3
-                && NearlyEqual(maximumRiskPerContract, 75.0)
+                && NearlyEqual(maximumRiskPerContract, 50.0)
                 && riskLimitMode == RiskLimitMode.DescartarAcimaDoLimite;
         }
 

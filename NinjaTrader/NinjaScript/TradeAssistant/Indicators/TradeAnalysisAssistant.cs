@@ -19,13 +19,21 @@ namespace NinjaTrader.NinjaScript.Indicators
     public class TradeAnalysisAssistant : Indicator
     {
         private ATR atr;
+        private double cumulativeSessionPriceVolume;
+        private double cumulativeSessionVolume;
         private EMA fastEma;
         private string instrumentCurrency;
         private double instrumentPointValue;
         private double instrumentTickSize;
         private int lastLongPullbackBar;
         private int lastShortPullbackBar;
+        private MarketContextAnalyzer marketContextAnalyzer;
+        private double previousSessionVwap;
+        private double sessionHigh;
+        private double sessionLow;
+        private double sessionVwap;
         private EMA slowEma;
+        private SMA volumeAverage;
         private HashSet<string> visibleSignalIds;
         private Queue<string> visualSignalIds;
         private SignalAnalyzer signalAnalyzer;
@@ -64,7 +72,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                 ZoneOpacity = 14;
                 EnableCsvJournal = true;
                 EnableValidationMode = true;
-                MaximumRiskPerContract = 75;
+                MaximumRiskPerContract = 50;
                 RiskLimitPolicy = RiskLimitMode.DescartarAcimaDoLimite;
             }
             else if (State == State.DataLoaded)
@@ -72,10 +80,12 @@ namespace NinjaTrader.NinjaScript.Indicators
                 fastEma = EMA(FastEmaPeriod);
                 slowEma = EMA(SlowEmaPeriod);
                 atr = ATR(AtrPeriod);
+                volumeAverage = SMA(Volume, ValidationPlan.VolumeAveragePeriod);
                 instrumentCurrency = GetCurrencyCode(Bars.Instrument.MasterInstrument.Currency.ToString());
                 instrumentPointValue = Bars.Instrument.MasterInstrument.PointValue;
                 instrumentTickSize = Bars.Instrument.MasterInstrument.TickSize;
                 signalAnalyzer = new SignalAnalyzer();
+                marketContextAnalyzer = new MarketContextAnalyzer();
                 signalTracker = new SignalTracker();
                 validationConfigurationMatches = ValidationPlan.MatchesFrozenConfiguration(
                     FastEmaPeriod,
@@ -139,7 +149,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         protected override void OnBarUpdate()
         {
-            int requiredBars = Math.Max(SlowEmaPeriod, AtrPeriod) + 1;
+            UpdateSessionContext();
+
+            int requiredBars = Math.Max(
+                Math.Max(SlowEmaPeriod, AtrPeriod),
+                ValidationPlan.VolumeAveragePeriod) + ValidationPlan.EmaSlopeLookbackBars;
             if (CurrentBar < requiredBars)
                 return;
 
@@ -160,7 +174,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         private void EvaluatePullbackSetup()
         {
-            if (!EnablePullbackSignals || signalTracker.HasActiveSignal(SignalSetup.TrendPullback))
+            bool baselineActive = signalTracker.HasActiveSignal(SignalSetup.TrendPullback);
+            bool contextActive = signalTracker.HasActiveSignal(SignalSetup.ContextPullback);
+            if (!EnablePullbackSignals || (baselineActive && contextActive))
                 return;
 
             double tolerance = atr[0] * PullbackToleranceAtr;
@@ -177,16 +193,11 @@ namespace NinjaTrader.NinjaScript.Indicators
                 && CurrentBar - lastLongPullbackBar >= PullbackCooldownBars)
             {
                 lastLongPullbackBar = CurrentBar;
-                RegisterAndRenderSignal(signalAnalyzer.CreatePullback(
+                RegisterPullbackCandidates(
                     SignalDirection.Long,
-                    Close[0],
                     Low[0] - instrumentTickSize,
-                    RiskRewardRatio,
-                    instrumentTickSize,
-                    instrumentPointValue,
-                    Time[0],
-                    ValidForBars),
-                    ShouldRenderSetup(SignalSetup.TrendPullback));
+                    baselineActive,
+                    contextActive);
                 return;
             }
 
@@ -203,17 +214,111 @@ namespace NinjaTrader.NinjaScript.Indicators
                 && CurrentBar - lastShortPullbackBar >= PullbackCooldownBars)
             {
                 lastShortPullbackBar = CurrentBar;
-                RegisterAndRenderSignal(signalAnalyzer.CreatePullback(
+                RegisterPullbackCandidates(
                     SignalDirection.Short,
-                    Close[0],
                     High[0] + instrumentTickSize,
-                    RiskRewardRatio,
-                    instrumentTickSize,
-                    instrumentPointValue,
-                    Time[0],
-                    ValidForBars),
+                    baselineActive,
+                    contextActive);
+            }
+        }
+
+        private void RegisterPullbackCandidates(
+            SignalDirection direction,
+            double technicalStopPrice,
+            bool baselineActive,
+            bool contextActive)
+        {
+            SignalContext context = BuildSignalContext(direction);
+
+            if (!baselineActive)
+            {
+                RegisterAndRenderSignal(
+                    signalAnalyzer.CreatePullback(
+                        SignalSetup.TrendPullback,
+                        direction,
+                        Close[0],
+                        technicalStopPrice,
+                        RiskRewardRatio,
+                        instrumentTickSize,
+                        instrumentPointValue,
+                        Time[0],
+                        ValidForBars,
+                        context),
                     ShouldRenderSetup(SignalSetup.TrendPullback));
             }
+
+            if (context.Passed && !contextActive)
+            {
+                RegisterAndRenderSignal(
+                    signalAnalyzer.CreatePullback(
+                        SignalSetup.ContextPullback,
+                        direction,
+                        Close[0],
+                        technicalStopPrice,
+                        RiskRewardRatio,
+                        instrumentTickSize,
+                        instrumentPointValue,
+                        Time[0],
+                        ValidForBars,
+                        context),
+                    ShouldRenderSetup(SignalSetup.ContextPullback));
+            }
+        }
+
+        private SignalContext BuildSignalContext(SignalDirection direction)
+        {
+            double normalizedAtr = atr[0] > 0 ? atr[0] : instrumentTickSize;
+            int slopeLookback = ValidationPlan.EmaSlopeLookbackBars;
+            double fastSlopeAtr = (fastEma[0] - fastEma[slopeLookback]) / normalizedAtr;
+            double slowSlopeAtr = (slowEma[0] - slowEma[slopeLookback]) / normalizedAtr;
+            double candleRange = High[0] - Low[0];
+            double closeLocation = candleRange > 0
+                ? (Close[0] - Low[0]) / candleRange
+                : 0.5;
+            double candleBodyAtr = Math.Abs(Close[0] - Open[0]) / normalizedAtr;
+            double averageVolume = volumeAverage[0];
+            double relativeVolume = averageVolume > 0 ? Volume[0] / averageVolume : 0;
+
+            return marketContextAnalyzer.Analyze(
+                direction,
+                Close[0],
+                sessionVwap,
+                previousSessionVwap,
+                fastSlopeAtr,
+                slowSlopeAtr,
+                sessionHigh,
+                sessionLow,
+                candleBodyAtr,
+                closeLocation,
+                relativeVolume,
+                normalizedAtr);
+        }
+
+        private void UpdateSessionContext()
+        {
+            double typicalPrice = (High[0] + Low[0] + Close[0]) / 3.0;
+            double barVolume = Math.Max(0, Volume[0]);
+
+            if (Bars.IsFirstBarOfSession || cumulativeSessionVolume <= 0)
+            {
+                cumulativeSessionPriceVolume = 0;
+                cumulativeSessionVolume = 0;
+                sessionHigh = High[0];
+                sessionLow = Low[0];
+                previousSessionVwap = typicalPrice;
+                sessionVwap = typicalPrice;
+            }
+            else
+            {
+                previousSessionVwap = sessionVwap;
+                sessionHigh = Math.Max(sessionHigh, High[0]);
+                sessionLow = Math.Min(sessionLow, Low[0]);
+            }
+
+            cumulativeSessionPriceVolume += typicalPrice * barVolume;
+            cumulativeSessionVolume += barVolume;
+            if (cumulativeSessionVolume > 0)
+                sessionVwap = cumulativeSessionPriceVolume / cumulativeSessionVolume;
         }
 
         private void EvaluateBaselineSetup()
@@ -331,7 +436,8 @@ namespace NinjaTrader.NinjaScript.Indicators
                     : "DIVERGENTE - NOVOS SINAIS BLOQUEADOS";
             string sampleStatus = ValidationPlan.IsForwardSample(Time[0])
                 ? "AMOSTRA PROSPECTIVA"
-                : "REFERÊNCIA HISTÓRICA - REVISÃO INICIA 23/07";
+                : "REFERÊNCIA HISTÓRICA - REVISÃO INICIA "
+                    + ValidationPlan.ForwardStartDate.ToString("dd/MM");
             string signalDetails = lastSignal == null
                 ? "Nenhum sinal registrado"
                 : string.Format(
@@ -350,6 +456,16 @@ namespace NinjaTrader.NinjaScript.Indicators
                     GetComparisonStatusText(lastSignal.TargetOnePointFiveRStatus),
                     GetComparisonStatusText(lastSignal.TargetTwoRStatus),
                     GetFirstEventText(lastSignal.FirstEvent));
+            if (lastSignal != null && lastSignal.Signal.Setup == SignalSetup.ContextPullback)
+            {
+                signalDetails += string.Format(
+                    "\nContexto: {0}/6 | VWAP {1} | Dist. {2:N2} ATR | Vol. {3:N2}x\n{4}",
+                    lastSignal.Signal.Context.Score,
+                    FormatPrice(lastSignal.Signal.Context.SessionVwap),
+                    lastSignal.Signal.Context.VwapDistanceAtr,
+                    lastSignal.Signal.Context.RelativeVolume,
+                    lastSignal.Signal.Context.Summary);
+            }
             string panelText = string.Format(
                 "TRADE ASSISTANT v" + TradeAssistantVersion.Current + " | RESULTADO HIPOTÉTICO | SEM ORDENS\nRodada: " + ValidationPlan.RoundId + " | {21}\nSetup: {12} | Etapa: {13} | Alvo: {14:N1}R\nConfiguração: {15}\nStatus: {0}\nHistórico e resumo: {11}\n\n{1}\n\nHoje: {2} sinais | {3} ativos | {16} decididos\nAlvos: {4} | Stops: {5}\nExpirados: {6} | Ambíguos: {7}\nDescartados por risco: {10}\nAcerto: {8:N1}% | Resultado: {9:+0.00;-0.00;0.00} R | {17}\nSequência máx. de stops: {18} | Drawdown: {19:N2} R / {20}",
                 currentStatus,
@@ -403,9 +519,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         private static string GetSetupText(SignalSetup setup)
         {
-            return setup == SignalSetup.EmaCrossBaseline
-                ? "CRUZAMENTO EMA"
-                : "PULLBACK";
+            if (setup == SignalSetup.EmaCrossBaseline)
+                return "CRUZAMENTO EMA";
+            if (setup == SignalSetup.ContextPullback)
+                return "PULLBACK CONTEXTUAL";
+            return "PULLBACK BASE";
         }
 
         private static string GetValidationStageText(ValidationStage stage)
@@ -646,7 +764,10 @@ namespace NinjaTrader.NinjaScript.Indicators
             Draw.Line(this, tagPrefix + ".Stop", false, 0, signal.StopPrice, -signal.ValidForBars, signal.StopPrice, Brushes.IndianRed, DashStyleHelper.Dash, 2);
             Draw.Line(this, tagPrefix + ".Target", false, 0, validationTargetPrice, -signal.ValidForBars, validationTargetPrice, Brushes.MediumSeaGreen, DashStyleHelper.Dash, 2);
 
-            Draw.Text(this, tagPrefix + ".EntryLabel", "ENTRADA " + FormatPrice(signal.EntryPrice), -signal.ValidForBars, signal.EntryPrice, Brushes.DodgerBlue);
+            string entryLabel = "ENTRADA " + FormatPrice(signal.EntryPrice);
+            if (signal.Setup == SignalSetup.ContextPullback)
+                entryLabel += " | CONTEXTO " + signal.Context.Score + "/6";
+            Draw.Text(this, tagPrefix + ".EntryLabel", entryLabel, -signal.ValidForBars, signal.EntryPrice, Brushes.DodgerBlue);
             Draw.Text(this, tagPrefix + ".StopLabel", "STOP " + FormatPrice(signal.StopPrice), -signal.ValidForBars, signal.StopPrice, Brushes.IndianRed);
             Draw.Text(this, tagPrefix + ".TargetLabel", "ALVO " + profile.TargetR.ToString("N1") + "R " + FormatPrice(validationTargetPrice), -signal.ValidForBars, validationTargetPrice, Brushes.MediumSeaGreen);
         }

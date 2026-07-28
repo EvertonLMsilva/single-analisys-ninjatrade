@@ -69,7 +69,12 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
             List<string> lines = new List<string>();
             lines.Add(Header);
 
-            foreach (SignalSetup setup in new[] { SignalSetup.EmaCrossBaseline, SignalSetup.TrendPullback })
+            foreach (SignalSetup setup in new[]
+            {
+                SignalSetup.EmaCrossBaseline,
+                SignalSetup.TrendPullback,
+                SignalSetup.ContextPullback
+            })
             {
                 List<TrackedSignal> setupSignals = Filter(signals, day, setup, null, null, null);
                 if (setupSignals.Count == 0)
@@ -92,6 +97,14 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 foreach (string riskBand in new[] { "0-25", "25-50", "50-75", "75+" })
                     AddSegment(lines, day, profile, "RiskBand", riskBand,
                         Filter(signals, day, setup, null, null, riskBand));
+
+                SortedSet<int> contextScores = new SortedSet<int>();
+                foreach (TrackedSignal signal in setupSignals)
+                    contextScores.Add(signal.Signal.Context.Score);
+                foreach (int contextScore in contextScores)
+                    AddSegment(lines, day, profile, "ContextScore",
+                        contextScore.ToString(CultureInfo.InvariantCulture),
+                        FilterByContextScore(setupSignals, contextScore));
             }
 
             File.WriteAllLines(GetFilePath(day), lines.ToArray(), new UTF8Encoding(true));
@@ -169,11 +182,25 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
             return filtered;
         }
 
+        private static List<TrackedSignal> FilterByContextScore(
+            IEnumerable<TrackedSignal> signals,
+            int contextScore)
+        {
+            List<TrackedSignal> filtered = new List<TrackedSignal>();
+            foreach (TrackedSignal signal in signals)
+            {
+                if (signal.Signal.Context.Score == contextScore)
+                    filtered.Add(signal);
+            }
+
+            return filtered;
+        }
+
         private string GetFilePath(DateTime day)
         {
             string fileName = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}_{1}_{2}_segments_v1.csv",
+                "{0}_{1}_{2}_segments_v2.csv",
                 day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 Sanitize(instrument),
                 Sanitize(barsPeriod));

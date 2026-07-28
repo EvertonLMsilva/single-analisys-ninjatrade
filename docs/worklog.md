@@ -277,3 +277,22 @@
 - mantida a exigência de nova validação prospectiva porque a regra foi selecionada sobre a própria amostra;
 - auditoria registrada em `docs/data-audits/2026-07-28-v7-strategy-redesign.md`;
 - nenhuma regra do indicador foi alterada nesta etapa.
+
+### Implementação do pullback contextual 0.9
+
+- identificado que a regra anterior usava apenas relação e inclinação imediata das EMAs, toque na EMA rápida e cor do candle;
+- criado `ContextPullback` com critérios simétricos de compra e venda;
+- adicionada VWAP aproximada por sessão, reiniciada pelo template de horário do gráfico;
+- adicionados inclinação da VWAP, inclinação de três candles das EMAs, corpo/localização do candle, distância em ATR e volume relativo;
+- definido score mínimo de 5/6, com lado da VWAP, inclinação, EMAs, candle e extensão obrigatórios;
+- mantido `TrendPullback` invisível como referência;
+- risco máximo reduzido para USD 50 e alvo de validação definido em 1R;
+- criado CSV v8, resumo `validation_v3` e segmentos `segments_v2`;
+- painel passa a mostrar VWAP, distância, volume e justificativa do contexto;
+- rodada `context-2026-07-v3` definida para iniciar em 29/07;
+- decisão registrada em `docs/decisions/0005-test-context-pullback.md`;
+- nenhuma execução automática ou acesso à conta foi adicionado.
+- testes do núcleo concluídos com sucesso, incluindo contextos comprador e vendedor;
+- código sincronizado com `bin/Custom/TradeAssistant` e conferido por hash;
+- projeto `NinjaTrader.Custom` compilado pelo terminal com zero erros;
+- validação visual, F5 e confirmação dos primeiros arquivos v8 permanecem como etapas manuais.

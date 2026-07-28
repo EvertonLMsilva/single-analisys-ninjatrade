@@ -1,5 +1,19 @@
 # Histórico de versões
 
+## 0.9.0-beta.1 — 2026-07-28
+
+- criada a rodada `context-2026-07-v3`, com início prospectivo em 29/07;
+- adicionada regra experimental `ContextPullback`, sem remover o pullback anterior usado como referência;
+- criada VWAP aproximada de sessão com preço típico e volume dos candles, reiniciada conforme o template de horário do gráfico;
+- contexto passa a avaliar lado e inclinação da VWAP, inclinação das EMAs, força do candle, extensão em ATR e volume relativo;
+- compras e vendas usam critérios simétricos e precisam atingir pelo menos 5 de 6 confirmações, além dos critérios obrigatórios;
+- máximo de risco reduzido de USD 75 para USD 50 por contrato;
+- alvo visual e de validação do novo setup definido em 1R;
+- painel passa a mostrar score, VWAP, distância em ATR e volume relativo;
+- criado CSV v8 com os valores completos do contexto;
+- criados resumo `validation_v3` e segmentos `segments_v2`, incluindo agrupamento por score;
+- mantida ausência total de execução automática e acesso à conta.
+
 ## 0.8.1-beta.1 — 2026-07-28
 
 - encerrada sem aprovação operacional a rodada `forward-2026-07-v1`;

@@ -15,6 +15,7 @@ internal static class Program
         {
             ValidateProfiles();
             ValidateFrozenConfiguration();
+            ValidateMarketContext();
             ValidateStatistics();
             ValidateCsvOutputs();
             Console.WriteLine("All Trade Assistant core tests passed.");
@@ -30,27 +31,82 @@ internal static class Program
     private static void ValidateProfiles()
     {
         ValidationProfile mesBaseline = ValidationPlan.GetProfile("MES 09-26", SignalSetup.EmaCrossBaseline, 2);
-        Assert(mesBaseline.Stage == ValidationStage.Candidate, "MES baseline must be the candidate.");
-        Assert(mesBaseline.RenderOnChart && mesBaseline.TargetR == 1, "MES baseline must render at 1R.");
+        Assert(mesBaseline.Stage == ValidationStage.Reference && !mesBaseline.RenderOnChart, "MES baseline must be a hidden reference.");
 
         ValidationProfile mesPullback = ValidationPlan.GetProfile("MES 09-26", SignalSetup.TrendPullback, 2);
-        Assert(mesPullback.Stage == ValidationStage.Paused && !mesPullback.RenderOnChart, "MES pullback must stay hidden.");
+        Assert(mesPullback.Stage == ValidationStage.Reference && !mesPullback.RenderOnChart, "MES pullback must stay hidden.");
+
+        ValidationProfile mesContext = ValidationPlan.GetProfile("MES 09-26", SignalSetup.ContextPullback, 2);
+        Assert(mesContext.Stage == ValidationStage.Observation, "MES context must remain under observation.");
+        Assert(mesContext.RenderOnChart && mesContext.TargetR == 1, "MES context must render at 1R.");
 
         ValidationProfile mnqPullback = ValidationPlan.GetProfile("MNQ 09-26", SignalSetup.TrendPullback, 2);
-        Assert(mnqPullback.Stage == ValidationStage.Observation, "MNQ pullback must remain under observation.");
-        Assert(mnqPullback.RenderOnChart && mnqPullback.TargetR == 1.5, "MNQ pullback must render at 1.5R.");
-        Assert(!ValidationPlan.IsForwardSample(new DateTime(2026, 7, 27)), "Closed round dates must remain historical reference.");
-        Assert(ValidationPlan.IsForwardSample(new DateTime(2026, 7, 28)), "Diagnostic sample must start on July 28.");
+        Assert(mnqPullback.Stage == ValidationStage.Reference && !mnqPullback.RenderOnChart, "MNQ pullback must be a hidden reference.");
+
+        ValidationProfile mnqContext = ValidationPlan.GetProfile("MNQ 09-26", SignalSetup.ContextPullback, 2);
+        Assert(mnqContext.Stage == ValidationStage.Candidate, "MNQ context must be the candidate.");
+        Assert(mnqContext.RenderOnChart && mnqContext.TargetR == 1, "MNQ context must render at 1R.");
+        Assert(!ValidationPlan.IsForwardSample(new DateTime(2026, 7, 28)), "Discovery dates must remain historical reference.");
+        Assert(ValidationPlan.IsForwardSample(new DateTime(2026, 7, 29)), "Context sample must start on July 29.");
     }
 
     private static void ValidateFrozenConfiguration()
     {
         Assert(
-            ValidationPlan.MatchesFrozenConfiguration(9, 21, 14, 0.1, 3, 1.5, 2, 3, 75, RiskLimitMode.DescartarAcimaDoLimite),
+            ValidationPlan.MatchesFrozenConfiguration(9, 21, 14, 0.1, 3, 1.5, 2, 3, 50, RiskLimitMode.DescartarAcimaDoLimite),
             "Default validation settings must be accepted.");
         Assert(
-            !ValidationPlan.MatchesFrozenConfiguration(10, 21, 14, 0.1, 3, 1.5, 2, 3, 75, RiskLimitMode.DescartarAcimaDoLimite),
+            !ValidationPlan.MatchesFrozenConfiguration(10, 21, 14, 0.1, 3, 1.5, 2, 3, 50, RiskLimitMode.DescartarAcimaDoLimite),
             "Changed EMA must be rejected by the frozen round.");
+    }
+
+    private static void ValidateMarketContext()
+    {
+        MarketContextAnalyzer analyzer = new MarketContextAnalyzer();
+        SignalContext approvedLong = analyzer.Analyze(
+            SignalDirection.Long,
+            101,
+            100,
+            99.9,
+            0.3,
+            0.1,
+            102,
+            98,
+            0.4,
+            0.8,
+            1.1,
+            1);
+        Assert(approvedLong.Passed && approvedLong.Score == 6, "Aligned long context must pass.");
+
+        SignalContext rejectedLong = analyzer.Analyze(
+            SignalDirection.Long,
+            99.5,
+            100,
+            100.1,
+            0.3,
+            0.1,
+            102,
+            98,
+            0.1,
+            0.5,
+            0.5,
+            1);
+        Assert(!rejectedLong.Passed && rejectedLong.Score < MarketContextAnalyzer.MinimumScore, "Weak long context must fail.");
+
+        SignalContext approvedShort = analyzer.Analyze(
+            SignalDirection.Short,
+            99,
+            100,
+            100.1,
+            -0.3,
+            -0.1,
+            102,
+            98,
+            0.4,
+            0.2,
+            1.1,
+            1);
+        Assert(approvedShort.Passed && approvedShort.Score == 6, "Aligned short context must pass.");
     }
 
     private static void ValidateStatistics()
@@ -92,14 +148,15 @@ internal static class Program
         {
             CsvSignalJournal journal = new CsvSignalJournal(
                 dataDirectory, "MES 09-26", "Minute-5", TradeAssistantVersion.Current,
-                9, 21, 14, 1.5, 0.1, 3, "USD", 75, "DescartarAcimaDoLimite");
+                9, 21, 14, 1.5, 0.1, 3, "USD", 50, "DescartarAcimaDoLimite");
             Assert(journal.Record(signal), "Raw CSV could not be written: " + journal.LastError);
 
-            string[] rawFiles = Directory.GetFiles(dataDirectory, "*_v7.csv");
-            Assert(rawFiles.Length == 1, "CSV v7 was not created.");
+            string[] rawFiles = Directory.GetFiles(dataDirectory, "*_v8.csv");
+            Assert(rawFiles.Length == 1, "CSV v8 was not created.");
             string raw = File.ReadAllText(rawFiles[0]);
-            Assert(raw.Contains("ValidationRound,ValidationStage,ValidationTargetR,ValidationSample"), "CSV v6 validation columns are missing.");
-            Assert(raw.Contains(ValidationPlan.RoundId + ",Candidate,1,HistoricalReference"), "CSV v6 profile was not recorded.");
+            Assert(raw.Contains("ValidationRound,ValidationStage,ValidationTargetR,ValidationSample"), "CSV v8 validation columns are missing.");
+            Assert(raw.Contains("SessionVwap,VwapSlopeAtr,VwapDistanceAtr"), "CSV v8 context columns are missing.");
+            Assert(raw.Contains(ValidationPlan.RoundId + ",Reference,1,HistoricalReference"), "CSV v8 profile was not recorded.");
 
             TrackedSignal staleSignal = Tracked("stale", day.AddMinutes(5), 30, ComparisonStatus.StopHit);
             Assert(journal.Record(staleSignal), "Stale test row could not be written: " + journal.LastError);
@@ -113,23 +170,24 @@ internal static class Program
                 summaryDirectory, "MES 09-26", "Minute-5", TradeAssistantVersion.Current, "USD", 2);
             Assert(summary.Record(new List<TrackedSignal> { signal }), "Summary CSV could not be written: " + summary.LastError);
 
-            string[] summaryFiles = Directory.GetFiles(summaryDirectory, "*_validation_v2.csv");
+            string[] summaryFiles = Directory.GetFiles(summaryDirectory, "*_validation_v3.csv");
             Assert(summaryFiles.Length == 1, "Daily summary was not created.");
             string summaryText = File.ReadAllText(summaryFiles[0]);
             Assert(summaryText.Contains("MaximumConsecutiveLosses,MaximumDrawdownR,MaximumDrawdownCurrency"), "Summary risk metrics are missing.");
             Assert(summaryText.Contains("HistoricalReference,No,EmaCrossBaseline"), "Historical summary must be ineligible.");
-            Assert(summaryText.Contains("EmaCrossBaseline,Candidate,1"), "Candidate summary row is missing.");
+            Assert(summaryText.Contains("EmaCrossBaseline,Reference,1"), "Reference summary row is missing.");
 
             string analysisDirectory = Path.Combine(directory, "Analysis");
             CsvValidationSegmentJournal segments = new CsvValidationSegmentJournal(
                 analysisDirectory, "MES 09-26", "Minute-5", TradeAssistantVersion.Current, "USD", 2);
             Assert(segments.Record(new List<TrackedSignal> { signal }), "Segment CSV could not be written: " + segments.LastError);
-            string[] segmentFiles = Directory.GetFiles(analysisDirectory, "*_segments_v1.csv");
+            string[] segmentFiles = Directory.GetFiles(analysisDirectory, "*_segments_v2.csv");
             Assert(segmentFiles.Length == 1, "Segment CSV was not created.");
             string segmentText = File.ReadAllText(segmentFiles[0]);
             Assert(segmentText.Contains("Direction,Long"), "Direction segment is missing.");
             Assert(segmentText.Contains("Hour,09:00"), "Hour segment is missing.");
             Assert(segmentText.Contains("RiskBand,0-25"), "Risk band segment is missing.");
+            Assert(segmentText.Contains("ContextScore,0"), "Context score segment is missing.");
         }
         finally
         {

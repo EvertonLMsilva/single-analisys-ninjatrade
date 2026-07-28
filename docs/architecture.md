@@ -52,6 +52,14 @@ O CSV v7 mantém as colunas do v6, mas grava cada dia como um retrato completo d
 
 Os arquivos v6 não são alterados. O resumo `validation_v2` e a análise `segments_v1` também usam nomes novos. A análise segmentada agrupa cada setup por direção, hora do gráfico e faixa de risco financeiro (`0-25`, `25-50`, `50-75` e `75+`). Ela é diagnóstica, não altera a criação dos sinais e não representa aprovação operacional.
 
+## Contexto da versão 0.9
+
+`ContextPullback` começa pelo mesmo candidato de pullback do setup anterior, mas exige contexto adicional. A VWAP é calculada por sessão com preço típico dos candles ponderado por volume e reiniciada no primeiro candle do template de horário configurado no gráfico. É uma aproximação por candle, não a implementação tick a tick do Order Flow VWAP.
+
+O contexto registra e pontua seis componentes: lado da VWAP, inclinação da VWAP, inclinação das EMAs, qualidade do candle, distância máxima da VWAP e volume relativo. Lado da VWAP, inclinação, EMAs, candle e extensão são obrigatórios; o score mínimo é 5 de 6. As condições são invertidas de forma simétrica entre compra e venda.
+
+O pullback-base continua sendo acompanhado sem desenho para permitir comparação direta. O CSV v8 grava VWAP, inclinações normalizadas por ATR, máxima e mínima da sessão, corpo e localização do fechamento do candle, volume relativo, score, aprovação e justificativa. O resumo `validation_v3` e os segmentos `segments_v2` preservam os formatos anteriores e acrescentam agrupamento por score.
+
 ## Plano da versão 0.8
 
 `ValidationPlan` mantém a classificação por ativo e setup sem alterar o analisador. `ValidationStatisticsCalculator` calcula as métricas do alvo escolhido, e `CsvValidationSummaryJournal` grava o resumo diário. O sinal bruto continua acompanhando 1R, 1,5R e 2R em paralelo.
