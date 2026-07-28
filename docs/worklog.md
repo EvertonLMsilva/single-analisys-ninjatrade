@@ -298,3 +298,13 @@
 - implementação registrada no commit `a06060e`;
 - pull request aberto em `https://github.com/EvertonLMsilva/single-analisys-ninjatrade/pull/4`;
 - validação visual, F5 e confirmação dos primeiros arquivos v8 permanecem como etapas manuais.
+
+### Correção do cache de compilação do NinjaTrader
+
+- analisado o arquivo `hoje.csv`, contendo 62 erros `CS0579`;
+- identificados 56 erros em arquivos `.resources.cs` gerados para oito idiomas e seis erros refletidos em `AssemblyInfo.cs`;
+- confirmada ausência de erro no código do indicador;
+- executada a limpeza do projeto `NinjaTrader.Custom`, removendo somente artefatos gerados em `bin/Debug` e `obj/Debug`;
+- confirmado que não restaram arquivos `.resources.cs` nem referências de compilação para `obj`;
+- mantidos intactos o indicador instalado, as configurações e os logs;
+- processo de desenvolvimento atualizado para exigir limpeza após a compilação pelo terminal e antes do F5.
