@@ -1,5 +1,9 @@
 # Backtest offline de estratégias — MNQ e MES
 
+> Esta rodada de 58 dias foi substituída pela análise ampliada de 149 dias em
+> `2026-07-29-offline-strategy-backtest-149d.md`. O registro abaixo permanece
+> preservado para auditoria.
+
 Data da análise: 29/07/2026
 
 ## Decisão

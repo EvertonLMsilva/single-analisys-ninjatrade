@@ -1,0 +1,1089 @@
+{
+  "methodology": {
+    "selection_cost_per_round_turn": 5.0,
+    "sensitivity_cost_per_round_turn": 3.0,
+    "high_cost_per_round_turn": 7.0,
+    "maximum_risk_per_contract": 50.0,
+    "minimum_risk_per_contract": 5.0,
+    "entry_assumption": "Fechamento do candle do gatilho",
+    "first_evaluated_bar": "Candle seguinte",
+    "same_bar_target_and_stop": "Pior caso: stop",
+    "expiry": "Saída no fechamento do último candle válido",
+    "split": "60% seleção, 20% validação, 20% teste final por sessão"
+  },
+  "alignment": {
+    "common_timestamps": 28941,
+    "mnq_only": 0,
+    "mes_only": 605,
+    "mnq_excluded_sessions": [
+      "2026-04-06",
+      "2026-04-07",
+      "2026-07-08",
+      "2026-07-09",
+      "2026-07-17"
+    ],
+    "mes_excluded_sessions": []
+  },
+  "datasets": {
+    "MNQ": {
+      "path": "NT_Optimizer_Data_MNQ_09-26_5Min_149d.csv",
+      "sha256": "5DC438B4D6A571B6C4354F0C757968EFDAA36263716B32BD84C22F5912FADD92",
+      "bars": 28941,
+      "valid_sessions": 103,
+      "excluded_sessions": [
+        "2026-04-06",
+        "2026-04-07",
+        "2026-07-08",
+        "2026-07-09",
+        "2026-07-17"
+      ],
+      "train_sessions": 61,
+      "validation_sessions": 21,
+      "test_sessions": 21,
+      "train_range": [
+        "2026-03-02",
+        "2026-05-27"
+      ],
+      "validation_range": [
+        "2026-05-28",
+        "2026-06-25"
+      ],
+      "test_range": [
+        "2026-06-26",
+        "2026-07-29"
+      ]
+    },
+    "MES": {
+      "path": "NT_Optimizer_Data_MES_09-26_5Min_149d.csv",
+      "sha256": "B1D8B2E8F2C84BF40C76BE35DFDCA5A553819D49B98D90581859558910D826BE",
+      "bars": 29546,
+      "valid_sessions": 108,
+      "excluded_sessions": [],
+      "train_sessions": 64,
+      "validation_sessions": 22,
+      "test_sessions": 22,
+      "train_range": [
+        "2026-03-02",
+        "2026-05-28"
+      ],
+      "validation_range": [
+        "2026-05-29",
+        "2026-06-29"
+      ],
+      "test_range": [
+        "2026-06-30",
+        "2026-07-29"
+      ]
+    }
+  },
+  "frozen_baseline": {
+    "candidate": {
+      "family": "Pullback",
+      "direction": "Short",
+      "minimum_score": 4,
+      "require_vwap_trend": true,
+      "maximum_vwap_distance_atr": "Infinity",
+      "minimum_relative_volume": 0.0,
+      "time_window": "All",
+      "target_r": 1.0,
+      "valid_bars": 3
+    },
+    "train": {
+      "trades": 382,
+      "net_currency": -1178.0,
+      "expectancy_currency": -3.08,
+      "profit_factor": 0.79,
+      "maximum_drawdown_currency": 1353.5,
+      "positive_sessions": 17,
+      "negative_sessions": 38,
+      "sessions_with_trades": 55,
+      "statuses": {
+        "Target": 168,
+        "Expired": 70,
+        "Stop": 129,
+        "AmbiguousWorstCase": 15
+      }
+    },
+    "validation": {
+      "trades": 79,
+      "net_currency": -219.5,
+      "expectancy_currency": -2.78,
+      "profit_factor": 0.824,
+      "maximum_drawdown_currency": 354.5,
+      "positive_sessions": 7,
+      "negative_sessions": 9,
+      "sessions_with_trades": 16,
+      "statuses": {
+        "Stop": 27,
+        "AmbiguousWorstCase": 9,
+        "Target": 35,
+        "Expired": 8
+      }
+    },
+    "test": {
+      "trades": 115,
+      "net_currency": -151.0,
+      "expectancy_currency": -1.31,
+      "profit_factor": 0.922,
+      "maximum_drawdown_currency": 438.5,
+      "positive_sessions": 9,
+      "negative_sessions": 10,
+      "sessions_with_trades": 19,
+      "statuses": {
+        "Stop": 43,
+        "Target": 56,
+        "Expired": 10,
+        "AmbiguousWorstCase": 6
+      }
+    },
+    "all": {
+      "trades": 576,
+      "net_currency": -1548.5,
+      "expectancy_currency": -2.69,
+      "profit_factor": 0.824,
+      "maximum_drawdown_currency": 1965.0,
+      "positive_sessions": 33,
+      "negative_sessions": 57,
+      "sessions_with_trades": 90,
+      "statuses": {
+        "Target": 259,
+        "Expired": 88,
+        "Stop": 199,
+        "AmbiguousWorstCase": 30
+      }
+    }
+  },
+  "selections": [
+    {
+      "instrument": "MNQ",
+      "direction": "Long",
+      "candidate": {
+        "family": "SessionBreakout",
+        "direction": "Long",
+        "minimum_score": 0,
+        "require_vwap_trend": false,
+        "maximum_vwap_distance_atr": 1.25,
+        "minimum_relative_volume": 1.0,
+        "time_window": "All",
+        "target_r": 1.5,
+        "valid_bars": 6
+      },
+      "evaluated_candidates": 3888,
+      "selection_validation_survivors": 25,
+      "metrics": {
+        "train": {
+          "trades": 44,
+          "net_currency": 222.25,
+          "expectancy_currency": 5.05,
+          "profit_factor": 1.358,
+          "maximum_drawdown_currency": 150.5,
+          "positive_sessions": 17,
+          "negative_sessions": 14,
+          "sessions_with_trades": 31,
+          "statuses": {
+            "Expired": 9,
+            "Stop": 16,
+            "Target": 19
+          }
+        },
+        "validation": {
+          "trades": 9,
+          "net_currency": 213.0,
+          "expectancy_currency": 23.67,
+          "profit_factor": 4.252,
+          "maximum_drawdown_currency": 34.5,
+          "positive_sessions": 5,
+          "negative_sessions": 1,
+          "sessions_with_trades": 6,
+          "statuses": {
+            "Target": 6,
+            "Stop": 2,
+            "Expired": 1
+          }
+        },
+        "test": {
+          "trades": 10,
+          "net_currency": -254.75,
+          "expectancy_currency": -25.48,
+          "profit_factor": 0.183,
+          "maximum_drawdown_currency": 254.75,
+          "positive_sessions": 1,
+          "negative_sessions": 6,
+          "sessions_with_trades": 7,
+          "statuses": {
+            "Stop": 8,
+            "Target": 1,
+            "Expired": 1
+          }
+        },
+        "all": {
+          "trades": 63,
+          "net_currency": 180.5,
+          "expectancy_currency": 2.87,
+          "profit_factor": 1.181,
+          "maximum_drawdown_currency": 285.75,
+          "positive_sessions": 23,
+          "negative_sessions": 21,
+          "sessions_with_trades": 44,
+          "statuses": {
+            "Expired": 11,
+            "Stop": 26,
+            "Target": 26
+          }
+        },
+        "all_at_3_cost": {
+          "trades": 63,
+          "net_currency": 306.5,
+          "expectancy_currency": 4.87,
+          "profit_factor": 1.325,
+          "maximum_drawdown_currency": 263.75,
+          "positive_sessions": 24,
+          "negative_sessions": 20,
+          "sessions_with_trades": 44,
+          "statuses": {
+            "Expired": 11,
+            "Stop": 26,
+            "Target": 26
+          }
+        },
+        "all_at_7_cost": {
+          "trades": 63,
+          "net_currency": 54.5,
+          "expectancy_currency": 0.87,
+          "profit_factor": 1.052,
+          "maximum_drawdown_currency": 307.75,
+          "positive_sessions": 23,
+          "negative_sessions": 21,
+          "sessions_with_trades": 44,
+          "statuses": {
+            "Expired": 11,
+            "Stop": 26,
+            "Target": 26
+          }
+        },
+        "monthly": {
+          "2026-03": {
+            "trades": 12,
+            "net_currency": 0.75,
+            "expectancy_currency": 0.06,
+            "profit_factor": 1.003,
+            "maximum_drawdown_currency": 117.0,
+            "positive_sessions": 6,
+            "negative_sessions": 4,
+            "sessions_with_trades": 10,
+            "statuses": {
+              "Expired": 2,
+              "Stop": 5,
+              "Target": 5
+            }
+          },
+          "2026-04": {
+            "trades": 18,
+            "net_currency": 101.25,
+            "expectancy_currency": 5.62,
+            "profit_factor": 1.585,
+            "maximum_drawdown_currency": 93.5,
+            "positive_sessions": 6,
+            "negative_sessions": 6,
+            "sessions_with_trades": 12,
+            "statuses": {
+              "Target": 8,
+              "Expired": 4,
+              "Stop": 6
+            }
+          },
+          "2026-05": {
+            "trades": 18,
+            "net_currency": 196.75,
+            "expectancy_currency": 10.93,
+            "profit_factor": 1.734,
+            "maximum_drawdown_currency": 150.5,
+            "positive_sessions": 6,
+            "negative_sessions": 5,
+            "sessions_with_trades": 11,
+            "statuses": {
+              "Target": 9,
+              "Expired": 3,
+              "Stop": 6
+            }
+          },
+          "2026-06": {
+            "trades": 5,
+            "net_currency": 136.5,
+            "expectancy_currency": 27.3,
+            "profit_factor": 5.403,
+            "maximum_drawdown_currency": 31.0,
+            "positive_sessions": 4,
+            "negative_sessions": 0,
+            "sessions_with_trades": 4,
+            "statuses": {
+              "Expired": 1,
+              "Target": 3,
+              "Stop": 1
+            }
+          },
+          "2026-07": {
+            "trades": 10,
+            "net_currency": -254.75,
+            "expectancy_currency": -25.48,
+            "profit_factor": 0.183,
+            "maximum_drawdown_currency": 254.75,
+            "positive_sessions": 1,
+            "negative_sessions": 6,
+            "sessions_with_trades": 7,
+            "statuses": {
+              "Stop": 8,
+              "Target": 1,
+              "Expired": 1
+            }
+          }
+        },
+        "risk_currency": {
+          "minimum": 8.0,
+          "median": 33.0,
+          "average": 31.11,
+          "maximum": 49.0
+        },
+        "context_criteria": {
+          "correct_vwap_side": {
+            "passed": 40,
+            "total": 63,
+            "rate_percent": 63.49
+          },
+          "vwap_slope_aligned": {
+            "passed": 36,
+            "total": 63,
+            "rate_percent": 57.14
+          },
+          "ema_slopes_aligned": {
+            "passed": 63,
+            "total": 63,
+            "rate_percent": 100.0
+          },
+          "strong_candle": {
+            "passed": 42,
+            "total": 63,
+            "rate_percent": 66.67
+          },
+          "within_1_25_atr_of_vwap": {
+            "passed": 63,
+            "total": 63,
+            "rate_percent": 100.0
+          },
+          "relative_volume_at_least_0_8": {
+            "passed": 63,
+            "total": 63,
+            "rate_percent": 100.0
+          }
+        },
+        "survivor_test_robustness": {
+          "pretest_survivors": 25,
+          "positive_in_test": 0,
+          "passed_test_gate": 0,
+          "median_test_net_currency": -258.0,
+          "minimum_test_net_currency": -484.5,
+          "maximum_test_net_currency": -99.0
+        },
+        "test_passed": false
+      }
+    },
+    {
+      "instrument": "MNQ",
+      "direction": "Short",
+      "candidate": {
+        "family": "Pullback",
+        "direction": "Short",
+        "minimum_score": 5,
+        "require_vwap_trend": false,
+        "maximum_vwap_distance_atr": 2.0,
+        "minimum_relative_volume": 1.0,
+        "time_window": "All",
+        "target_r": 1.5,
+        "valid_bars": 12
+      },
+      "evaluated_candidates": 3888,
+      "selection_validation_survivors": 12,
+      "metrics": {
+        "train": {
+          "trades": 58,
+          "net_currency": 166.5,
+          "expectancy_currency": 2.87,
+          "profit_factor": 1.169,
+          "maximum_drawdown_currency": 170.75,
+          "positive_sessions": 17,
+          "negative_sessions": 16,
+          "sessions_with_trades": 33,
+          "statuses": {
+            "Target": 27,
+            "Stop": 23,
+            "Expired": 5,
+            "AmbiguousWorstCase": 3
+          }
+        },
+        "validation": {
+          "trades": 13,
+          "net_currency": 93.75,
+          "expectancy_currency": 7.21,
+          "profit_factor": 1.38,
+          "maximum_drawdown_currency": 113.5,
+          "positive_sessions": 5,
+          "negative_sessions": 4,
+          "sessions_with_trades": 9,
+          "statuses": {
+            "Target": 7,
+            "Stop": 6
+          }
+        },
+        "test": {
+          "trades": 15,
+          "net_currency": 216.25,
+          "expectancy_currency": 14.42,
+          "profit_factor": 1.877,
+          "maximum_drawdown_currency": 124.0,
+          "positive_sessions": 6,
+          "negative_sessions": 4,
+          "sessions_with_trades": 10,
+          "statuses": {
+            "Stop": 5,
+            "Target": 9,
+            "AmbiguousWorstCase": 1
+          }
+        },
+        "all": {
+          "trades": 86,
+          "net_currency": 476.5,
+          "expectancy_currency": 5.54,
+          "profit_factor": 1.323,
+          "maximum_drawdown_currency": 198.25,
+          "positive_sessions": 28,
+          "negative_sessions": 24,
+          "sessions_with_trades": 52,
+          "statuses": {
+            "Target": 43,
+            "Stop": 34,
+            "Expired": 5,
+            "AmbiguousWorstCase": 4
+          }
+        },
+        "all_at_3_cost": {
+          "trades": 86,
+          "net_currency": 648.5,
+          "expectancy_currency": 7.54,
+          "profit_factor": 1.464,
+          "maximum_drawdown_currency": 152.25,
+          "positive_sessions": 28,
+          "negative_sessions": 24,
+          "sessions_with_trades": 52,
+          "statuses": {
+            "Target": 43,
+            "Stop": 34,
+            "Expired": 5,
+            "AmbiguousWorstCase": 4
+          }
+        },
+        "all_at_7_cost": {
+          "trades": 86,
+          "net_currency": 304.5,
+          "expectancy_currency": 3.54,
+          "profit_factor": 1.196,
+          "maximum_drawdown_currency": 244.25,
+          "positive_sessions": 28,
+          "negative_sessions": 24,
+          "sessions_with_trades": 52,
+          "statuses": {
+            "Target": 43,
+            "Stop": 34,
+            "Expired": 5,
+            "AmbiguousWorstCase": 4
+          }
+        },
+        "monthly": {
+          "2026-03": {
+            "trades": 27,
+            "net_currency": 296.25,
+            "expectancy_currency": 10.97,
+            "profit_factor": 1.695,
+            "maximum_drawdown_currency": 122.0,
+            "positive_sessions": 10,
+            "negative_sessions": 5,
+            "sessions_with_trades": 15,
+            "statuses": {
+              "Target": 15,
+              "Stop": 9,
+              "Expired": 1,
+              "AmbiguousWorstCase": 2
+            }
+          },
+          "2026-04": {
+            "trades": 24,
+            "net_currency": -29.75,
+            "expectancy_currency": -1.24,
+            "profit_factor": 0.926,
+            "maximum_drawdown_currency": 135.5,
+            "positive_sessions": 6,
+            "negative_sessions": 7,
+            "sessions_with_trades": 13,
+            "statuses": {
+              "Stop": 11,
+              "Target": 9,
+              "Expired": 3,
+              "AmbiguousWorstCase": 1
+            }
+          },
+          "2026-05": {
+            "trades": 11,
+            "net_currency": -127.5,
+            "expectancy_currency": -11.59,
+            "profit_factor": 0.476,
+            "maximum_drawdown_currency": 127.5,
+            "positive_sessions": 2,
+            "negative_sessions": 5,
+            "sessions_with_trades": 7,
+            "statuses": {
+              "Stop": 5,
+              "Target": 5,
+              "Expired": 1
+            }
+          },
+          "2026-06": {
+            "trades": 9,
+            "net_currency": 121.25,
+            "expectancy_currency": 13.47,
+            "profit_factor": 1.763,
+            "maximum_drawdown_currency": 113.5,
+            "positive_sessions": 4,
+            "negative_sessions": 3,
+            "sessions_with_trades": 7,
+            "statuses": {
+              "Target": 5,
+              "Stop": 4
+            }
+          },
+          "2026-07": {
+            "trades": 15,
+            "net_currency": 216.25,
+            "expectancy_currency": 14.42,
+            "profit_factor": 1.877,
+            "maximum_drawdown_currency": 124.0,
+            "positive_sessions": 6,
+            "negative_sessions": 4,
+            "sessions_with_trades": 10,
+            "statuses": {
+              "Stop": 5,
+              "Target": 9,
+              "AmbiguousWorstCase": 1
+            }
+          }
+        },
+        "risk_currency": {
+          "minimum": 9.5,
+          "median": 34.0,
+          "average": 33.32,
+          "maximum": 50.0
+        },
+        "context_criteria": {
+          "correct_vwap_side": {
+            "passed": 86,
+            "total": 86,
+            "rate_percent": 100.0
+          },
+          "vwap_slope_aligned": {
+            "passed": 82,
+            "total": 86,
+            "rate_percent": 95.35
+          },
+          "ema_slopes_aligned": {
+            "passed": 80,
+            "total": 86,
+            "rate_percent": 93.02
+          },
+          "strong_candle": {
+            "passed": 59,
+            "total": 86,
+            "rate_percent": 68.6
+          },
+          "within_1_25_atr_of_vwap": {
+            "passed": 68,
+            "total": 86,
+            "rate_percent": 79.07
+          },
+          "relative_volume_at_least_0_8": {
+            "passed": 86,
+            "total": 86,
+            "rate_percent": 100.0
+          }
+        },
+        "survivor_test_robustness": {
+          "pretest_survivors": 12,
+          "positive_in_test": 12,
+          "passed_test_gate": 12,
+          "median_test_net_currency": 87.88,
+          "minimum_test_net_currency": 28.0,
+          "maximum_test_net_currency": 216.25
+        },
+        "test_passed": true
+      }
+    },
+    {
+      "instrument": "MES",
+      "direction": "Long",
+      "candidate": {
+        "family": "SessionBreakout",
+        "direction": "Long",
+        "minimum_score": 5,
+        "require_vwap_trend": false,
+        "maximum_vwap_distance_atr": 4.0,
+        "minimum_relative_volume": 1.0,
+        "time_window": "Opening",
+        "target_r": 1.0,
+        "valid_bars": 12
+      },
+      "evaluated_candidates": 3888,
+      "selection_validation_survivors": 16,
+      "metrics": {
+        "train": {
+          "trades": 23,
+          "net_currency": 102.5,
+          "expectancy_currency": 4.46,
+          "profit_factor": 1.327,
+          "maximum_drawdown_currency": 127.5,
+          "positive_sessions": 11,
+          "negative_sessions": 6,
+          "sessions_with_trades": 17,
+          "statuses": {
+            "Target": 15,
+            "Stop": 8
+          }
+        },
+        "validation": {
+          "trades": 7,
+          "net_currency": 75.0,
+          "expectancy_currency": 10.71,
+          "profit_factor": 1.714,
+          "maximum_drawdown_currency": 55.0,
+          "positive_sessions": 4,
+          "negative_sessions": 2,
+          "sessions_with_trades": 6,
+          "statuses": {
+            "Target": 5,
+            "Stop": 2
+          }
+        },
+        "test": {
+          "trades": 14,
+          "net_currency": -63.75,
+          "expectancy_currency": -4.55,
+          "profit_factor": 0.782,
+          "maximum_drawdown_currency": 107.5,
+          "positive_sessions": 6,
+          "negative_sessions": 5,
+          "sessions_with_trades": 11,
+          "statuses": {
+            "Stop": 6,
+            "Target": 7,
+            "Expired": 1
+          }
+        },
+        "all": {
+          "trades": 44,
+          "net_currency": 113.75,
+          "expectancy_currency": 2.59,
+          "profit_factor": 1.16,
+          "maximum_drawdown_currency": 132.5,
+          "positive_sessions": 21,
+          "negative_sessions": 13,
+          "sessions_with_trades": 34,
+          "statuses": {
+            "Target": 27,
+            "Stop": 16,
+            "Expired": 1
+          }
+        },
+        "all_at_3_cost": {
+          "trades": 44,
+          "net_currency": 201.75,
+          "expectancy_currency": 4.59,
+          "profit_factor": 1.298,
+          "maximum_drawdown_currency": 109.5,
+          "positive_sessions": 22,
+          "negative_sessions": 12,
+          "sessions_with_trades": 34,
+          "statuses": {
+            "Target": 27,
+            "Stop": 16,
+            "Expired": 1
+          }
+        },
+        "all_at_7_cost": {
+          "trades": 44,
+          "net_currency": 25.75,
+          "expectancy_currency": 0.59,
+          "profit_factor": 1.035,
+          "maximum_drawdown_currency": 176.75,
+          "positive_sessions": 21,
+          "negative_sessions": 13,
+          "sessions_with_trades": 34,
+          "statuses": {
+            "Target": 27,
+            "Stop": 16,
+            "Expired": 1
+          }
+        },
+        "monthly": {
+          "2026-03": {
+            "trades": 1,
+            "net_currency": 32.5,
+            "expectancy_currency": 32.5,
+            "profit_factor": 99.0,
+            "maximum_drawdown_currency": 0.0,
+            "positive_sessions": 1,
+            "negative_sessions": 0,
+            "sessions_with_trades": 1,
+            "statuses": {
+              "Target": 1
+            }
+          },
+          "2026-04": {
+            "trades": 13,
+            "net_currency": 150.0,
+            "expectancy_currency": 11.54,
+            "profit_factor": 2.212,
+            "maximum_drawdown_currency": 46.25,
+            "positive_sessions": 8,
+            "negative_sessions": 2,
+            "sessions_with_trades": 10,
+            "statuses": {
+              "Stop": 3,
+              "Target": 10
+            }
+          },
+          "2026-05": {
+            "trades": 10,
+            "net_currency": -46.25,
+            "expectancy_currency": -4.62,
+            "profit_factor": 0.757,
+            "maximum_drawdown_currency": 96.25,
+            "positive_sessions": 3,
+            "negative_sessions": 4,
+            "sessions_with_trades": 7,
+            "statuses": {
+              "Stop": 5,
+              "Target": 5
+            }
+          },
+          "2026-06": {
+            "trades": 7,
+            "net_currency": -7.5,
+            "expectancy_currency": -1.07,
+            "profit_factor": 0.951,
+            "maximum_drawdown_currency": 55.0,
+            "positive_sessions": 3,
+            "negative_sessions": 3,
+            "sessions_with_trades": 6,
+            "statuses": {
+              "Stop": 3,
+              "Target": 4
+            }
+          },
+          "2026-07": {
+            "trades": 13,
+            "net_currency": -15.0,
+            "expectancy_currency": -1.15,
+            "profit_factor": 0.938,
+            "maximum_drawdown_currency": 107.5,
+            "positive_sessions": 6,
+            "negative_sessions": 4,
+            "sessions_with_trades": 10,
+            "statuses": {
+              "Target": 7,
+              "Stop": 5,
+              "Expired": 1
+            }
+          }
+        },
+        "risk_currency": {
+          "minimum": 15.0,
+          "median": 36.25,
+          "average": 36.59,
+          "maximum": 50.0
+        },
+        "context_criteria": {
+          "correct_vwap_side": {
+            "passed": 44,
+            "total": 44,
+            "rate_percent": 100.0
+          },
+          "vwap_slope_aligned": {
+            "passed": 44,
+            "total": 44,
+            "rate_percent": 100.0
+          },
+          "ema_slopes_aligned": {
+            "passed": 44,
+            "total": 44,
+            "rate_percent": 100.0
+          },
+          "strong_candle": {
+            "passed": 41,
+            "total": 44,
+            "rate_percent": 93.18
+          },
+          "within_1_25_atr_of_vwap": {
+            "passed": 9,
+            "total": 44,
+            "rate_percent": 20.45
+          },
+          "relative_volume_at_least_0_8": {
+            "passed": 44,
+            "total": 44,
+            "rate_percent": 100.0
+          }
+        },
+        "survivor_test_robustness": {
+          "pretest_survivors": 16,
+          "positive_in_test": 0,
+          "passed_test_gate": 0,
+          "median_test_net_currency": -73.75,
+          "minimum_test_net_currency": -205.62,
+          "maximum_test_net_currency": -12.5
+        },
+        "test_passed": false
+      }
+    },
+    {
+      "instrument": "MES",
+      "direction": "Short",
+      "candidate": {
+        "family": "SessionBreakout",
+        "direction": "Short",
+        "minimum_score": 5,
+        "require_vwap_trend": true,
+        "maximum_vwap_distance_atr": 2.0,
+        "minimum_relative_volume": 0.8,
+        "time_window": "RTH",
+        "target_r": 1.5,
+        "valid_bars": 6
+      },
+      "evaluated_candidates": 3888,
+      "selection_validation_survivors": 12,
+      "metrics": {
+        "train": {
+          "trades": 23,
+          "net_currency": 67.5,
+          "expectancy_currency": 2.93,
+          "profit_factor": 1.168,
+          "maximum_drawdown_currency": 153.75,
+          "positive_sessions": 9,
+          "negative_sessions": 9,
+          "sessions_with_trades": 18,
+          "statuses": {
+            "Stop": 9,
+            "AmbiguousWorstCase": 1,
+            "Target": 10,
+            "Expired": 3
+          }
+        },
+        "validation": {
+          "trades": 9,
+          "net_currency": 112.5,
+          "expectancy_currency": 12.5,
+          "profit_factor": 1.783,
+          "maximum_drawdown_currency": 98.75,
+          "positive_sessions": 4,
+          "negative_sessions": 3,
+          "sessions_with_trades": 7,
+          "statuses": {
+            "Stop": 4,
+            "Target": 5
+          }
+        },
+        "test": {
+          "trades": 9,
+          "net_currency": -10.0,
+          "expectancy_currency": -1.11,
+          "profit_factor": 0.93,
+          "maximum_drawdown_currency": 110.62,
+          "positive_sessions": 2,
+          "negative_sessions": 5,
+          "sessions_with_trades": 7,
+          "statuses": {
+            "Target": 3,
+            "Expired": 2,
+            "Stop": 4
+          }
+        },
+        "all": {
+          "trades": 41,
+          "net_currency": 170.0,
+          "expectancy_currency": 4.15,
+          "profit_factor": 1.246,
+          "maximum_drawdown_currency": 153.75,
+          "positive_sessions": 15,
+          "negative_sessions": 17,
+          "sessions_with_trades": 32,
+          "statuses": {
+            "Stop": 17,
+            "AmbiguousWorstCase": 1,
+            "Target": 18,
+            "Expired": 5
+          }
+        },
+        "all_at_3_cost": {
+          "trades": 41,
+          "net_currency": 252.0,
+          "expectancy_currency": 6.15,
+          "profit_factor": 1.389,
+          "maximum_drawdown_currency": 145.75,
+          "positive_sessions": 15,
+          "negative_sessions": 17,
+          "sessions_with_trades": 32,
+          "statuses": {
+            "Stop": 17,
+            "AmbiguousWorstCase": 1,
+            "Target": 18,
+            "Expired": 5
+          }
+        },
+        "all_at_7_cost": {
+          "trades": 41,
+          "net_currency": 88.0,
+          "expectancy_currency": 2.15,
+          "profit_factor": 1.12,
+          "maximum_drawdown_currency": 161.75,
+          "positive_sessions": 15,
+          "negative_sessions": 17,
+          "sessions_with_trades": 32,
+          "statuses": {
+            "Stop": 17,
+            "AmbiguousWorstCase": 1,
+            "Target": 18,
+            "Expired": 5
+          }
+        },
+        "monthly": {
+          "2026-03": {
+            "trades": 6,
+            "net_currency": -62.5,
+            "expectancy_currency": -10.42,
+            "profit_factor": 0.593,
+            "maximum_drawdown_currency": 153.75,
+            "positive_sessions": 1,
+            "negative_sessions": 3,
+            "sessions_with_trades": 4,
+            "statuses": {
+              "Stop": 3,
+              "AmbiguousWorstCase": 1,
+              "Target": 2
+            }
+          },
+          "2026-04": {
+            "trades": 8,
+            "net_currency": 67.5,
+            "expectancy_currency": 8.44,
+            "profit_factor": 1.628,
+            "maximum_drawdown_currency": 100.0,
+            "positive_sessions": 3,
+            "negative_sessions": 3,
+            "sessions_with_trades": 6,
+            "statuses": {
+              "Target": 4,
+              "Expired": 2,
+              "Stop": 2
+            }
+          },
+          "2026-05": {
+            "trades": 11,
+            "net_currency": 46.25,
+            "expectancy_currency": 4.2,
+            "profit_factor": 1.248,
+            "maximum_drawdown_currency": 106.88,
+            "positive_sessions": 5,
+            "negative_sessions": 4,
+            "sessions_with_trades": 9,
+            "statuses": {
+              "Expired": 1,
+              "Target": 5,
+              "Stop": 5
+            }
+          },
+          "2026-06": {
+            "trades": 7,
+            "net_currency": 128.75,
+            "expectancy_currency": 18.39,
+            "profit_factor": 2.304,
+            "maximum_drawdown_currency": 98.75,
+            "positive_sessions": 4,
+            "negative_sessions": 2,
+            "sessions_with_trades": 6,
+            "statuses": {
+              "Target": 4,
+              "Stop": 3
+            }
+          },
+          "2026-07": {
+            "trades": 9,
+            "net_currency": -10.0,
+            "expectancy_currency": -1.11,
+            "profit_factor": 0.93,
+            "maximum_drawdown_currency": 110.62,
+            "positive_sessions": 2,
+            "negative_sessions": 5,
+            "sessions_with_trades": 7,
+            "statuses": {
+              "Target": 3,
+              "Expired": 2,
+              "Stop": 4
+            }
+          }
+        },
+        "risk_currency": {
+          "minimum": 17.5,
+          "median": 33.75,
+          "average": 33.99,
+          "maximum": 50.0
+        },
+        "context_criteria": {
+          "correct_vwap_side": {
+            "passed": 41,
+            "total": 41,
+            "rate_percent": 100.0
+          },
+          "vwap_slope_aligned": {
+            "passed": 41,
+            "total": 41,
+            "rate_percent": 100.0
+          },
+          "ema_slopes_aligned": {
+            "passed": 41,
+            "total": 41,
+            "rate_percent": 100.0
+          },
+          "strong_candle": {
+            "passed": 32,
+            "total": 41,
+            "rate_percent": 78.05
+          },
+          "within_1_25_atr_of_vwap": {
+            "passed": 22,
+            "total": 41,
+            "rate_percent": 53.66
+          },
+          "relative_volume_at_least_0_8": {
+            "passed": 41,
+            "total": 41,
+            "rate_percent": 100.0
+          }
+        },
+        "survivor_test_robustness": {
+          "pretest_survivors": 12,
+          "positive_in_test": 0,
+          "passed_test_gate": 0,
+          "median_test_net_currency": -108.12,
+          "minimum_test_net_currency": -243.75,
+          "maximum_test_net_currency": -10.0
+        },
+        "test_passed": false
+      }
+    }
+  ]
+}

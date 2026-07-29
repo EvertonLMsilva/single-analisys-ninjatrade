@@ -123,8 +123,10 @@ python research/offline_backtest.py `
   --self-test
 ```
 
-A rodada de 29/07/2026 não aprovou nenhuma nova estratégia. Consulte
-`docs/data-audits/2026-07-29-offline-strategy-backtest.md`.
+A primeira rodada de 58 dias não aprovou uma estratégia. A rodada ampliada de 149
+dias qualificou um novo candidato vendido de MNQ somente para observação visual,
+sem execução. Consulte
+`docs/data-audits/2026-07-29-offline-strategy-backtest-149d.md`.
 
 ## Documentação
 
@@ -134,6 +136,7 @@ A rodada de 29/07/2026 não aprovou nenhuma nova estratégia. Consulte
 - [Protocolo de validação](docs/validation-protocol.md)
 - [Registro cronológico do trabalho](docs/worklog.md)
 - [Backtest offline de MNQ e MES](docs/data-audits/2026-07-29-offline-strategy-backtest.md)
+- [Backtest offline ampliado de 149 dias](docs/data-audits/2026-07-29-offline-strategy-backtest-149d.md)
 - [Auditoria inicial dos CSVs v2](docs/data-audits/2026-07-20-initial-v2-audit.md)
 - [Auditoria dos CSVs v2 regenerados](docs/data-audits/2026-07-20-regenerated-v2-audit.md)
 - [Análise de risco e alcance dos alvos](docs/data-audits/2026-07-20-risk-target-analysis.md)

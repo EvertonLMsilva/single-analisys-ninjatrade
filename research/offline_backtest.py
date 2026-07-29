@@ -13,6 +13,7 @@ import hashlib
 import itertools
 import json
 import math
+import statistics
 from collections import deque
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, time, timedelta
@@ -23,6 +24,7 @@ from typing import Callable, Iterable, Optional
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 ROUND_TURN_COST = 5.0
 SENSITIVITY_COST = 3.0
+HIGH_COST = 7.0
 MAXIMUM_RISK = 50.0
 MINIMUM_RISK = 5.0
 
@@ -85,7 +87,19 @@ class Trade:
 
 
 def trading_day_for(timestamp: datetime) -> date:
-    return timestamp.date() + timedelta(days=1) if timestamp.time() >= time(19, 0) else timestamp.date()
+    rollover = time(19, 0) if is_us_daylight_saving(timestamp.date()) else time(20, 0)
+    return timestamp.date() + timedelta(days=1) if timestamp.time() >= rollover else timestamp.date()
+
+
+def is_us_daylight_saving(day: date) -> bool:
+    march_first = date(day.year, 3, 1)
+    first_sunday_march = march_first + timedelta(days=(6 - march_first.weekday()) % 7)
+    second_sunday_march = first_sunday_march + timedelta(days=7)
+    november_first = date(day.year, 11, 1)
+    first_sunday_november = november_first + timedelta(
+        days=(6 - november_first.weekday()) % 7
+    )
+    return second_sunday_march <= day < first_sunday_november
 
 
 def file_sha256(path: Path) -> str:
@@ -202,21 +216,24 @@ def calculate_features(bars: list[Bar]) -> None:
 
 
 def context_score(bar: Bar, direction: str) -> int:
+    return sum(context_checks(bar, direction).values())
+
+
+def context_checks(bar: Bar, direction: str) -> dict[str, bool]:
     is_long = direction == "Long"
-    checks = [
-        bar.close > bar.vwap if is_long else bar.close < bar.vwap,
-        bar.vwap_slope_atr > 0 if is_long else bar.vwap_slope_atr < 0,
-        (
+    return {
+        "correct_vwap_side": bar.close > bar.vwap if is_long else bar.close < bar.vwap,
+        "vwap_slope_aligned": bar.vwap_slope_atr > 0 if is_long else bar.vwap_slope_atr < 0,
+        "ema_slopes_aligned": (
             bar.fast_slope_atr > 0 and bar.slow_slope_atr >= 0
             if is_long
             else bar.fast_slope_atr < 0 and bar.slow_slope_atr <= 0
         ),
-        bar.candle_body_atr >= 0.15
+        "strong_candle": bar.candle_body_atr >= 0.15
         and (bar.close_location >= 0.65 if is_long else bar.close_location <= 0.35),
-        bar.vwap_distance_atr <= 1.25,
-        bar.relative_volume >= 0.8,
-    ]
-    return sum(1 for check in checks if check)
+        "within_1_25_atr_of_vwap": bar.vwap_distance_atr <= 1.25,
+        "relative_volume_at_least_0_8": bar.relative_volume >= 0.8,
+    }
 
 
 def trigger_indices(bars: list[Bar], family: str, direction: str) -> list[int]:
@@ -295,10 +312,12 @@ def in_time_window(timestamp: datetime, window: str) -> bool:
     minutes = timestamp.hour * 60 + timestamp.minute
     if window == "All":
         return True
+    regular_open = 10 * 60 + 30 if is_us_daylight_saving(timestamp.date()) else 11 * 60 + 30
+    regular_close = regular_open + 6 * 60 + 30
     if window == "RTH":
-        return 10 * 60 + 30 <= minutes < 17 * 60
+        return regular_open <= minutes < regular_close
     if window == "Opening":
-        return 10 * 60 + 30 <= minutes < 13 * 60 + 30
+        return regular_open <= minutes < regular_open + 3 * 60
     raise ValueError(f"Janela desconhecida: {window}")
 
 
@@ -435,6 +454,48 @@ def metrics(trades: Iterable[Trade]) -> dict:
     }
 
 
+def monthly_metrics(trades: Iterable[Trade]) -> dict[str, dict]:
+    grouped: dict[str, list[Trade]] = {}
+    for trade in trades:
+        month = trade.trading_day.strftime("%Y-%m")
+        grouped.setdefault(month, []).append(trade)
+    return {month: metrics(grouped[month]) for month in sorted(grouped)}
+
+
+def risk_summary(trades: Iterable[Trade]) -> dict:
+    risks = [trade.risk_currency for trade in trades]
+    if not risks:
+        return {"minimum": 0.0, "median": 0.0, "average": 0.0, "maximum": 0.0}
+    return {
+        "minimum": round(min(risks), 2),
+        "median": round(statistics.median(risks), 2),
+        "average": round(statistics.mean(risks), 2),
+        "maximum": round(max(risks), 2),
+    }
+
+
+def context_criterion_summary(
+    trades: Iterable[Trade], bars: list[Bar], direction: str
+) -> dict[str, dict]:
+    bars_by_timestamp = {bar.timestamp: bar for bar in bars}
+    trade_list = list(trades)
+    totals: dict[str, int] = {}
+    for trade in trade_list:
+        for name, passed in context_checks(
+            bars_by_timestamp[trade.signal_time], direction
+        ).items():
+            totals[name] = totals.get(name, 0) + int(passed)
+    count = len(trade_list)
+    return {
+        name: {
+            "passed": passed,
+            "total": count,
+            "rate_percent": round(passed / count * 100.0, 2) if count else 0.0,
+        }
+        for name, passed in totals.items()
+    }
+
+
 def split_sessions(sessions: list[date]) -> tuple[set[date], set[date], set[date]]:
     if len(sessions) < 15:
         raise ValueError("São necessárias pelo menos 15 sessões válidas.")
@@ -539,12 +600,52 @@ def select_candidate(
         excluded_sessions,
         SENSITIVITY_COST,
     )
+    high_cost_trades = simulate_candidate(
+        instrument,
+        bars,
+        selected,
+        triggers_by_family[selected.family],
+        point_value,
+        tick_size,
+        excluded_sessions,
+        HIGH_COST,
+    )
+    survivor_test_metrics = [
+        metrics(subset(item[2], test_sessions))
+        for item in ranked
+    ]
+    survivor_test_nets = [
+        item["net_currency"] for item in survivor_test_metrics
+    ]
     result = {
         "train": train_metrics,
         "validation": validation_metrics,
         "test": test_metrics,
         "all": all_metrics,
         "all_at_3_cost": metrics(sensitivity_trades),
+        "all_at_7_cost": metrics(high_cost_trades),
+        "monthly": monthly_metrics(trades),
+        "risk_currency": risk_summary(trades),
+        "context_criteria": context_criterion_summary(
+            trades, bars, selected.direction
+        ),
+        "survivor_test_robustness": {
+            "pretest_survivors": len(survivor_test_metrics),
+            "positive_in_test": sum(
+                item["net_currency"] > 0 for item in survivor_test_metrics
+            ),
+            "passed_test_gate": sum(
+                item["trades"] >= 4
+                and item["net_currency"] > 0
+                and item["profit_factor"] > 1.0
+                for item in survivor_test_metrics
+            ),
+            "median_test_net_currency": round(
+                statistics.median(survivor_test_nets), 2
+            ),
+            "minimum_test_net_currency": round(min(survivor_test_nets), 2),
+            "maximum_test_net_currency": round(max(survivor_test_nets), 2),
+        },
         "test_passed": (
             test_metrics["trades"] >= 4
             and test_metrics["net_currency"] > 0
@@ -603,6 +704,7 @@ def run_backtest(mnq_path: Path, mes_path: Path) -> dict:
         "methodology": {
             "selection_cost_per_round_turn": ROUND_TURN_COST,
             "sensitivity_cost_per_round_turn": SENSITIVITY_COST,
+            "high_cost_per_round_turn": HIGH_COST,
             "maximum_risk_per_contract": MAXIMUM_RISK,
             "minimum_risk_per_contract": MINIMUM_RISK,
             "entry_assumption": "Fechamento do candle do gatilho",
@@ -685,8 +787,20 @@ def run_backtest(mnq_path: Path, mes_path: Path) -> dict:
 
 
 def run_self_tests() -> None:
+    assert not is_us_daylight_saving(date(2026, 3, 7))
+    assert is_us_daylight_saving(date(2026, 3, 8))
+    assert is_us_daylight_saving(date(2026, 10, 31))
+    assert not is_us_daylight_saving(date(2026, 11, 1))
+    assert trading_day_for(datetime(2026, 3, 2, 19, 0)).isoformat() == "2026-03-02"
+    assert trading_day_for(datetime(2026, 3, 2, 20, 5)).isoformat() == "2026-03-03"
+    assert trading_day_for(datetime(2026, 3, 8, 19, 5)).isoformat() == "2026-03-09"
+    assert trading_day_for(datetime(2026, 11, 1, 19, 5)).isoformat() == "2026-11-01"
+    assert trading_day_for(datetime(2026, 11, 1, 20, 5)).isoformat() == "2026-11-02"
     assert trading_day_for(datetime(2026, 7, 29, 18, 0)).isoformat() == "2026-07-29"
     assert trading_day_for(datetime(2026, 7, 29, 19, 5)).isoformat() == "2026-07-30"
+    assert in_time_window(datetime(2026, 3, 6, 11, 30), "RTH")
+    assert not in_time_window(datetime(2026, 3, 6, 10, 30), "RTH")
+    assert in_time_window(datetime(2026, 3, 9, 10, 30), "RTH")
     candidate = Candidate("Pullback", "Long", 0, False, 4.0, 0.0, "All", 1.0, 3)
     day = date(2026, 7, 1)
     bars = [

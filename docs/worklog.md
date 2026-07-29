@@ -385,3 +385,24 @@
 - análise registrada em
   `docs/data-audits/2026-07-29-offline-strategy-backtest.md`;
 - decisão registrada em `docs/decisions/0008-reject-58-day-backtest-candidates.md`.
+
+### Backtest ampliado de 149 dias
+
+- validados 28.941 candles de MNQ e 29.546 de MES entre março e julho;
+- corrigidas virada da sessão e janela regular para o horário de verão dos EUA;
+- excluídas cinco sessões incompletas do MNQ;
+- repetidas 15.552 configurações com teste final separado;
+- qualificado MNQ vendido, pullback, score 5/6, distância máxima de 2 ATR, volume
+  relativo mínimo 1, alvo 1,5R e validade de 12 candles;
+- resultado total do candidato: 86 operações, +USD 476,50, PF 1,323 e drawdown de
+  USD 198,25 com custo de USD 5;
+- resultado no teste final: 15 operações, +USD 216,25 e PF 1,877;
+- os 12 sobreviventes pré-teste também passaram o teste final;
+- mantida reprovação de compras e MES;
+- reconstrução da regra instalada: -USD 1.548,50 e PF 0,824;
+- nenhuma alteração realizada no indicador ou em sua instalação;
+- auditoria registrada em `docs/data-audits/2026-07-29-ohlcv-dataset-audit-149d.md`;
+- análise registrada em
+  `docs/data-audits/2026-07-29-offline-strategy-backtest-149d.md`;
+- decisão registrada em
+  `docs/decisions/0009-qualify-149-day-mnq-short-candidate.md`.
