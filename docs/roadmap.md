@@ -1,5 +1,13 @@
 # Roteiro do projeto
 
+## Estado atual - momentum intradiario
+
+Implementacao concluida na versao `1.2.0-beta.1`: o candidato roda no MNQ em modo
+visual, com um micro hipotetico, CSV proprio e sem ordens. O proximo passo nao e
+otimizar a regra; e coletar 20 sessoes posteriores a 29/07 e aplicar o protocolo
+congelado de pelo menos 12 operacoes, lucro positivo, PF minimo 1,20, drawdown
+maximo de USD 500 e intervalo sem sinal de no maximo cinco sessoes.
+
 O objetivo atual permanece: apoiar a decisão do operador com sinais explicáveis e
 mensuráveis, sem executar ordens. A arquitetura será preparada para uma execução futura,
 mas qualquer integração de ordens permanecerá fisicamente separada e desligada até cumprir

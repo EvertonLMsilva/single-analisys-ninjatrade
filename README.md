@@ -6,7 +6,30 @@ Assistente visual de análise para NinjaTrader 8. A versão experimental identif
 
 ## Versão
 
-Versão atual: `1.1.0-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
+Versão atual: `1.2.0-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
+
+## Candidato de momentum intradiario
+
+Versao atual do indicador: `1.2.0-beta.1`.
+
+A versao 1.2 integra o candidato congelado `intraday-momentum-2026-07-v1` somente
+para observacao no MNQ. O indicador:
+
+- carrega internamente barras de um minuto;
+- usa 20 sessoes completas para aquecer a mediana de volatilidade da abertura;
+- cria no maximo uma analise hipotetica na ultima meia hora da sessao regular;
+- acompanha stop fixo de USD 75 por micro e encerra no fechamento regular;
+- considera USD 5 de custo hipotetico de ida e volta;
+- salva um CSV separado em
+  `Documents/NinjaTrader 8/TradeAssistant/IntradayMomentum`;
+- desativa a geracao dos sinais antigos no MNQ enquanto este candidato estiver
+  ligado, evitando operacoes hipoteticas simultaneas.
+
+O campo **Momentum intradiario MNQ** vem ligado. Ele nao envia ordens, nao define
+quantidade real e nao acessa conta. A rodada prospectiva usa apenas um micro
+hipotetico e nao deve ter parametros alterados durante os 20 pregoes de observacao.
+Configure o grafico para carregar pelo menos 30 dias, garantindo o fechamento
+anterior e os 20 sinais usados no aquecimento.
 
 ## Primeira entrega
 

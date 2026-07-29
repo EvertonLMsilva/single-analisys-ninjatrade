@@ -1,5 +1,22 @@
 # Registro de trabalho
 
+## 2026-07-29 - Integracao visual do momentum intradiario
+
+- versao elevada para `1.2.0-beta.1`;
+- adicionada serie interna de um minuto ao indicador;
+- implementado aquecimento de 20 sessoes e mediana movel da volatilidade de abertura;
+- implementada a regra congelada para MNQ, com uma analise por sessao;
+- adicionado stop de USD 75 por micro, saida no fechamento e custo hipotetico de USD 5;
+- criados desenho de entrada/stop, resultado no grafico e painel exclusivo;
+- desativada a geracao dos setups antigos enquanto o novo candidato estiver ativo;
+- criado CSV diario separado em `TradeAssistant/IntradayMomentum`;
+- adicionados testes de horario BRT, elegibilidade, aquecimento, stop, fechamento e CSV;
+- confirmada compilacao do projeto real do NinjaTrader sem erros;
+- confirmada ausencia de chamadas de envio de ordens;
+- arquivos sincronizados com a instalacao local do NinjaTrader;
+- decisao registrada em
+  `docs/decisions/0016-integrate-intraday-momentum-shadow-mode.md`.
+
 ## 2026-07-20
 
 ### Preparação do repositório

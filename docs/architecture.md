@@ -1,5 +1,23 @@
 # Arquitetura inicial
 
+## Momentum intradiario da versao 1.2
+
+`TradeAnalysisAssistant` adiciona uma serie interna de um minuto. As barras dessa
+serie alimentam `IntradayMomentumTracker`, que mantem a mediana movel das 20
+volatilidades de abertura anteriores, escolhe o regime congelado e acompanha uma
+unica operacao hipotetica por sessao.
+
+Esse fluxo e independente de `SignalTracker`. O novo candidato nao possui alvo:
+ele encerra no fechamento regular ou no stop fixo de USD 75 por micro, o que
+ocorrer primeiro. O resultado desconta USD 5 de custo hipotetico. O
+`CsvIntradayMomentumJournal` substitui o registro do dia ao reprocessar o grafico,
+evitando duplicacao.
+
+Quando o candidato esta ativo em MNQ, os setups antigos deixam de gerar novos
+sinais. O painel mostra apenas o candidato atual, sua fase, entrada, stop e
+resultado acumulado carregado. MES continua fora dessa rodada. Nenhum componente
+desse fluxo chama APIs de ordem ou acessa uma conta.
+
 O projeto começa com um fluxo propositalmente pequeno:
 
 ```text
