@@ -172,6 +172,22 @@ python research/prop_strategy_search.py `
 
 Consulte `docs/data-audits/2026-07-29-prop-strategy-redesign.md`.
 
+Uma nova linha de pesquisa usa barras de um minuto para classificar a abertura como
+tendência, equilíbrio ou transição antes de procurar um gatilho. Ela combina faixa de
+abertura, VWAP, eficiência direcional, volume relativo e concordância MNQ/MES.
+
+```powershell
+python research/regime_structure_backtest.py `
+  --mnq CAMINHO_DO_MNQ_1MIN.csv `
+  --mes CAMINHO_DO_MES_1MIN.csv `
+  --output research/results/resultado-regime.json `
+  --self-test
+```
+
+A primeira hipótese (`TrendRetest` e `BalanceRejection`) foi reprovada e não foi
+publicada no indicador. Consulte
+`docs/data-audits/2026-07-29-regime-structure-1m.md`.
+
 ## Documentação
 
 - [Arquitetura e limites](docs/architecture.md)

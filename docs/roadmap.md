@@ -107,6 +107,21 @@ dados posteriores a 29/07.
 - permitir desligamento imediato e reconciliação da posição com a corretora;
 - liberar gradualmente, começando por um contrato e risco reduzido.
 
+## Próximo experimento de mercado
+
+A primeira hipótese por regime e estrutura em barras de um minuto foi reprovada. O
+MNQ perdeu USD 846,76; o MES apresentou somente seis operações. O classificador de
+regime fica preservado como infraestrutura, mas o reteste simples não será ajustado
+por busca massiva. O próximo incremento deve:
+
+- registrar MFE e MAE de todos os eventos estruturais, inclusive os que não viraram
+  operação pelo limite financeiro;
+- distinguir rompimento aceito, falso rompimento e recuperação de nível;
+- usar walk-forward por pregões inteiros;
+- manter fluxo bid/ask fora do modelo até existir histórico de ticks ou barras
+  volumétricas;
+- aceitar somente regras estáveis em blocos cronológicos e no portão econômico.
+
 ## Fora do escopo atual
 
 - envio de ordens;

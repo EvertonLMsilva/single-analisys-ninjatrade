@@ -475,3 +475,26 @@
   `docs/data-audits/2026-07-29-prop-strategy-redesign.md`;
 - decisão registrada em
   `docs/decisions/0012-reject-prop-portfolio-search.md`.
+
+### Pesquisa por regime e estrutura em um minuto
+
+- exportados MNQ e MES 09-26 em barras de um minuto para 149 dias corridos;
+- auditadas 146.890 barras de MNQ e 147.785 de MES;
+- confirmados 107 pregões compartilhados entre 02/03 e 29/07;
+- criado `research/regime_structure_backtest.py`;
+- congelada a classificação após os primeiros 30 minutos em tendência, equilíbrio
+  ou transição;
+- adicionadas faixa de abertura, VWAP, eficiência direcional, volume relativo e
+  confirmação cruzada MNQ/MES;
+- testados somente dois playbooks explicáveis: reteste em tendência e rejeição da
+  faixa em equilíbrio;
+- MNQ terminou com 30 operações, -USD 846,76, PF 0,355 e drawdown de USD 1.008,44;
+- MES terminou com seis operações, +USD 36,02 e amostra insuficiente;
+- nenhuma quantidade de 1 a 30 micros passou pelo portão de USD 1.500 em 20 pregões;
+- primeiro gatilho reprovado sem alteração do indicador ou do NinjaTrader;
+- próximo experimento limitado a diagnóstico MFE/MAE e um gatilho estrutural
+  qualitativamente diferente;
+- análise registrada em
+  `docs/data-audits/2026-07-29-regime-structure-1m.md`;
+- decisão registrada em
+  `docs/decisions/0013-reject-first-regime-structure-trigger.md`.
