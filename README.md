@@ -209,6 +209,24 @@ O melhor cenário observado foi MNQ com alvo 2R: +USD 108,50 na validação e
 -USD 145,50 na confirmação. Ele foi reprovado e não alterou o indicador. Consulte
 `docs/data-audits/2026-07-29-trigger-and-event-model-search.md`.
 
+Uma pesquisa posterior mudou a hipótese para momentum intradiário, overnight, gap e
+força relativa. Os quatro meses foram usados integralmente como desenvolvimento:
+
+```powershell
+python research/alternative_market_methods.py `
+  --mnq CAMINHO_DO_MNQ_1MIN.csv `
+  --mes CAMINHO_DO_MES_1MIN.csv `
+  --output research/results/resultado-metodos-alternativos.json `
+  --self-test
+```
+
+O candidato congelado opera MNQ na última meia hora conforme o retorno da primeira
+meia hora, usando a penúltima meia hora como informação adicional em baixa
+volatilidade. O resultado de desenvolvimento foi 81 operações, +USD 1.244, PF 1,416
+e drawdown de USD 621 por micro. Ele ainda não está validado e precisa de 20 pregões
+posteriores a 29/07. Consulte
+`docs/data-audits/2026-07-29-alternative-market-methods.md`.
+
 ## Documentação
 
 - [Arquitetura e limites](docs/architecture.md)

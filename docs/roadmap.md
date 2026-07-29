@@ -128,6 +128,12 @@ USD 108,50 na validação e perdeu USD 145,50 na confirmação, sendo reprovado.
 serão escolhidos novos filtros sobre o mesmo histórico. A próxima seleção exige um
 bloco adicional de dados posteriores a 29/07.
 
+Esse bloco de desenvolvimento foi concluído com uma mudança de hipótese. O candidato
+de momentum intradiário do MNQ ganhou USD 1.244 por micro em 81 pregões, com PF 1,416
+e frequência diária. Ele foi congelado para 20 pregões futuros com um micro. A regra
+não pode ser ajustada durante a rodada, e o dimensionamento só será reconsiderado se
+o PF permanecer em pelo menos 1,20 com drawdown de até USD 500.
+
 ## Fora do escopo atual
 
 - envio de ordens;

@@ -519,3 +519,22 @@
   `docs/data-audits/2026-07-29-trigger-and-event-model-search.md`;
 - decisão registrada em
   `docs/decisions/0014-reject-best-observed-event-model.md`.
+
+### Métodos alternativos e candidato de momentum intradiário
+
+- pesquisada evidência acadêmica sobre momentum da primeira para a última meia hora;
+- adicionados momentum/reversão intradiária, overnight, gap-fill e força relativa;
+- avaliados 270 candidatos individuais e 984 combinações de regimes;
+- corrigido vazamento preliminar do filtro de 30 minutos na entrada de gap-fill;
+- congelado candidato MNQ de momentum no fechamento condicionado pela volatilidade da
+  abertura;
+- resultado de desenvolvimento: 81 operações, +USD 1.244, PF 1,416 e drawdown de
+  USD 621 por micro;
+- quatro de cinco meses positivos e sinal em todos os pregões após aquecimento;
+- melhor dimensionamento histórico chegou a 50% de aprovação, ainda abaixo de 60%;
+- definido teste prospectivo de 20 pregões com um micro e parâmetros imutáveis;
+- indicador mantido sem alterações nesta etapa;
+- análise registrada em
+  `docs/data-audits/2026-07-29-alternative-market-methods.md`;
+- decisão registrada em
+  `docs/decisions/0015-freeze-intraday-momentum-candidate.md`.
