@@ -428,4 +428,5 @@
 - projeto real `NinjaTrader.Custom` compilado com zero erros;
 - avisos da compilação pertencem ao conjunto geral de scripts instalado;
 - cache temporário limpo e confirmada ausência de arquivos `.resources.cs`;
+- implementação registrada no commit `1b13f69`;
 - atualização vinculada ao pull request 4.
