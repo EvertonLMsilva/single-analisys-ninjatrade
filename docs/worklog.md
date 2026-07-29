@@ -2,6 +2,14 @@
 
 ## 2026-07-29 - Integracao visual do momentum intradiario
 
+- corrigida contaminacao da compilacao interna por arquivos temporarios criados
+  em `Custom/obj` durante a validacao externa;
+- confirmado no CSV de erros que todos os registros eram `CS0579` de atributos
+  duplicados e nenhum apontava para o indicador;
+- pasta `obj` retirada da arvore compilada e preservada temporariamente fora do
+  NinjaTrader para recuperacao;
+- processo alterado para proibir `dotnet build` diretamente na pasta ativa
+  `NinjaTrader 8/bin/Custom`;
 - versao elevada para `1.2.0-beta.1`;
 - adicionada serie interna de um minuto ao indicador;
 - implementado aquecimento de 20 sessoes e mediana movel da volatilidade de abertura;
