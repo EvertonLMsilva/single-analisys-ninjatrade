@@ -451,3 +451,27 @@
   `docs/data-audits/2026-07-29-prop-evaluation-20d.md`;
 - decisão registrada em
   `docs/decisions/0011-reject-qualified-pullback-for-prop-goal.md`.
+
+### Redesenho de estratégias orientado à aprovação
+
+- criada branch `agent/prop-strategy-redesign` sobre o incremento econômico anterior;
+- criado `research/prop_strategy_search.py`, sem integração com NinjaTrader ou conta;
+- adicionadas seis famílias: pullback, retomada da VWAP, rompimento de sessão,
+  rejeição da VWAP, rompimento da abertura e retorno à VWAP;
+- avaliadas compras e vendas em MNQ e MES;
+- mantida somente uma posição hipotética simultânea entre todos os componentes;
+- adicionada deduplicação de regras e portfólios pelas operações da seleção;
+- avaliados 4.224 componentes, 192 componentes lucrativos únicos e 1.099 portfólios
+  únicos;
+- aplicado portão de 60% de aprovação, até 15% de falha por drawdown e drawdown P90
+  máximo de USD 1.000;
+- 60 portfólios passaram na seleção e nenhum passou na validação;
+- melhor aproximação atingiu 95,24% na seleção e 50% na validação com cinco micros;
+- nenhum candidato recebeu acesso ao teste final na execução canônica;
+- registrado que o trecho final foi consultado durante desenvolvimento preliminar e
+  não pode mais ser considerado inédito;
+- indicador, versão e instalação mantidos sem alteração;
+- análise registrada em
+  `docs/data-audits/2026-07-29-prop-strategy-redesign.md`;
+- decisão registrada em
+  `docs/decisions/0012-reject-prop-portfolio-search.md`.

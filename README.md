@@ -158,6 +158,20 @@ python research/prop_evaluation.py `
 O candidato qualificado foi reprovado no portão econômico. Consulte
 `docs/data-audits/2026-07-29-prop-evaluation-20d.md`.
 
+Uma segunda pesquisa combinou seis famílias de setups em MNQ e MES. Dos 1.099
+portfólios únicos, 60 passaram na seleção e nenhum passou na validação com o teto de
+USD 1.000 para o drawdown P90. O indicador permaneceu inalterado.
+
+```powershell
+python research/prop_strategy_search.py `
+  --mnq CAMINHO_DO_MNQ.csv `
+  --mes CAMINHO_DO_MES.csv `
+  --output research/results/pesquisa-de-portfolios.json `
+  --self-test
+```
+
+Consulte `docs/data-audits/2026-07-29-prop-strategy-redesign.md`.
+
 ## Documentação
 
 - [Arquitetura e limites](docs/architecture.md)
@@ -168,6 +182,7 @@ O candidato qualificado foi reprovado no portão econômico. Consulte
 - [Backtest offline de MNQ e MES](docs/data-audits/2026-07-29-offline-strategy-backtest.md)
 - [Backtest offline ampliado de 149 dias](docs/data-audits/2026-07-29-offline-strategy-backtest-149d.md)
 - [Simulação da avaliação de 25k em 20 pregões](docs/data-audits/2026-07-29-prop-evaluation-20d.md)
+- [Redesenho de estratégias para a avaliação](docs/data-audits/2026-07-29-prop-strategy-redesign.md)
 - [Auditoria inicial dos CSVs v2](docs/data-audits/2026-07-20-initial-v2-audit.md)
 - [Auditoria dos CSVs v2 regenerados](docs/data-audits/2026-07-20-regenerated-v2-audit.md)
 - [Análise de risco e alcance dos alvos](docs/data-audits/2026-07-20-risk-target-analysis.md)

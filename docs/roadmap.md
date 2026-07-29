@@ -73,6 +73,12 @@ Situação: o candidato atual foi reprovado; redesenho pendente.
 O `QualifiedPullback` atingiu no máximo 19,05% de aprovação nas janelas históricas.
 Nenhuma quantidade entre 1 e 30 micros passou pelo portão.
 
+A primeira busca de portfólios também foi concluída sem aprovação: 60 de 1.099
+portfólios únicos passaram na seleção, mas nenhum confirmou pelo menos 60% de
+aprovação na validação mantendo drawdown P90 de até USD 1.000. O próximo incremento
+de pesquisa deve usar walk-forward, e a confirmação final deve ocorrer somente em
+dados posteriores a 29/07.
+
 ## Marco 6 — Preparar execução simulada
 
 - criar um contrato de execução separado do analisador;

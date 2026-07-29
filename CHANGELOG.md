@@ -1,5 +1,19 @@
 # Histórico de versões
 
+## Pesquisa de portfólios — 2026-07-29 (sem alteração de versão)
+
+- adicionadas rejeição da VWAP, rompimento da abertura e retorno à VWAP à pesquisa
+  offline, além das três famílias existentes;
+- pesquisadas compras e vendas em MNQ e MES, com uma única posição hipotética por
+  vez;
+- avaliados 4.224 componentes e 1.099 portfólios únicos de dois ou três setups;
+- removidas configurações e composições que produziam operações idênticas;
+- adicionado teto obrigatório de USD 1.000 para o drawdown P90;
+- 60 portfólios passaram na seleção e nenhum passou na validação;
+- trecho final marcado como contaminado após acesso durante desenvolvimento
+  preliminar e bloqueado na execução canônica;
+- todos os candidatos reprovados e indicador mantido sem alteração.
+
 ## Pesquisa econômica — 2026-07-29 (sem alteração de versão)
 
 - criado simulador da avaliação de 25k com meta de USD 1.500 em até 20 pregões;
