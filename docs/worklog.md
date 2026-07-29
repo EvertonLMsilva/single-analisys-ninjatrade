@@ -341,3 +341,5 @@
 - código sincronizado com `bin/Custom/TradeAssistant` e conferido por hash;
 - projeto `NinjaTrader.Custom` compilado com zero erros;
 - cache de compilação limpo após o teste, sem arquivos `.resources.cs` residuais.
+- implementação registrada no commit `f34d91e`;
+- pull request 4 atualizado com a estratégia e a evidência da versão 1.0.
