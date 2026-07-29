@@ -561,7 +561,7 @@ namespace NinjaTrader.NinjaScript.Indicators
             if (setup == SignalSetup.ContextPullback)
                 return "PULLBACK CONTEXTUAL";
             if (setup == SignalSetup.EvidencePullback)
-                return "MNQ VENDA POR EVIDÊNCIA";
+                return "VENDA POR EVIDÊNCIA";
             return "PULLBACK BASE";
         }
 
