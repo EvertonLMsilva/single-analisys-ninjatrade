@@ -58,6 +58,15 @@ internal static class Program
         Assert(
             !ValidationPlan.MatchesFrozenConfiguration(10, 21, 14, 0.1, 3, 1.5, 2, 3, 50, RiskLimitMode.DescartarAcimaDoLimite),
             "Changed EMA must be rejected by the frozen round.");
+        Assert(
+            ValidationPlan.NormalizeMaximumRiskPerContract(75, RiskLimitMode.DescartarAcimaDoLimite) == 50,
+            "A saved legacy risk limit must be capped at the frozen validation limit.");
+        Assert(
+            ValidationPlan.NormalizeMaximumRiskPerContract(40, RiskLimitMode.DescartarAcimaDoLimite) == 40,
+            "A stricter configured risk limit must not be relaxed.");
+        Assert(
+            ValidationPlan.NormalizeMaximumRiskPerContract(75, RiskLimitMode.SomenteAvisar) == 75,
+            "Warning-only configurations must not be silently changed.");
     }
 
     private static void ValidateMarketContext()

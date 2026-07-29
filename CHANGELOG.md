@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 0.9.1-beta.1 — 2026-07-29
+
+- corrigida a migração de indicadores já salvos no workspace com limite de risco de USD 75;
+- no modo de validação, limites antigos acima de USD 50 passam a ser reduzidos automaticamente para o valor congelado da rodada;
+- a divergência antiga deixa de bloquear toda a avaliação de tendência e contexto;
+- limites mais restritivos e políticas diferentes continuam preservados e sinalizados como configuração divergente;
+- mantidos os critérios do `ContextPullback`, a rodada `context-2026-07-v3` e o formato CSV v8.
+
 ## 0.9.0-beta.1 — 2026-07-28
 
 - criada a rodada `context-2026-07-v3`, com início prospectivo em 29/07;

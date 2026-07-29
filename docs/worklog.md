@@ -308,3 +308,15 @@
 - confirmado que não restaram arquivos `.resources.cs` nem referências de compilação para `obj`;
 - mantidos intactos o indicador instalado, as configurações e os logs;
 - processo de desenvolvimento atualizado para exigir limpeza após a compilação pelo terminal e antes do F5.
+
+## 2026-07-29
+
+### Correção do bloqueio da rodada contextual
+
+- confirmado que a versão 0.9 estava instalada e que os sinais de compra e venda permaneciam habilitados;
+- identificado no workspace `Mercado americano` que MES e MNQ ainda conservavam `MaximumRiskPerContract = 75`;
+- confirmado que a rodada contextual exige USD 50 e, por isso, a validação bloqueava toda a avaliação antes dos filtros de tendência e VWAP;
+- adicionada migração automática que reduz limites antigos acima de USD 50 para o limite congelado quando a política é descartar acima do limite;
+- limites inferiores a USD 50 e políticas diferentes não são relaxados automaticamente;
+- mantidos os critérios de entrada, o início prospectivo em 29/07 e o formato CSV v8;
+- versão elevada para `0.9.1-beta.1`.

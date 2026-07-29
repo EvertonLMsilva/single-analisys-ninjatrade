@@ -6,7 +6,7 @@ Assistente visual de análise para NinjaTrader 8. A versão experimental identif
 
 ## Versão
 
-Versão atual: `0.9.0-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
+Versão atual: `0.9.1-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
 
 ## Primeira entrega
 

@@ -10,6 +10,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Configuration
         public const int VolumeAveragePeriod = 20;
         public const int MinimumSessions = 5;
         public const int MinimumDecidedSignals = 30;
+        public const double FrozenMaximumRiskPerContract = 50.0;
         public static readonly DateTime ForwardStartDate = new DateTime(2026, 7, 29);
 
         public static bool IsForwardSample(DateTime signalTime)
@@ -55,6 +56,19 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Configuration
             return GetProfile(instrument, SignalSetup.ContextPullback, configuredTargetR);
         }
 
+        public static double NormalizeMaximumRiskPerContract(
+            double configuredMaximumRiskPerContract,
+            RiskLimitMode riskLimitMode)
+        {
+            if (riskLimitMode == RiskLimitMode.DescartarAcimaDoLimite
+                && configuredMaximumRiskPerContract > FrozenMaximumRiskPerContract)
+            {
+                return FrozenMaximumRiskPerContract;
+            }
+
+            return configuredMaximumRiskPerContract;
+        }
+
         public static bool MatchesFrozenConfiguration(
             int fastEmaPeriod,
             int slowEmaPeriod,
@@ -75,7 +89,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Configuration
                 && NearlyEqual(stopAtrMultiplier, 1.5)
                 && NearlyEqual(configuredTargetR, 2.0)
                 && validForBars == 3
-                && NearlyEqual(maximumRiskPerContract, 50.0)
+                && NearlyEqual(maximumRiskPerContract, FrozenMaximumRiskPerContract)
                 && riskLimitMode == RiskLimitMode.DescartarAcimaDoLimite;
         }
 

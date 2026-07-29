@@ -87,6 +87,12 @@ namespace NinjaTrader.NinjaScript.Indicators
                 signalAnalyzer = new SignalAnalyzer();
                 marketContextAnalyzer = new MarketContextAnalyzer();
                 signalTracker = new SignalTracker();
+                if (EnableValidationMode)
+                {
+                    MaximumRiskPerContract = ValidationPlan.NormalizeMaximumRiskPerContract(
+                        MaximumRiskPerContract,
+                        RiskLimitPolicy);
+                }
                 validationConfigurationMatches = ValidationPlan.MatchesFrozenConfiguration(
                     FastEmaPeriod,
                     SlowEmaPeriod,
