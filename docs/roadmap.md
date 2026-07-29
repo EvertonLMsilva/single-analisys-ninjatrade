@@ -1,6 +1,9 @@
 # Roteiro do projeto
 
-O objetivo permanece: apoiar a decisão do operador com sinais explicáveis e mensuráveis, sem executar ordens.
+O objetivo atual permanece: apoiar a decisão do operador com sinais explicáveis e
+mensuráveis, sem executar ordens. A arquitetura será preparada para uma execução futura,
+mas qualquer integração de ordens permanecerá fisicamente separada e desligada até cumprir
+os marcos de segurança e ser permitida pelas regras da conta utilizada.
 
 ## Marco 1 — Validar a persistência atual
 
@@ -56,6 +59,34 @@ Antes da migração do projeto antigo, foi aprovado um experimento controlado de
 - adicionar filtros visuais somente depois de observar uso real;
 - validar legibilidade em diferentes escalas e temas do gráfico.
 
+## Marco 6 — Preparar execução simulada
+
+- criar um contrato de execução separado do analisador;
+- reproduzir entrada, stop, alvo, slippage, comissões e rejeições no Playback/Sim101;
+- registrar ordem solicitada, preenchimento, cancelamento e posição resultante;
+- implementar limite diário, limite por operação, quantidade máxima e botão de emergência;
+- provar que nenhuma implementação simulada consegue alcançar uma conta real;
+- comparar preenchimentos simulados com as hipóteses atuais do CSV.
+
+## Marco 7 — Confirmação manual assistida
+
+- apresentar a ordem preparada sem enviá-la;
+- exigir confirmação explícita do operador;
+- revalidar preço, risco, horário e estado da posição imediatamente antes do envio;
+- impedir ordens duplicadas e operações fora da janela permitida;
+- manter trilha de auditoria completa;
+- disponibilizar somente em ambiente onde assistência de execução seja permitida.
+
+## Marco 8 — Automação controlada
+
+- habilitar somente após validação prospectiva, Playback e Sim101;
+- exigir configuração explícita por conta e ambiente;
+- iniciar desligada e falhar sempre para o estado seguro;
+- usar uma conta própria ou um programa que autorize bots por escrito;
+- bloquear contas da Take Profit Trader PRO enquanto a regra oficial proibir bots e algos;
+- permitir desligamento imediato e reconciliação da posição com a corretora;
+- liberar gradualmente, começando por um contrato e risco reduzido.
+
 ## Fora do escopo atual
 
 - envio de ordens;
@@ -63,3 +94,7 @@ Antes da migração do projeto antigo, foi aprovado um experimento controlado de
 - gerenciamento de posição real;
 - promessa de rentabilidade;
 - otimização de parâmetros antes de obter uma linha de base confiável.
+
+Os três primeiros itens permanecem fora do escopo da versão atual, mas passam a ter marcos
+futuros explícitos. Planejamento de automação não representa autorização para operar uma
+conta real nem para contrariar regras de uma mesa proprietária.

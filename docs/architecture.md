@@ -42,6 +42,24 @@ O componente é um indicador exclusivamente visual. Ele não contém métodos de
 
 O painel e o CSV identificam os resultados como hipotéticos. A entrada é presumida no fechamento do candle do sinal e os eventos são inferidos pelas máximas e mínimas dos candles seguintes. Não são considerados preenchimento real, decisão do usuário, comissão, taxas ou slippage.
 
+## Fronteira para execução futura
+
+A execução futura não será incorporada diretamente ao `SignalAnalyzer` nem ao indicador
+visual. A separação planejada é:
+
+```text
+SignalAnalyzer -> TradeSignal -> Simulação/Confirmação -> Adaptador permitido
+```
+
+O adaptador permitido deverá validar ambiente, conta, horário, risco, posição existente e
+duplicidade imediatamente antes de qualquer envio. Na ausência de confirmação ou diante de
+qualquer divergência, o estado padrão será não enviar.
+
+A primeira implementação será exclusivamente simulada. A confirmação manual será uma etapa
+separada. Automação real somente poderá existir em conta própria ou programa que permita
+bots explicitamente; a conta PRO da Take Profit Trader deverá permanecer bloqueada enquanto
+a regra oficial atual proibir bots e algos.
+
 ## Persistência v6
 
 O CSV v6 preserva os formatos anteriores e adiciona rodada, etapa, alvo selecionado, tolerância e intervalo do pullback. A chave estável inclui todos os parâmetros congelados. Um segundo arquivo em `TradeAssistant/Summaries` consolida cada dia e setup com resultados em R e moeda, riscos médios, sequência de stops e drawdown. Custos permanecem identificados como não incluídos.

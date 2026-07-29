@@ -343,3 +343,13 @@
 - cache de compilação limpo após o teste, sem arquivos `.resources.cs` residuais.
 - implementação registrada no commit `f34d91e`;
 - pull request 4 atualizado com a estratégia e a evidência da versão 1.0.
+
+### Planejamento da execução futura
+
+- mantida a versão atual sem acesso à conta e sem envio de ordens;
+- definida evolução em três marcos: execução simulada, confirmação manual e automação controlada;
+- separadas análise, acompanhamento, execução e integração com conta;
+- estabelecido bloqueio para ambientes que proíbem bots, incluindo a regra atual da Take Profit Trader PRO;
+- definidos portões mínimos de validação prospectiva, custos, Playback, Sim101, risco, duplicidade e botão de emergência;
+- decisão registrada em `docs/decisions/0007-prepare-controlled-execution.md`;
+- roadmap e arquitetura atualizados sem alterar o comportamento do indicador.
