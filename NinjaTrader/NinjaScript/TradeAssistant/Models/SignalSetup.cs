@@ -3,6 +3,9 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Models
     public enum SignalSetup
     {
         EmaCrossBaseline,
-        TrendPullback
+        TrendPullback,
+        ContextPullback,
+        EvidencePullback,
+        QualifiedPullback
     }
 }

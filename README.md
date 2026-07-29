@@ -6,7 +6,7 @@ Assistente visual de análise para NinjaTrader 8. A versão experimental identif
 
 ## Versão
 
-Versão atual: `0.8.1-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
+Versão atual: `1.1.0-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
 
 ## Primeira entrega
 
@@ -47,6 +47,17 @@ Versão atual: `0.8.1-beta.1`. A versão em execução aparece no cabeçalho do 
 - bloqueio de novos sinais quando os parâmetros divergem da rodada congelada.
 - CSV v7 sincronizado por dia para remover registros órfãos após reprocessamento;
 - análise diagnóstica automática por direção, hora e faixa de risco.
+- novo `ContextPullback` com VWAP de sessão, inclinação das EMAs, força do candle, distância em ATR e volume relativo;
+- score contextual de 0 a 6, com critérios simétricos para compras e vendas;
+- pullback anterior preservado silenciosamente como referência.
+- `EvidencePullback` como único candidato visível: MNQ vendido, abaixo de VWAP descendente, score mínimo 4/6, risco até USD 50 e alvo de 1R;
+- MES, compras e demais setups preservados somente para pesquisa silenciosa;
+- seleção offline separada por período temporal e regra congelada por pelo menos dez resultados decididos.
+- `QualifiedPullback` substitui o candidato visual anterior após o backtest de 149
+  dias: MNQ vendido, score mínimo 5/6, distância máxima de 2 ATR da VWAP, volume
+  relativo mínimo 1, risco entre USD 5 e USD 50, alvo 1,5R e validade de 12 candles;
+- rodada `qualified-149d-2026-07-v5` exige pelo menos 20 resultados decididos em dez
+  sessões, sem execução de ordens.
 
 ## Estrutura
 
@@ -89,17 +100,63 @@ docs/
 4. Em um gráfico, adicione o indicador **Trade Analysis Assistant**.
 5. Mantenha-a em ambiente simulado enquanto valida os sinais e os parâmetros.
 
-O **Modo de validação 0.8** vem ativado. Durante a rodada `forward-2026-07-v1`, mantenha EMA 9/21, ATR 14, stop 1,5 ATR, tolerância 0,1 ATR, intervalo de 3 candles, validade de 3 candles, risco/retorno configurado em 2R, risco máximo de USD 75 e política de descarte acima do limite. Se qualquer um desses parâmetros divergir, o painel avisa e bloqueia novos sinais para não misturar amostras.
+O modo de validação vem ativado. Durante a rodada `qualified-149d-2026-07-v5`,
+mantenha EMA 9/21, ATR 14, stop 1,5 ATR, tolerância 0,1 ATR, intervalo de 3 candles,
+risco/retorno configurado em 2R, validade configurada em 3 candles, risco máximo de
+USD 50 e política de descarte acima do limite. O candidato qualificado usa
+internamente alvo 1,5R e validade de 12 candles, independentemente desses dois campos
+gerais. Se a configuração-base divergir, o painel bloqueia novos sinais.
 
-O histórico bruto CSV v7 fica salvo em `Documents/NinjaTrader 8/TradeAssistant/Data`. Os resumos diários `validation_v2` ficam em `Documents/NinjaTrader 8/TradeAssistant/Summaries`, e os segmentos diagnósticos ficam em `Documents/NinjaTrader 8/TradeAssistant/Analysis`, sempre separados por ativo, período e dia. Os arquivos v6 e `validation_v1` anteriores são preservados como evidência da rodada encerrada. A propriedade **Risco máximo por contrato** aceita um valor na moeda do ativo; use `0` apenas fora da rodada congelada. A propriedade **Política do limite** define se o indicador apenas avisa ou descarta o sinal acima desse valor.
+O histórico bruto CSV v8 fica salvo em `Documents/NinjaTrader 8/TradeAssistant/Data`. Os resumos diários `validation_v3` ficam em `Documents/NinjaTrader 8/TradeAssistant/Summaries`, e os segmentos `segments_v2` ficam em `Documents/NinjaTrader 8/TradeAssistant/Analysis`, sempre separados por ativo, período e dia. Os formatos anteriores permanecem preservados. A propriedade **Risco máximo por contrato** aceita um valor na moeda do ativo; use `0` apenas fora da rodada congelada. A propriedade **Política do limite** define se o indicador apenas avisa ou descarta o sinal acima desse valor.
 
-A rodada diagnóstica começa em `2026-07-28`. Se o NinjaTrader recalcular dias anteriores, eles serão marcados como `HistoricalReference` e `EligibleForReview=No`.
+A rodada qualificada começa em `2026-07-30`. Se o NinjaTrader recalcular dias
+anteriores, eles serão marcados como `HistoricalReference` e `EligibleForReview=No`.
 
 Os valores financeiros são estimativas para um contrato baseadas na distância dos níveis e no valor do ponto. Não incluem comissão, taxas, slippage ou conversão para a moeda da conta.
 
 ## Próximo marco
 
-Compilar `0.8.1-beta.1` no NinjaTrader, confirmar a criação dos arquivos v7, `validation_v2` e `segments_v1` e coletar dados diagnósticos sem mudar os parâmetros. A próxima alteração de estratégia só será definida após comparar direção, horário e faixa de risco.
+O `QualifiedPullback` permanece disponível somente para pesquisa visual. Ele foi
+reprovado para o objetivo econômico de atingir USD 1.500 em até 20 pregões, mesmo
+testando de 1 a 30 micros. O próximo marco é pesquisar candidatos pela probabilidade
+de aprovação da avaliação, sem alterar o indicador até que um candidato passe pelo
+novo portão econômico.
+
+## Pesquisa offline
+
+O backtest reproduzível para arquivos OHLCV de cinco minutos está em
+`research/offline_backtest.py`. Ele não acessa o NinjaTrader, não envia ordens e
+separa cronologicamente seleção, validação e teste final.
+
+Exemplo:
+
+```powershell
+python research/offline_backtest.py `
+  --mnq CAMINHO_DO_MNQ.csv `
+  --mes CAMINHO_DO_MES.csv `
+  --output research/results/resultado.json `
+  --self-test
+```
+
+A primeira rodada de 58 dias não aprovou uma estratégia. A rodada ampliada de 149
+dias qualificou um novo candidato vendido de MNQ somente para observação visual,
+sem execução. Consulte
+`docs/data-audits/2026-07-29-offline-strategy-backtest-149d.md`.
+
+O simulador econômico está em `research/prop_evaluation.py`. Ele aplica a meta de
+USD 1.500, o prazo de 20 pregões, o trailing drawdown, a consistência e quantidades
+de 1 a 30 micros sobre todas as janelas históricas e sobre reamostragem em blocos.
+
+```powershell
+python research/prop_evaluation.py `
+  --mnq CAMINHO_DO_MNQ.csv `
+  --mes CAMINHO_DO_MES.csv `
+  --output research/results/resultado-avaliacao.json `
+  --self-test
+```
+
+O candidato qualificado foi reprovado no portão econômico. Consulte
+`docs/data-audits/2026-07-29-prop-evaluation-20d.md`.
 
 ## Documentação
 
@@ -108,6 +165,9 @@ Compilar `0.8.1-beta.1` no NinjaTrader, confirmar a criação dos arquivos v7, `
 - [Roteiro priorizado](docs/roadmap.md)
 - [Protocolo de validação](docs/validation-protocol.md)
 - [Registro cronológico do trabalho](docs/worklog.md)
+- [Backtest offline de MNQ e MES](docs/data-audits/2026-07-29-offline-strategy-backtest.md)
+- [Backtest offline ampliado de 149 dias](docs/data-audits/2026-07-29-offline-strategy-backtest-149d.md)
+- [Simulação da avaliação de 25k em 20 pregões](docs/data-audits/2026-07-29-prop-evaluation-20d.md)
 - [Auditoria inicial dos CSVs v2](docs/data-audits/2026-07-20-initial-v2-audit.md)
 - [Auditoria dos CSVs v2 regenerados](docs/data-audits/2026-07-20-regenerated-v2-audit.md)
 - [Análise de risco e alcance dos alvos](docs/data-audits/2026-07-20-risk-target-analysis.md)
@@ -124,4 +184,5 @@ Compilar `0.8.1-beta.1` no NinjaTrader, confirmar a criação dos arquivos v7, `
 - [Decisão de encerrar a primeira rodada e iniciar o diagnóstico](docs/decisions/0004-close-forward-round.md)
 - [Auditoria da primeira rodada prospectiva](docs/data-audits/2026-07-28-forward-v1-review.md)
 - [Redesenho da operação a partir dos logs v7](docs/data-audits/2026-07-28-v7-strategy-redesign.md)
+- [Decisão de testar o pullback contextual](docs/decisions/0005-test-context-pullback.md)
 - [Histórico de versões](CHANGELOG.md)

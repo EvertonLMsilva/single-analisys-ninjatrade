@@ -10,7 +10,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
 {
     public sealed class CsvSignalJournal
     {
-        private const string Header = "RecordKey,SignalId,SignalTime,ClosedAt,Instrument,BarsPeriod,Version,EvaluationType,EntryAssumption,OutcomeBasis,ValidationRound,ValidationStage,ValidationTargetR,ValidationSample,Setup,Direction,EntryPrice,StopPrice,TargetPrice,TickSize,PointValue,Currency,RiskPoints,RiskTicks,RiskCurrency,RewardCurrency,MaximumRiskPerContract,RiskLimitMode,RiskLimitStatus,RiskReward,ValidForBars,FastEmaPeriod,SlowEmaPeriod,AtrPeriod,StopAtrMultiplier,PullbackToleranceAtr,PullbackCooldownBars,Status,ResultR,MfeR,MaeR,BarsElapsed,FirstEvent,FirstEventAt,Target1RPrice,Target1RStatus,Target1RAt,Target1_5RPrice,Target1_5RStatus,Target1_5RAt,Target2RPrice,Target2RStatus,Target2RAt,Reason";
+        private const string Header = "RecordKey,SignalId,SignalTime,ClosedAt,Instrument,BarsPeriod,Version,EvaluationType,EntryAssumption,OutcomeBasis,ValidationRound,ValidationStage,ValidationTargetR,ValidationSample,Setup,Direction,EntryPrice,StopPrice,TargetPrice,TickSize,PointValue,Currency,RiskPoints,RiskTicks,RiskCurrency,RewardCurrency,MaximumRiskPerContract,RiskLimitMode,RiskLimitStatus,RiskReward,ValidForBars,FastEmaPeriod,SlowEmaPeriod,AtrPeriod,StopAtrMultiplier,PullbackToleranceAtr,PullbackCooldownBars,Status,ResultR,MfeR,MaeR,BarsElapsed,FirstEvent,FirstEventAt,Target1RPrice,Target1RStatus,Target1RAt,Target1_5RPrice,Target1_5RStatus,Target1_5RAt,Target2RPrice,Target2RStatus,Target2RAt,Reason,SessionVwap,VwapSlopeAtr,VwapDistanceAtr,FastEmaSlopeAtr,SlowEmaSlopeAtr,SessionHigh,SessionLow,CandleBodyAtr,CloseLocation,RelativeVolume,ContextScore,ContextPassed,ContextSummary";
         private static readonly object FileLock = new object();
 
         private readonly int atrPeriod;
@@ -219,14 +219,27 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 Number(signal.TargetTwoRPrice),
                 Csv(trackedSignal.TargetTwoRStatus.ToString()),
                 Csv(Iso(trackedSignal.TargetTwoRAt)),
-                Csv(signal.Reason));
+                Csv(signal.Reason),
+                Number(signal.Context.SessionVwap),
+                Number(signal.Context.VwapSlopeAtr),
+                Number(signal.Context.VwapDistanceAtr),
+                Number(signal.Context.FastEmaSlopeAtr),
+                Number(signal.Context.SlowEmaSlopeAtr),
+                Number(signal.Context.SessionHigh),
+                Number(signal.Context.SessionLow),
+                Number(signal.Context.CandleBodyAtr),
+                Number(signal.Context.CloseLocation),
+                Number(signal.Context.RelativeVolume),
+                signal.Context.Score.ToString(CultureInfo.InvariantCulture),
+                Csv(signal.Context.Passed ? "Yes" : "No"),
+                Csv(signal.Context.Summary));
         }
 
         private string GetFilePath(DateTime signalTime)
         {
             string fileName = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}_{1}_{2}_v7.csv",
+                "{0}_{1}_{2}_v8.csv",
                 signalTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 Sanitize(instrument),
                 Sanitize(barsPeriod));
@@ -235,6 +248,12 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
 
         private string GetRiskLimitStatus(TradeSignal signal)
         {
+            if (signal.Setup == SignalSetup.QualifiedPullback
+                && signal.RiskCurrency < ValidationPlan.FrozenMinimumRiskPerContract)
+            {
+                return "BelowMinimum";
+            }
+
             if (maximumRiskPerContract <= 0)
                 return "NotConfigured";
 

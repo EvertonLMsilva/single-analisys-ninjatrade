@@ -49,6 +49,23 @@ Esses parâmetros também acompanham cada linha do CSV quando se aplicam ao cál
 23. na versão 0.8.1, confirmar a criação do CSV bruto `v7`, do resumo `validation_v2` e da análise `segments_v1`;
 24. recarregar o gráfico e confirmar que a quantidade total do CSV v7 coincide com o resumo do mesmo dia e setup;
 25. confirmar que `TradeAssistant/Analysis` contém segmentos por `Direction`, `Hour` e `RiskBand`;
+26. na versão 0.9, confirmar a versão `0.9.0-beta.1` e a rodada `context-2026-07-v3`;
+27. confirmar risco máximo de USD 50 e alvo visual de 1R;
+28. confirmar que somente `ContextPullback` é desenhado e que `TrendPullback` permanece no CSV como referência;
+29. confirmar no CSV v8 os campos de VWAP, inclinação, estrutura da sessão, candle, volume e score;
+30. confirmar a criação de `validation_v3` e `segments_v2`;
+31. comparar uma compra aprovada com o gráfico e verificar preço acima da VWAP, VWAP ascendente, EMAs ascendentes, candle forte e distância máxima de 1,25 ATR;
+32. repetir a verificação de forma simétrica para uma venda;
+33. na versão 1.1, confirmar `1.1.0-beta.1` e a rodada
+    `qualified-149d-2026-07-v5`;
+34. no MNQ, confirmar que somente `MNQ VENDA VALIDADA 149D` é desenhado;
+35. confirmar direção vendida, score mínimo 5/6, distância máxima de 2 ATR e volume
+    relativo mínimo 1;
+36. confirmar alvo visual de 1,5R e validade de 12 candles;
+37. confirmar descarte abaixo de USD 5 e acima de USD 50 por contrato;
+38. no MES, confirmar ausência de candidato visual;
+39. confirmar que sinais históricos anteriores a 30/07 são
+    `HistoricalReference`;
 23. confirmar a criação do resumo em `TradeAssistant/Summaries`;
 24. alterar temporariamente um parâmetro e confirmar o aviso de configuração divergente e o bloqueio de novos sinais; depois restaurar o valor congelado.
 
@@ -111,3 +128,17 @@ Para esta rodada, a data de corte registrada no código é `2026-07-23`. Registr
 - estimar comissão e slippage antes de qualquer etapa posterior.
 
 Mesmo que a primeira revisão seja favorável, o objetivo maior permanece 20 sessões e 100 oportunidades antes de considerar encerrada a validação. Nenhum desses critérios autoriza automaticamente operação real.
+
+## 7. Rodada prospectiva 1.1
+
+A rodada `qualified-149d-2026-07-v5` começa em 30/07/2026. Somente linhas
+`ValidationSample=Forward` do setup `QualifiedPullback` participam da decisão.
+
+- mínimo de dez sessões;
+- mínimo de 20 resultados decididos;
+- parâmetros congelados;
+- custo externo de USD 5 por operação na análise;
+- ambiguidades tratadas como perda na avaliação conservadora;
+- expirados preservados como 0R bruto e sujeitos ao custo;
+- nenhuma execução automática;
+- interromper e investigar se a versão, rodada ou configuração exibida divergir.

@@ -64,6 +64,31 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Analysis
             DateTime createdAt,
             int validForBars)
         {
+            return CreatePullback(
+                SignalSetup.TrendPullback,
+                direction,
+                entryPrice,
+                technicalStopPrice,
+                riskRewardRatio,
+                tickSize,
+                pointValue,
+                createdAt,
+                validForBars,
+                SignalContext.Empty);
+        }
+
+        public TradeSignal CreatePullback(
+            SignalSetup setup,
+            SignalDirection direction,
+            double entryPrice,
+            double technicalStopPrice,
+            double riskRewardRatio,
+            double tickSize,
+            double pointValue,
+            DateTime createdAt,
+            int validForBars,
+            SignalContext context)
+        {
             double normalizedTickSize = tickSize > 0 ? tickSize : 1;
             double normalizedEntryPrice = RoundToTickSize(entryPrice, normalizedTickSize);
             double stopPrice = RoundToTickSize(technicalStopPrice, normalizedTickSize);
@@ -82,10 +107,12 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Analysis
             string reason = direction == SignalDirection.Long
                 ? "Pullback na EMA rapida com confirmacao compradora"
                 : "Pullback na EMA rapida com confirmacao vendedora";
+            if (context != null && context != SignalContext.Empty)
+                reason += " | " + context.Summary;
 
             return new TradeSignal(
                 Guid.NewGuid().ToString("N"),
-                SignalSetup.TrendPullback,
+                setup,
                 direction,
                 normalizedEntryPrice,
                 stopPrice,
@@ -94,8 +121,9 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Analysis
                 pointValue,
                 createdAt,
                 validForBars,
-                2,
-                reason);
+                context == null || context == SignalContext.Empty ? 2 : context.Score,
+                reason,
+                context);
         }
 
         private static double RoundToTickSize(double price, double tickSize)

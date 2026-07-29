@@ -7,8 +7,9 @@ Data da análise: 2026-07-20.
 - mesa: Take Profit Trader;
 - conta: USD 25.000;
 - drawdown máximo informado: USD 1.500;
-- orçamento máximo pessoal de perda por dia: USD 300;
+- limite pessoal de perda diária: ainda não definido;
 - risco por operação: ainda não definido.
+- requisito econômico do projeto: atingir USD 1.500 em no máximo 20 pregões.
 
 ## Regras externas verificadas
 
@@ -16,7 +17,9 @@ Na avaliação de 25k, a Take Profit Trader informa drawdown trailing de fim de 
 
 Na conta PRO, o trailing é intradiário e acompanha o pico do saldo, incluindo ganhos não realizados. O limite para de subir quando alcança o saldo inicial. Atingir o saldo mínimo pode liquidar a conta imediatamente.
 
-A comunicação atual da empresa informa remoção do limite diário obrigatório. O operador confirmou que os USD 300 são seu orçamento máximo pessoal de perda por dia, e não uma regra da mesa.
+A comunicação atual da empresa informa remoção do limite diário obrigatório. A menção
+anterior a USD 300 foi um mal-entendido e não deve ser tratada como limite escolhido
+pelo operador.
 
 Referências:
 
@@ -24,7 +27,10 @@ Referências:
 - https://takeprofittraderhelp.zendesk.com/hc/en-us/articles/15171769361053-PRO-Account-Rules
 - https://takeprofittraderhelp.zendesk.com/hc/en-us/articles/15169066911133-Rule-2-Do-Not-Exceed-Maximum-Position-Size
 
-## Cenários considerados
+## Cenários considerados na estimativa inicial
+
+Esta tabela foi produzida antes da definição da meta de 20 pregões e permanece apenas
+como registro histórico. Ela não determina mais o tamanho da posição.
 
 | Risco por operação | % do drawdown | % do limite diário | Três stops | MNQ aceitos | MES aceitos |
 |---:|---:|---:|---:|---:|---:|
@@ -34,18 +40,18 @@ Referências:
 | USD 90 | 6,0% | 30,0% | USD 270 | 15 de 40 | 40 de 40 |
 | USD 100 | 6,7% | 33,3% | USD 300 | 20 de 40 | 40 de 40 |
 
-## Recomendação inicial
+## Recomendação inicial — substituída
 
-- risco máximo técnico por operação: USD 75;
-- quantidade inicial: 1 microcontrato;
-- parada operacional diária: USD 225 ou 3 stops completos, o que acontecer primeiro;
-- teto pessoal absoluto: USD 300;
-- margem entre USD 225 e USD 300: USD 75 para comissão, taxas, slippage e variações de execução; essa margem não deve ser usada para iniciar uma nova operação;
-- sinal acima de USD 75: descartar, sem aproximar artificialmente o stop;
+- risco técnico máximo do candidato instalado: USD 50 por microcontrato;
+- não iniciar uma avaliação usando o candidato instalado;
+- não definir quantidade multiplicando o resultado médio até alcançar a meta;
+- limite diário e risco operacional serão definidos somente depois de existir um
+  candidato economicamente aprovado;
+- sinal acima de USD 50 por microcontrato: descartar, sem aproximar artificialmente o stop;
 - sinal descartado: registrar no CSV como `RiskRejected`;
 - não usar o máximo de 30 micros permitido pela mesa como referência de tamanho de posição.
 
-O limite de USD 75 é provisório e não garante cumprimento do trailing, especialmente em conta PRO. O indicador não acessa saldo, pico intradiário, drawdown restante ou ordens reais.
+O indicador não acessa saldo, pico intradiário, drawdown restante ou ordens reais.
 
 ## Impacto esperado na amostra atual
 
@@ -54,10 +60,15 @@ O limite de USD 75 é provisório e não garante cumprimento do trailing, especi
 - o exemplo de aproximadamente USD 154 de risco no MNQ seria descartado;
 - o filtro favorece o ativo que oferece stop técnico compatível com o orçamento financeiro.
 
-## Próximas decisões
+## Portão econômico atual
 
 Tipo inicial confirmado: conta de avaliação (`Test`).
 
-1. validar o filtro implementado sobre os mesmos candles históricos;
-2. conferir os sinais `RiskRejected` no CSV v3;
-3. somente depois comparar alvos de 1R, 1,5R e 2R.
+1. atingir USD 1.500 em no máximo 20 pregões;
+2. respeitar drawdown trailing de USD 1.500;
+3. obter pelo menos 60% de aprovação nas janelas históricas;
+4. limitar falhas por drawdown a no máximo 15%;
+5. confirmar o resultado fora da amostra de seleção.
+
+O `QualifiedPullback` foi reprovado nesse portão. Consulte
+`docs/data-audits/2026-07-29-prop-evaluation-20d.md`.

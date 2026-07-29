@@ -26,7 +26,13 @@ Este processo é obrigatório para cada incremento do Trade Assistant.
 5. criar um commit com descrição objetiva;
 6. enviar para a branch de trabalho e manter o pull request atualizado;
 7. sincronizar a pasta oficial e a instalação do NinjaTrader;
-8. validar a compilação real com F5 no NinjaScript Editor.
+8. depois de uma compilação do projeto `NinjaTrader.Custom` pelo terminal, executar a limpeza do projeto para remover os arquivos `.resources.cs` gerados em `obj`;
+9. validar a compilação real com F5 no NinjaScript Editor.
+
+A limpeza do passo 8 é obrigatória. O compilador interno do NinjaTrader percorre os arquivos
+temporários de `obj` e pode tentar compilar novamente os atributos de assembly criados pelo
+MSBuild, produzindo erros `CS0579` de atributos duplicados. Essa limpeza não remove os
+indicadores, configurações ou logs.
 
 ## Registro obrigatório de cada versão
 
