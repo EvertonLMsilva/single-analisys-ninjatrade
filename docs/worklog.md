@@ -353,3 +353,16 @@
 - definidos portões mínimos de validação prospectiva, custos, Playback, Sim101, risco, duplicidade e botão de emergência;
 - decisão registrada em `docs/decisions/0007-prepare-controlled-execution.md`;
 - roadmap e arquitetura atualizados sem alterar o comportamento do indicador.
+
+### Auditoria da base OHLCV de 58 dias
+
+- validados os arquivos de MNQ e MES em candles de cinco minutos;
+- confirmadas 11.576 linhas no MNQ e 11.731 no MES, sem duplicações ou erros de OHLCV;
+- confirmada aderência de todos os preços ao tick de 0,25;
+- identificada cobertura conjunta de 98,6787%;
+- detectados 152 candles históricos presentes no MES e ausentes no MNQ em 08–09/07 e 17/07;
+- identificados três candles finais adicionais do MES por diferença no horário de exportação;
+- definido uso da interseção dos timestamps para comparação entre ativos;
+- definidas exclusões das sessões incompletas do MNQ em análises que exigem contexto contínuo;
+- arquivos mantidos fora do repositório e identificados por SHA-256;
+- auditoria registrada em `docs/data-audits/2026-07-29-ohlcv-dataset-audit.md`.
