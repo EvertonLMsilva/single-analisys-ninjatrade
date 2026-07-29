@@ -107,6 +107,25 @@ Os valores financeiros são estimativas para um contrato baseadas na distância 
 
 Compilar `0.9.0-beta.1` no NinjaTrader, confirmar a criação dos arquivos v8, `validation_v3` e `segments_v2` e comparar `ContextPullback` com o pullback-base durante pelo menos cinco sessões completas.
 
+## Pesquisa offline
+
+O backtest reproduzível para arquivos OHLCV de cinco minutos está em
+`research/offline_backtest.py`. Ele não acessa o NinjaTrader, não envia ordens e
+separa cronologicamente seleção, validação e teste final.
+
+Exemplo:
+
+```powershell
+python research/offline_backtest.py `
+  --mnq CAMINHO_DO_MNQ.csv `
+  --mes CAMINHO_DO_MES.csv `
+  --output research/results/resultado.json `
+  --self-test
+```
+
+A rodada de 29/07/2026 não aprovou nenhuma nova estratégia. Consulte
+`docs/data-audits/2026-07-29-offline-strategy-backtest.md`.
+
 ## Documentação
 
 - [Arquitetura e limites](docs/architecture.md)
@@ -114,6 +133,7 @@ Compilar `0.9.0-beta.1` no NinjaTrader, confirmar a criação dos arquivos v8, `
 - [Roteiro priorizado](docs/roadmap.md)
 - [Protocolo de validação](docs/validation-protocol.md)
 - [Registro cronológico do trabalho](docs/worklog.md)
+- [Backtest offline de MNQ e MES](docs/data-audits/2026-07-29-offline-strategy-backtest.md)
 - [Auditoria inicial dos CSVs v2](docs/data-audits/2026-07-20-initial-v2-audit.md)
 - [Auditoria dos CSVs v2 regenerados](docs/data-audits/2026-07-20-regenerated-v2-audit.md)
 - [Análise de risco e alcance dos alvos](docs/data-audits/2026-07-20-risk-target-analysis.md)

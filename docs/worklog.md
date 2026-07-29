@@ -366,3 +366,22 @@
 - definidas exclusões das sessões incompletas do MNQ em análises que exigem contexto contínuo;
 - arquivos mantidos fora do repositório e identificados por SHA-256;
 - auditoria registrada em `docs/data-audits/2026-07-29-ohlcv-dataset-audit.md`.
+
+### Backtest offline de MNQ e MES
+
+- criado simulador reproduzível e sem acesso ao NinjaTrader ou à conta;
+- reconstruídos EMA 9/21, ATR 14, VWAP de sessão, volume relativo e score contextual;
+- avaliadas 15.552 configurações de pullback, retomada da VWAP e rompimento;
+- aplicada divisão cronológica 60/20/20, custo de USD 5 e pior caso para candles
+  ambíguos;
+- nenhum candidato comprado ou vendido passou no teste final;
+- nenhuma regra de compra de MES sobreviveu à seleção e à validação;
+- o candidato comprado de MNQ perdeu USD 230,25 no teste final;
+- a reconstrução da regra congelada terminou em -USD 251,50 no período completo,
+  apesar de +USD 152,50 no trecho mais recente;
+- mantido o indicador sem mudanças e sem execução automática;
+- decidido solicitar de seis a doze meses sincronizados de MNQ e MES antes da próxima
+  seleção;
+- análise registrada em
+  `docs/data-audits/2026-07-29-offline-strategy-backtest.md`;
+- decisão registrada em `docs/decisions/0008-reject-58-day-backtest-candidates.md`.
