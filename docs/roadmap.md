@@ -122,6 +122,12 @@ por busca massiva. O próximo incremento deve:
   volumétricas;
 - aceitar somente regras estáveis em blocos cronológicos e no portão econômico.
 
+Os ajustes desse incremento foram concluídos. Entre gatilhos manuais, portfólios
+pequenos e 12 modelos de eventos, o melhor observado foi MNQ em 2R. Ele ganhou
+USD 108,50 na validação e perdeu USD 145,50 na confirmação, sendo reprovado. Não
+serão escolhidos novos filtros sobre o mesmo histórico. A próxima seleção exige um
+bloco adicional de dados posteriores a 29/07.
+
 ## Fora do escopo atual
 
 - envio de ordens;

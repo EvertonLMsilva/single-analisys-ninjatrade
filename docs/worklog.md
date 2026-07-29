@@ -498,3 +498,24 @@
   `docs/data-audits/2026-07-29-regime-structure-1m.md`;
 - decisão registrada em
   `docs/decisions/0013-reject-first-regime-structure-trigger.md`.
+
+### Ajustes de gatilho e modelo de eventos
+
+- adicionados 12 mecanismos manuais com alvos de 1R, 1,5R e 2R;
+- avaliados 36 candidatos por ativo em seleção, validação e confirmação;
+- adicionados MFE e MAE de 60 minutos para todos os eventos;
+- um candidato individual passou na seleção e nenhum passou na validação;
+- formadas 71 combinações de até dois playbooks; nenhuma passou seleção e validação;
+- criado `research/event_model_walkforward.py` com 22 variáveis e amostragem de cinco
+  minutos;
+- testados MNQ, MES, 1R, 1,5R e 2R com modelo congelado e adaptação móvel de 40
+  pregões;
+- somente MNQ 2R congelado passou a validação: 17 operações, +USD 108,50 e PF 1,325;
+- o mesmo cenário falhou na confirmação: 16 operações, -USD 145,50 e PF 0,646;
+- com oito micros, o melhor portão econômico atingiu 28,57% de aprovação e drawdown
+  P90 de USD 1.684;
+- nenhum cenário aprovado e indicador preservado sem alterações;
+- análise registrada em
+  `docs/data-audits/2026-07-29-trigger-and-event-model-search.md`;
+- decisão registrada em
+  `docs/decisions/0014-reject-best-observed-event-model.md`.

@@ -188,6 +188,27 @@ A primeira hipótese (`TrendRetest` e `BalanceRejection`) foi reprovada e não f
 publicada no indicador. Consulte
 `docs/data-audits/2026-07-29-regime-structure-1m.md`.
 
+A continuação da pesquisa comparou gatilhos manuais, portfólios pequenos e um modelo
+logístico de eventos em walk-forward:
+
+```powershell
+python research/regime_trigger_walkforward.py `
+  --mnq CAMINHO_DO_MNQ_1MIN.csv `
+  --mes CAMINHO_DO_MES_1MIN.csv `
+  --output research/results/resultado-gatilhos.json `
+  --self-test
+
+python research/event_model_walkforward.py `
+  --mnq CAMINHO_DO_MNQ_1MIN.csv `
+  --mes CAMINHO_DO_MES_1MIN.csv `
+  --output research/results/resultado-modelo.json `
+  --self-test
+```
+
+O melhor cenário observado foi MNQ com alvo 2R: +USD 108,50 na validação e
+-USD 145,50 na confirmação. Ele foi reprovado e não alterou o indicador. Consulte
+`docs/data-audits/2026-07-29-trigger-and-event-model-search.md`.
+
 ## Documentação
 
 - [Arquitetura e limites](docs/architecture.md)
