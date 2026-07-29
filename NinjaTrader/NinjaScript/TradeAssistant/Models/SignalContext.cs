@@ -48,5 +48,26 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Models
         public int Score { get; private set; }
         public bool Passed { get; private set; }
         public string Summary { get; private set; }
+
+        public SignalContext WithDecision(bool passed, string decision)
+        {
+            string baseSummary = Summary
+                .Replace(" | APROVADO", string.Empty)
+                .Replace(" | REPROVADO", string.Empty);
+            return new SignalContext(
+                SessionVwap,
+                VwapSlopeAtr,
+                VwapDistanceAtr,
+                FastEmaSlopeAtr,
+                SlowEmaSlopeAtr,
+                SessionHigh,
+                SessionLow,
+                CandleBodyAtr,
+                CloseLocation,
+                RelativeVolume,
+                Score,
+                passed,
+                baseSummary + " | " + decision);
+        }
     }
 }

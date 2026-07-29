@@ -182,7 +182,8 @@ namespace NinjaTrader.NinjaScript.Indicators
         {
             bool baselineActive = signalTracker.HasActiveSignal(SignalSetup.TrendPullback);
             bool contextActive = signalTracker.HasActiveSignal(SignalSetup.ContextPullback);
-            if (!EnablePullbackSignals || (baselineActive && contextActive))
+            bool evidenceActive = signalTracker.HasActiveSignal(SignalSetup.EvidencePullback);
+            if (!EnablePullbackSignals || (baselineActive && contextActive && evidenceActive))
                 return;
 
             double tolerance = atr[0] * PullbackToleranceAtr;
@@ -203,7 +204,8 @@ namespace NinjaTrader.NinjaScript.Indicators
                     SignalDirection.Long,
                     Low[0] - instrumentTickSize,
                     baselineActive,
-                    contextActive);
+                    contextActive,
+                    evidenceActive);
                 return;
             }
 
@@ -224,7 +226,8 @@ namespace NinjaTrader.NinjaScript.Indicators
                     SignalDirection.Short,
                     High[0] + instrumentTickSize,
                     baselineActive,
-                    contextActive);
+                    contextActive,
+                    evidenceActive);
             }
         }
 
@@ -232,7 +235,8 @@ namespace NinjaTrader.NinjaScript.Indicators
             SignalDirection direction,
             double technicalStopPrice,
             bool baselineActive,
-            bool contextActive)
+            bool contextActive,
+            bool evidenceActive)
         {
             SignalContext context = BuildSignalContext(direction);
 
@@ -268,6 +272,31 @@ namespace NinjaTrader.NinjaScript.Indicators
                         ValidForBars,
                         context),
                     ShouldRenderSetup(SignalSetup.ContextPullback));
+            }
+
+            if (!evidenceActive
+                && ValidationPlan.MatchesEvidenceRule(
+                    Bars.Instrument.FullName,
+                    direction,
+                    Close[0],
+                    context))
+            {
+                SignalContext evidenceContext = context.WithDecision(
+                    true,
+                    "REGRA POR EVIDENCIA APROVADA");
+                RegisterAndRenderSignal(
+                    signalAnalyzer.CreatePullback(
+                        SignalSetup.EvidencePullback,
+                        direction,
+                        Close[0],
+                        technicalStopPrice,
+                        RiskRewardRatio,
+                        instrumentTickSize,
+                        instrumentPointValue,
+                        Time[0],
+                        ValidForBars,
+                        evidenceContext),
+                    ShouldRenderSetup(SignalSetup.EvidencePullback));
             }
         }
 
@@ -462,7 +491,9 @@ namespace NinjaTrader.NinjaScript.Indicators
                     GetComparisonStatusText(lastSignal.TargetOnePointFiveRStatus),
                     GetComparisonStatusText(lastSignal.TargetTwoRStatus),
                     GetFirstEventText(lastSignal.FirstEvent));
-            if (lastSignal != null && lastSignal.Signal.Setup == SignalSetup.ContextPullback)
+            if (lastSignal != null
+                && (lastSignal.Signal.Setup == SignalSetup.ContextPullback
+                    || lastSignal.Signal.Setup == SignalSetup.EvidencePullback))
             {
                 signalDetails += string.Format(
                     "\nContexto: {0}/6 | VWAP {1} | Dist. {2:N2} ATR | Vol. {3:N2}x\n{4}",
@@ -529,6 +560,8 @@ namespace NinjaTrader.NinjaScript.Indicators
                 return "CRUZAMENTO EMA";
             if (setup == SignalSetup.ContextPullback)
                 return "PULLBACK CONTEXTUAL";
+            if (setup == SignalSetup.EvidencePullback)
+                return "MNQ VENDA POR EVIDÊNCIA";
             return "PULLBACK BASE";
         }
 
@@ -771,7 +804,8 @@ namespace NinjaTrader.NinjaScript.Indicators
             Draw.Line(this, tagPrefix + ".Target", false, 0, validationTargetPrice, -signal.ValidForBars, validationTargetPrice, Brushes.MediumSeaGreen, DashStyleHelper.Dash, 2);
 
             string entryLabel = "ENTRADA " + FormatPrice(signal.EntryPrice);
-            if (signal.Setup == SignalSetup.ContextPullback)
+            if (signal.Setup == SignalSetup.ContextPullback
+                || signal.Setup == SignalSetup.EvidencePullback)
                 entryLabel += " | CONTEXTO " + signal.Context.Score + "/6";
             Draw.Text(this, tagPrefix + ".EntryLabel", entryLabel, -signal.ValidForBars, signal.EntryPrice, Brushes.DodgerBlue);
             Draw.Text(this, tagPrefix + ".StopLabel", "STOP " + FormatPrice(signal.StopPrice), -signal.ValidForBars, signal.StopPrice, Brushes.IndianRed);

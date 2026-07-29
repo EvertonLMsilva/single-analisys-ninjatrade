@@ -37,17 +37,21 @@ internal static class Program
         Assert(mesPullback.Stage == ValidationStage.Reference && !mesPullback.RenderOnChart, "MES pullback must stay hidden.");
 
         ValidationProfile mesContext = ValidationPlan.GetProfile("MES 09-26", SignalSetup.ContextPullback, 2);
-        Assert(mesContext.Stage == ValidationStage.Observation, "MES context must remain under observation.");
-        Assert(mesContext.RenderOnChart && mesContext.TargetR == 1, "MES context must render at 1R.");
+        Assert(mesContext.Stage == ValidationStage.Reference, "MES context must remain a reference.");
+        Assert(!mesContext.RenderOnChart && mesContext.TargetR == 1, "MES context must stay hidden at 1R.");
 
         ValidationProfile mnqPullback = ValidationPlan.GetProfile("MNQ 09-26", SignalSetup.TrendPullback, 2);
         Assert(mnqPullback.Stage == ValidationStage.Reference && !mnqPullback.RenderOnChart, "MNQ pullback must be a hidden reference.");
 
         ValidationProfile mnqContext = ValidationPlan.GetProfile("MNQ 09-26", SignalSetup.ContextPullback, 2);
-        Assert(mnqContext.Stage == ValidationStage.Candidate, "MNQ context must be the candidate.");
-        Assert(mnqContext.RenderOnChart && mnqContext.TargetR == 1, "MNQ context must render at 1R.");
-        Assert(!ValidationPlan.IsForwardSample(new DateTime(2026, 7, 28)), "Discovery dates must remain historical reference.");
-        Assert(ValidationPlan.IsForwardSample(new DateTime(2026, 7, 29)), "Context sample must start on July 29.");
+        Assert(mnqContext.Stage == ValidationStage.Reference, "Strict MNQ context must become a hidden reference.");
+        Assert(!mnqContext.RenderOnChart && mnqContext.TargetR == 1, "Strict MNQ context must stay hidden at 1R.");
+
+        ValidationProfile mnqEvidence = ValidationPlan.GetProfile("MNQ 09-26", SignalSetup.EvidencePullback, 2);
+        Assert(mnqEvidence.Stage == ValidationStage.Candidate, "MNQ evidence pullback must be the candidate.");
+        Assert(mnqEvidence.RenderOnChart && mnqEvidence.TargetR == 1, "MNQ evidence pullback must render at 1R.");
+        Assert(!ValidationPlan.IsForwardSample(new DateTime(2026, 7, 29)), "Selection dates must remain historical reference.");
+        Assert(ValidationPlan.IsForwardSample(new DateTime(2026, 7, 30)), "Evidence sample must start on July 30.");
     }
 
     private static void ValidateFrozenConfiguration()
@@ -116,6 +120,27 @@ internal static class Program
             1.1,
             1);
         Assert(approvedShort.Passed && approvedShort.Score == 6, "Aligned short context must pass.");
+        Assert(
+            ValidationPlan.MatchesEvidenceRule(
+                "MNQ 09-26",
+                SignalDirection.Short,
+                99,
+                approvedShort),
+            "MNQ short below a falling VWAP with score 4+ must pass the evidence rule.");
+        Assert(
+            !ValidationPlan.MatchesEvidenceRule(
+                "MNQ 09-26",
+                SignalDirection.Long,
+                101,
+                approvedLong),
+            "Long signals must not pass the selected evidence rule.");
+        Assert(
+            !ValidationPlan.MatchesEvidenceRule(
+                "MES 09-26",
+                SignalDirection.Short,
+                99,
+                approvedShort),
+            "MES must remain outside the selected evidence rule.");
     }
 
     private static void ValidateStatistics()

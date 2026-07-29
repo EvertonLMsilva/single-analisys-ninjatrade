@@ -4,6 +4,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Models
     {
         EmaCrossBaseline,
         TrendPullback,
-        ContextPullback
+        ContextPullback,
+        EvidencePullback
     }
 }

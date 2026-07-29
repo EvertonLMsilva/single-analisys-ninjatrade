@@ -78,7 +78,8 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
             {
                 SignalSetup.EmaCrossBaseline,
                 SignalSetup.TrendPullback,
-                SignalSetup.ContextPullback
+                SignalSetup.ContextPullback,
+                SignalSetup.EvidencePullback
             })
             {
                 bool hasSetup = false;

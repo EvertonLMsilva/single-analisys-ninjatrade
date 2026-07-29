@@ -6,7 +6,7 @@ Assistente visual de análise para NinjaTrader 8. A versão experimental identif
 
 ## Versão
 
-Versão atual: `0.9.1-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
+Versão atual: `1.0.0-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
 
 ## Primeira entrega
 
@@ -50,6 +50,9 @@ Versão atual: `0.9.1-beta.1`. A versão em execução aparece no cabeçalho do 
 - novo `ContextPullback` com VWAP de sessão, inclinação das EMAs, força do candle, distância em ATR e volume relativo;
 - score contextual de 0 a 6, com critérios simétricos para compras e vendas;
 - pullback anterior preservado silenciosamente como referência.
+- `EvidencePullback` como único candidato visível: MNQ vendido, abaixo de VWAP descendente, score mínimo 4/6, risco até USD 50 e alvo de 1R;
+- MES, compras e demais setups preservados somente para pesquisa silenciosa;
+- seleção offline separada por período temporal e regra congelada por pelo menos dez resultados decididos.
 
 ## Estrutura
 

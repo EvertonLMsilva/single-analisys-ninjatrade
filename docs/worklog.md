@@ -320,3 +320,24 @@
 - limites inferiores a USD 50 e políticas diferentes não são relaxados automaticamente;
 - mantidos os critérios de entrada, o início prospectivo em 29/07 e o formato CSV v8;
 - versão elevada para `0.9.1-beta.1`.
+
+### Seleção offline da estratégia 1.0
+
+- consolidados 14 arquivos v8, 531 registros e 380 candidatos de pullback entre 22 e 29/07;
+- separados os dados de 22 a 26/07 para seleção e de 27 a 29/07 para verificação posterior;
+- custos estimados em USD 3 por operação, ambiguidades tratadas como perda e risco limitado a USD 50;
+- nenhuma regra simples do MES permaneceu positiva nos dois períodos com amostra mínima;
+- compras de MNQ e combinação das duas direções não apresentaram estabilidade suficiente;
+- selecionado MNQ vendido, abaixo de VWAP descendente e score mínimo 4/6;
+- resultado retrospectivo: 23 sinais, 15 alvos, quatro stops, duas ambiguidades, duas expirações, USD 272 líquidos estimados, profit factor 2,23 e drawdown de USD 85;
+- criado setup `EvidencePullback` como único candidato visível;
+- mantidos MES, compras e setups anteriores como pesquisa silenciosa;
+- criada rodada `evidence-2026-07-v4`, iniciando em 30/07 e congelada por pelo menos dez resultados decididos;
+- versão elevada para `1.0.0-beta.1`;
+- análise registrada em `docs/data-audits/2026-07-29-evidence-strategy-selection.md`;
+- decisão registrada em `docs/decisions/0006-select-evidence-pullback.md`.
+- testes do núcleo concluídos com sucesso;
+- confirmada ausência de chamadas de execução de ordens ou acesso à conta;
+- código sincronizado com `bin/Custom/TradeAssistant` e conferido por hash;
+- projeto `NinjaTrader.Custom` compilado com zero erros;
+- cache de compilação limpo após o teste, sem arquivos `.resources.cs` residuais.

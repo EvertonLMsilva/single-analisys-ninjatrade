@@ -5,13 +5,13 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Configuration
 {
     public static class ValidationPlan
     {
-        public const string RoundId = "context-2026-07-v3";
+        public const string RoundId = "evidence-2026-07-v4";
         public const int EmaSlopeLookbackBars = 3;
         public const int VolumeAveragePeriod = 20;
         public const int MinimumSessions = 5;
         public const int MinimumDecidedSignals = 30;
         public const double FrozenMaximumRiskPerContract = 50.0;
-        public static readonly DateTime ForwardStartDate = new DateTime(2026, 7, 29);
+        public static readonly DateTime ForwardStartDate = new DateTime(2026, 7, 30);
 
         public static bool IsForwardSample(DateTime signalTime)
         {
@@ -32,28 +32,39 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Configuration
 
             if (masterInstrument == "MES")
             {
-                if (setup == SignalSetup.ContextPullback)
-                    return new ValidationProfile(setup, ValidationStage.Observation, 1.0, true);
-
                 return new ValidationProfile(setup, ValidationStage.Reference, 1.0, false);
             }
 
             if (masterInstrument == "MNQ")
             {
-                if (setup == SignalSetup.ContextPullback)
+                if (setup == SignalSetup.EvidencePullback)
                     return new ValidationProfile(setup, ValidationStage.Candidate, 1.0, true);
 
                 return new ValidationProfile(setup, ValidationStage.Reference, 1.0, false);
             }
 
-            return setup == SignalSetup.ContextPullback
+            return setup == SignalSetup.EvidencePullback
                 ? new ValidationProfile(setup, ValidationStage.Observation, 1.0, true)
                 : new ValidationProfile(setup, ValidationStage.Reference, 1.0, false);
         }
 
         public static ValidationProfile GetPrimaryProfile(string instrument, double configuredTargetR)
         {
-            return GetProfile(instrument, SignalSetup.ContextPullback, configuredTargetR);
+            return GetProfile(instrument, SignalSetup.EvidencePullback, configuredTargetR);
+        }
+
+        public static bool MatchesEvidenceRule(
+            string instrument,
+            SignalDirection direction,
+            double entryPrice,
+            SignalContext context)
+        {
+            return GetMasterInstrument(instrument) == "MNQ"
+                && direction == SignalDirection.Short
+                && context != null
+                && context.Score >= 4
+                && entryPrice < context.SessionVwap
+                && context.VwapSlopeAtr < 0;
         }
 
         public static double NormalizeMaximumRiskPerContract(

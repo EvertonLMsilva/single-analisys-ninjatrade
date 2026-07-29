@@ -1,5 +1,16 @@
 # Histórico de versões
 
+## 1.0.0-beta.1 — 2026-07-29
+
+- adotada seleção offline da estratégia em vez de ajustes sucessivos no gráfico;
+- analisados 531 registros v8 e 380 candidatos de pullback entre 22 e 29/07;
+- criado `EvidencePullback` para MNQ vendido, abaixo de VWAP descendente, score mínimo 4/6 e risco máximo de USD 50;
+- definido alvo de 1R e rodada `evidence-2026-07-v4`, iniciando em 30/07;
+- MES, compras e setups anteriores permanecem registrados silenciosamente, mas deixam de aparecer como recomendação;
+- regra congelada por pelo menos dez resultados decididos;
+- análise e decisão registradas na documentação;
+- mantida ausência total de execução automática e acesso à conta.
+
 ## 0.9.1-beta.1 — 2026-07-29
 
 - corrigida a migração de indicadores já salvos no workspace com limite de risco de USD 75;
