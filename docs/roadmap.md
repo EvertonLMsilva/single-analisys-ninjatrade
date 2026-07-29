@@ -59,6 +59,20 @@ Antes da migração do projeto antigo, foi aprovado um experimento controlado de
 - adicionar filtros visuais somente depois de observar uso real;
 - validar legibilidade em diferentes escalas e temas do gráfico.
 
+## Marco 4.5 — Viabilidade econômica da avaliação
+
+Situação: o candidato atual foi reprovado; redesenho pendente.
+
+- simular meta de USD 1.500 em no máximo 20 pregões;
+- aplicar drawdown trailing, mínimo de dias e regra de consistência;
+- testar quantidades sem confundir alavancagem com vantagem estatística;
+- exigir pelo menos 60% de aprovação e no máximo 15% de falha por drawdown;
+- manter seleção, validação e teste final separados;
+- impedir publicação no indicador enquanto nenhum candidato passar pelo portão.
+
+O `QualifiedPullback` atingiu no máximo 19,05% de aprovação nas janelas históricas.
+Nenhuma quantidade entre 1 e 30 micros passou pelo portão.
+
 ## Marco 6 — Preparar execução simulada
 
 - criar um contrato de execução separado do analisador;

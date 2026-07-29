@@ -1,5 +1,18 @@
 # Histórico de versões
 
+## Pesquisa econômica — 2026-07-29 (sem alteração de versão)
+
+- criado simulador da avaliação de 25k com meta de USD 1.500 em até 20 pregões;
+- aplicados trailing drawdown de USD 1.500, cinco dias ativos e consistência abaixo
+  de 50%;
+- avaliadas todas as 84 janelas históricas e 10.000 reamostragens em blocos para
+  cada quantidade de 1 a 30 micros;
+- nenhuma quantidade atingiu o portão de 60% de aprovação e no máximo 15% de falha
+  por drawdown;
+- `QualifiedPullback` reprovado como estratégia principal da avaliação e preservado
+  somente para pesquisa;
+- indicador, versão e comportamento no gráfico mantidos sem alteração.
+
 ## 1.1.0-beta.1 — 2026-07-29
 
 - criada a rodada `qualified-149d-2026-07-v5`, com início prospectivo em 30/07;

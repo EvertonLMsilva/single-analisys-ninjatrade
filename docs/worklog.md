@@ -430,3 +430,24 @@
 - cache temporário limpo e confirmada ausência de arquivos `.resources.cs`;
 - implementação registrada no commit `1b13f69`;
 - atualização vinculada ao pull request 4.
+
+### Simulação econômica da avaliação em 20 pregões
+
+- definido requisito de atingir USD 1.500 líquidos em no máximo 20 pregões;
+- criado `research/prop_evaluation.py`, sem acesso ao NinjaTrader ou envio de ordens;
+- aplicados drawdown trailing de USD 1.500, mínimo de cinco dias ativos e melhor dia
+  abaixo de 50% do lucro líquido;
+- testadas posições fixas de 1 a 30 micros sobre 84 janelas históricas de 20 sessões;
+- executadas 10.000 reamostragens determinísticas em blocos de cinco pregões para
+  cada quantidade;
+- reconciliadas as 86 operações e USD 442,50 do backtest qualificado;
+- nenhuma quantidade atingiu 60% de aprovação com no máximo 15% de quebra;
+- a maior taxa histórica foi 19,05%;
+- 18 micros, quantidade exigida pela média histórica, quebraram o drawdown em 66,67%
+  das janelas;
+- `QualifiedPullback` reprovado economicamente e mantido apenas para pesquisa;
+- indicador e versão `1.1.0-beta.1` preservados sem alteração;
+- análise registrada em
+  `docs/data-audits/2026-07-29-prop-evaluation-20d.md`;
+- decisão registrada em
+  `docs/decisions/0011-reject-qualified-pullback-for-prop-goal.md`.

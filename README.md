@@ -116,9 +116,11 @@ Os valores financeiros são estimativas para um contrato baseadas na distância 
 
 ## Próximo marco
 
-Compilar `1.1.0-beta.1` no NinjaTrader, confirmar o painel
-`MNQ VENDA VALIDADA 149D` e coletar pelo menos 20 resultados decididos em dez sessões
-sem alterar os parâmetros.
+O `QualifiedPullback` permanece disponível somente para pesquisa visual. Ele foi
+reprovado para o objetivo econômico de atingir USD 1.500 em até 20 pregões, mesmo
+testando de 1 a 30 micros. O próximo marco é pesquisar candidatos pela probabilidade
+de aprovação da avaliação, sem alterar o indicador até que um candidato passe pelo
+novo portão econômico.
 
 ## Pesquisa offline
 
@@ -141,6 +143,21 @@ dias qualificou um novo candidato vendido de MNQ somente para observação visua
 sem execução. Consulte
 `docs/data-audits/2026-07-29-offline-strategy-backtest-149d.md`.
 
+O simulador econômico está em `research/prop_evaluation.py`. Ele aplica a meta de
+USD 1.500, o prazo de 20 pregões, o trailing drawdown, a consistência e quantidades
+de 1 a 30 micros sobre todas as janelas históricas e sobre reamostragem em blocos.
+
+```powershell
+python research/prop_evaluation.py `
+  --mnq CAMINHO_DO_MNQ.csv `
+  --mes CAMINHO_DO_MES.csv `
+  --output research/results/resultado-avaliacao.json `
+  --self-test
+```
+
+O candidato qualificado foi reprovado no portão econômico. Consulte
+`docs/data-audits/2026-07-29-prop-evaluation-20d.md`.
+
 ## Documentação
 
 - [Arquitetura e limites](docs/architecture.md)
@@ -150,6 +167,7 @@ sem execução. Consulte
 - [Registro cronológico do trabalho](docs/worklog.md)
 - [Backtest offline de MNQ e MES](docs/data-audits/2026-07-29-offline-strategy-backtest.md)
 - [Backtest offline ampliado de 149 dias](docs/data-audits/2026-07-29-offline-strategy-backtest-149d.md)
+- [Simulação da avaliação de 25k em 20 pregões](docs/data-audits/2026-07-29-prop-evaluation-20d.md)
 - [Auditoria inicial dos CSVs v2](docs/data-audits/2026-07-20-initial-v2-audit.md)
 - [Auditoria dos CSVs v2 regenerados](docs/data-audits/2026-07-20-regenerated-v2-audit.md)
 - [Análise de risco e alcance dos alvos](docs/data-audits/2026-07-20-risk-target-analysis.md)
