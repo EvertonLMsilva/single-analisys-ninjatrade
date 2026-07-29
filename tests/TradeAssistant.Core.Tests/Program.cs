@@ -48,10 +48,23 @@ internal static class Program
         Assert(!mnqContext.RenderOnChart && mnqContext.TargetR == 1, "Strict MNQ context must stay hidden at 1R.");
 
         ValidationProfile mnqEvidence = ValidationPlan.GetProfile("MNQ 09-26", SignalSetup.EvidencePullback, 2);
-        Assert(mnqEvidence.Stage == ValidationStage.Candidate, "MNQ evidence pullback must be the candidate.");
-        Assert(mnqEvidence.RenderOnChart && mnqEvidence.TargetR == 1, "MNQ evidence pullback must render at 1R.");
+        Assert(mnqEvidence.Stage == ValidationStage.Reference, "Old MNQ evidence pullback must become a reference.");
+        Assert(!mnqEvidence.RenderOnChart && mnqEvidence.TargetR == 1, "Old MNQ evidence pullback must stay hidden at 1R.");
+
+        ValidationProfile mnqQualified = ValidationPlan.GetProfile("MNQ 09-26", SignalSetup.QualifiedPullback, 2);
+        Assert(mnqQualified.Stage == ValidationStage.Candidate, "Qualified MNQ pullback must be the candidate.");
+        Assert(
+            mnqQualified.RenderOnChart && mnqQualified.TargetR == ValidationPlan.QualifiedTargetR,
+            "Qualified MNQ pullback must render at the frozen 1.5R target.");
+
+        ValidationProfile mesQualified = ValidationPlan.GetProfile("MES 09-26", SignalSetup.QualifiedPullback, 2);
+        Assert(
+            mesQualified.Stage == ValidationStage.Reference
+                && !mesQualified.RenderOnChart
+                && mesQualified.TargetR == ValidationPlan.QualifiedTargetR,
+            "MES qualified profile must stay hidden.");
         Assert(!ValidationPlan.IsForwardSample(new DateTime(2026, 7, 29)), "Selection dates must remain historical reference.");
-        Assert(ValidationPlan.IsForwardSample(new DateTime(2026, 7, 30)), "Evidence sample must start on July 30.");
+        Assert(ValidationPlan.IsForwardSample(new DateTime(2026, 7, 30)), "Qualified sample must start on July 30.");
     }
 
     private static void ValidateFrozenConfiguration()
@@ -71,6 +84,10 @@ internal static class Program
         Assert(
             ValidationPlan.NormalizeMaximumRiskPerContract(75, RiskLimitMode.SomenteAvisar) == 75,
             "Warning-only configurations must not be silently changed.");
+        Assert(ValidationPlan.IsQualifiedRiskEligible(5), "Qualified minimum risk must be accepted.");
+        Assert(ValidationPlan.IsQualifiedRiskEligible(50), "Qualified maximum risk must be accepted.");
+        Assert(!ValidationPlan.IsQualifiedRiskEligible(4.5), "Risk below USD 5 must be rejected.");
+        Assert(!ValidationPlan.IsQualifiedRiskEligible(50.5), "Risk above USD 50 must be rejected.");
     }
 
     private static void ValidateMarketContext()
@@ -141,6 +158,40 @@ internal static class Program
                 99,
                 approvedShort),
             "MES must remain outside the selected evidence rule.");
+        Assert(
+            ValidationPlan.MatchesQualifiedRule(
+                "MNQ 09-26",
+                SignalDirection.Short,
+                approvedShort),
+            "Aligned MNQ short with score 5+, distance up to 2 ATR and volume 1+ must qualify.");
+        Assert(
+            !ValidationPlan.MatchesQualifiedRule(
+                "MNQ 09-26",
+                SignalDirection.Long,
+                approvedLong),
+            "Long signals must not pass the qualified rule.");
+        Assert(
+            !ValidationPlan.MatchesQualifiedRule(
+                "MES 09-26",
+                SignalDirection.Short,
+                approvedShort),
+            "MES must not pass the qualified rule.");
+        SignalContext lowVolume = new SignalContext(
+            100, -0.1, 1, -0.2, -0.1, 102, 98, 0.3, 0.2, 0.9, 5, true, "low volume");
+        Assert(
+            !ValidationPlan.MatchesQualifiedRule(
+                "MNQ 09-26",
+                SignalDirection.Short,
+                lowVolume),
+            "Relative volume below 1 must reject the qualified rule.");
+        SignalContext tooFarFromVwap = new SignalContext(
+            100, -0.1, 2.01, -0.2, -0.1, 103, 97, 0.3, 0.2, 1.1, 5, true, "too far");
+        Assert(
+            !ValidationPlan.MatchesQualifiedRule(
+                "MNQ 09-26",
+                SignalDirection.Short,
+                tooFarFromVwap),
+            "VWAP distance above 2 ATR must reject the qualified rule.");
     }
 
     private static void ValidateStatistics()

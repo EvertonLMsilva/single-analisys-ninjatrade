@@ -24,10 +24,10 @@ escolha dos parâmetros.
 ## Motivo
 
 O candidato terminou positivo na seleção, validação e teste final. No teste foram 15
-operações, +USD 216,25, profit factor 1,877 e drawdown de USD 124. Todos os 12
+operações, +USD 216,25, profit factor 1,877 e drawdown de USD 124. Todos os 26
 candidatos que sobreviveram antes do teste também passaram o portão final.
 
-A regra instalada terminou negativa nos três períodos e em -USD 1.548,50 no total.
+A regra instalada terminou negativa nos três períodos e em -USD 1.267,00 no total.
 
 ## Consequências
 

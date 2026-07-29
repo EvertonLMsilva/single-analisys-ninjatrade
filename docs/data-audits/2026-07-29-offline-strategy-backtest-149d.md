@@ -38,6 +38,7 @@ O método preserva a rodada anterior:
 - risco entre USD 5 e USD 50 por contrato;
 - custo conservador de USD 5 por operação completa;
 - pior caso quando stop e alvo aparecem no mesmo candle;
+- expiração contabilizada como 0R bruto, mantendo o custo da operação;
 - somente uma operação simultânea por configuração;
 - seleção cronológica 60/20/20;
 - mínimo de 15 operações na seleção e 5 na validação;
@@ -67,10 +68,10 @@ volume relativo de pelo menos 0,8.
 
 | Período | Operações | Resultado líquido | Expectativa | PF | Drawdown |
 |---|---:|---:|---:|---:|---:|
-| Seleção | 58 | +USD 166,50 | +USD 2,87 | 1,169 | USD 170,75 |
+| Seleção | 58 | +USD 132,50 | +USD 2,28 | 1,135 | USD 177,75 |
 | Validação | 13 | +USD 93,75 | +USD 7,21 | 1,380 | USD 113,50 |
 | Teste final | 15 | **+USD 216,25** | **+USD 14,42** | **1,877** | USD 124,00 |
-| Total | 86 | **+USD 476,50** | **+USD 5,54** | **1,323** | **USD 198,25** |
+| Total | 86 | **+USD 442,50** | **+USD 5,15** | **1,301** | **USD 205,25** |
 
 No total foram 43 alvos, 34 stops, cinco expirações e quatro ambiguidades tratadas
 como stop.
@@ -79,17 +80,17 @@ como stop.
 
 | Mês | Operações | Resultado | PF |
 |---|---:|---:|---:|
-| Março | 27 | +USD 296,25 | 1,695 |
-| Abril | 24 | -USD 29,75 | 0,926 |
-| Maio | 11 | -USD 127,50 | 0,476 |
+| Março | 27 | +USD 278,75 | 1,646 |
+| Abril | 24 | -USD 69,25 | 0,833 |
+| Maio | 11 | -USD 104,50 | 0,526 |
 | Junho | 9 | +USD 121,25 | 1,763 |
 | Julho | 15 | +USD 216,25 | 1,877 |
 
 Três dos cinco meses foram positivos. Maio mostra que a regra ainda atravessa regimes
 desfavoráveis e não deve ser tratada como renda constante.
 
-Os 12 candidatos que sobreviveram antes de abrir o teste final também terminaram o
-teste positivos e passaram o portão final. O resultado mediano deles foi +USD 87,88,
+Os 26 candidatos que sobreviveram antes de abrir o teste final também terminaram o
+teste positivos e passaram o portão final. O resultado mediano deles foi +USD 77,75,
 com intervalo entre +USD 28,00 e +USD 216,25. Isso reduz a dependência de uma única
 combinação exata.
 
@@ -99,9 +100,9 @@ combinação exata.
 - risco mediano: USD 34,00;
 - risco médio: USD 33,32;
 - risco máximo: USD 50,00;
-- com custo de USD 3: +USD 648,50 e PF 1,464;
-- com custo de USD 5: +USD 476,50 e PF 1,323;
-- com custo de USD 7: +USD 304,50 e PF 1,196.
+- com custo de USD 3: +USD 614,50 e PF 1,443;
+- com custo de USD 5: +USD 442,50 e PF 1,301;
+- com custo de USD 7: +USD 270,50 e PF 1,174.
 
 A estratégia permaneceu positiva no cenário de custo mais alto.
 
@@ -110,9 +111,9 @@ A estratégia permaneceu positiva no cenário de custo mais alto.
 A reconstrução da regra `EvidencePullback` atualmente congelada terminou:
 
 - 576 operações;
-- -USD 1.548,50;
-- profit factor 0,824;
-- drawdown de USD 1.965,00;
+- -USD 1.267,00;
+- profit factor 0,846;
+- drawdown de USD 1.728,00;
 - resultado negativo na seleção, validação e teste final.
 
 O resultado inicial positivo dos logs cobria menos versões e menos dias. A base

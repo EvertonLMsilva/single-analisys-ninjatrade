@@ -1,5 +1,20 @@
 # Histórico de versões
 
+## 1.1.0-beta.1 — 2026-07-29
+
+- criada a rodada `qualified-149d-2026-07-v5`, com início prospectivo em 30/07;
+- adicionado `QualifiedPullback` como único candidato visível no MNQ;
+- congelados venda, score mínimo 5/6, distância máxima de 2 ATR da VWAP, volume
+  relativo mínimo 1, alvo de 1,5R e validade de 12 candles;
+- definido risco técnico aceito entre USD 5 e USD 50 por contrato;
+- `EvidencePullback`, compras, MES e demais setups passam a referências silenciosas;
+- painel identifica o setup como `MNQ VENDA VALIDADA 149D`;
+- corrigido o backtest para tratar expiração como 0R bruto, igual ao acompanhamento
+  do NinjaTrader;
+- seleção ampliada validada em 103 sessões de MNQ, com +USD 216,25 e PF 1,877 no
+  teste final separado;
+- mantida ausência total de execução automática e acesso à conta.
+
 ## 1.0.0-beta.1 — 2026-07-29
 
 - adotada seleção offline da estratégia em vez de ajustes sucessivos no gráfico;

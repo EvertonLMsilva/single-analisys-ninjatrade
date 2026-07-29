@@ -248,6 +248,12 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
 
         private string GetRiskLimitStatus(TradeSignal signal)
         {
+            if (signal.Setup == SignalSetup.QualifiedPullback
+                && signal.RiskCurrency < ValidationPlan.FrozenMinimumRiskPerContract)
+            {
+                return "BelowMinimum";
+            }
+
             if (maximumRiskPerContract <= 0)
                 return "NotConfigured";
 

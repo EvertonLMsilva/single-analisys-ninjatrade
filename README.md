@@ -6,7 +6,7 @@ Assistente visual de análise para NinjaTrader 8. A versão experimental identif
 
 ## Versão
 
-Versão atual: `1.0.0-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
+Versão atual: `1.1.0-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
 
 ## Primeira entrega
 
@@ -53,6 +53,11 @@ Versão atual: `1.0.0-beta.1`. A versão em execução aparece no cabeçalho do 
 - `EvidencePullback` como único candidato visível: MNQ vendido, abaixo de VWAP descendente, score mínimo 4/6, risco até USD 50 e alvo de 1R;
 - MES, compras e demais setups preservados somente para pesquisa silenciosa;
 - seleção offline separada por período temporal e regra congelada por pelo menos dez resultados decididos.
+- `QualifiedPullback` substitui o candidato visual anterior após o backtest de 149
+  dias: MNQ vendido, score mínimo 5/6, distância máxima de 2 ATR da VWAP, volume
+  relativo mínimo 1, risco entre USD 5 e USD 50, alvo 1,5R e validade de 12 candles;
+- rodada `qualified-149d-2026-07-v5` exige pelo menos 20 resultados decididos em dez
+  sessões, sem execução de ordens.
 
 ## Estrutura
 
@@ -95,17 +100,25 @@ docs/
 4. Em um gráfico, adicione o indicador **Trade Analysis Assistant**.
 5. Mantenha-a em ambiente simulado enquanto valida os sinais e os parâmetros.
 
-O modo de validação vem ativado. Durante a rodada `context-2026-07-v3`, mantenha EMA 9/21, ATR 14, stop 1,5 ATR, tolerância 0,1 ATR, intervalo de 3 candles, validade de 3 candles, risco/retorno configurado em 2R, risco máximo de USD 50 e política de descarte acima do limite. Se qualquer um desses parâmetros divergir, o painel avisa e bloqueia novos sinais para não misturar amostras.
+O modo de validação vem ativado. Durante a rodada `qualified-149d-2026-07-v5`,
+mantenha EMA 9/21, ATR 14, stop 1,5 ATR, tolerância 0,1 ATR, intervalo de 3 candles,
+risco/retorno configurado em 2R, validade configurada em 3 candles, risco máximo de
+USD 50 e política de descarte acima do limite. O candidato qualificado usa
+internamente alvo 1,5R e validade de 12 candles, independentemente desses dois campos
+gerais. Se a configuração-base divergir, o painel bloqueia novos sinais.
 
 O histórico bruto CSV v8 fica salvo em `Documents/NinjaTrader 8/TradeAssistant/Data`. Os resumos diários `validation_v3` ficam em `Documents/NinjaTrader 8/TradeAssistant/Summaries`, e os segmentos `segments_v2` ficam em `Documents/NinjaTrader 8/TradeAssistant/Analysis`, sempre separados por ativo, período e dia. Os formatos anteriores permanecem preservados. A propriedade **Risco máximo por contrato** aceita um valor na moeda do ativo; use `0` apenas fora da rodada congelada. A propriedade **Política do limite** define se o indicador apenas avisa ou descarta o sinal acima desse valor.
 
-A rodada contextual começa em `2026-07-29`. Se o NinjaTrader recalcular dias anteriores, eles serão marcados como `HistoricalReference` e `EligibleForReview=No`.
+A rodada qualificada começa em `2026-07-30`. Se o NinjaTrader recalcular dias
+anteriores, eles serão marcados como `HistoricalReference` e `EligibleForReview=No`.
 
 Os valores financeiros são estimativas para um contrato baseadas na distância dos níveis e no valor do ponto. Não incluem comissão, taxas, slippage ou conversão para a moeda da conta.
 
 ## Próximo marco
 
-Compilar `0.9.0-beta.1` no NinjaTrader, confirmar a criação dos arquivos v8, `validation_v3` e `segments_v2` e comparar `ContextPullback` com o pullback-base durante pelo menos cinco sessões completas.
+Compilar `1.1.0-beta.1` no NinjaTrader, confirmar o painel
+`MNQ VENDA VALIDADA 149D` e coletar pelo menos 20 resultados decididos em dez sessões
+sem alterar os parâmetros.
 
 ## Pesquisa offline
 

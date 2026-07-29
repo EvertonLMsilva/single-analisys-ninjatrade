@@ -74,7 +74,8 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 SignalSetup.EmaCrossBaseline,
                 SignalSetup.TrendPullback,
                 SignalSetup.ContextPullback,
-                SignalSetup.EvidencePullback
+                SignalSetup.EvidencePullback,
+                SignalSetup.QualifiedPullback
             })
             {
                 List<TrackedSignal> setupSignals = Filter(signals, day, setup, null, null, null);

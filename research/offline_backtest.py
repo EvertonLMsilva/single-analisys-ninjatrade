@@ -394,12 +394,7 @@ def simulate_candidate(
         else:
             last_index = min(signal_index + candidate.valid_bars, len(bars) - 1)
         if outcome == "Expired":
-            exit_close = bars[last_index].close
-            gross = (
-                (exit_close - entry) * point_value
-                if is_long
-                else (entry - exit_close) * point_value
-            )
+            gross = 0.0
         trades.append(
             Trade(
                 instrument,
@@ -710,7 +705,7 @@ def run_backtest(mnq_path: Path, mes_path: Path) -> dict:
             "entry_assumption": "Fechamento do candle do gatilho",
             "first_evaluated_bar": "Candle seguinte",
             "same_bar_target_and_stop": "Pior caso: stop",
-            "expiry": "Saída no fechamento do último candle válido",
+            "expiry": "Resultado bruto 0R no último candle válido",
             "split": "60% seleção, 20% validação, 20% teste final por sessão",
         },
         "alignment": alignment,
@@ -822,7 +817,7 @@ def run_self_tests() -> None:
     cases = (
         (102.0, 99.0, 101.0, "Target", 10.0),
         (101.0, 98.0, 99.0, "Stop", -10.0),
-        (101.0, 99.0, 101.0, "Expired", 5.0),
+        (101.0, 99.0, 101.0, "Expired", 0.0),
     )
     for high, low, close, expected_status, expected_gross in cases:
         case_bars = [

@@ -394,15 +394,38 @@
 - repetidas 15.552 configurações com teste final separado;
 - qualificado MNQ vendido, pullback, score 5/6, distância máxima de 2 ATR, volume
   relativo mínimo 1, alvo 1,5R e validade de 12 candles;
-- resultado total do candidato: 86 operações, +USD 476,50, PF 1,323 e drawdown de
-  USD 198,25 com custo de USD 5;
+- resultado total do candidato: 86 operações, +USD 442,50, PF 1,301 e drawdown de
+  USD 205,25 com custo de USD 5;
 - resultado no teste final: 15 operações, +USD 216,25 e PF 1,877;
-- os 12 sobreviventes pré-teste também passaram o teste final;
+- os 26 sobreviventes pré-teste também passaram o teste final;
 - mantida reprovação de compras e MES;
-- reconstrução da regra instalada: -USD 1.548,50 e PF 0,824;
+- reconstrução da regra instalada: -USD 1.267,00 e PF 0,846;
 - nenhuma alteração realizada no indicador ou em sua instalação;
 - auditoria registrada em `docs/data-audits/2026-07-29-ohlcv-dataset-audit-149d.md`;
 - análise registrada em
   `docs/data-audits/2026-07-29-offline-strategy-backtest-149d.md`;
 - decisão registrada em
   `docs/decisions/0009-qualify-149-day-mnq-short-candidate.md`.
+
+### Implementação do candidato qualificado 1.1
+
+- corrigido o simulador para contabilizar expiração como 0R bruto, alinhado ao
+  NinjaTrader;
+- repetida integralmente a seleção de 149 dias;
+- mantido o mesmo candidato, com +USD 216,25 e PF 1,877 no teste final;
+- resultado total conservador atualizado para +USD 442,50 e PF 1,301;
+- todos os 26 sobreviventes pré-teste passaram o teste final;
+- criado setup `QualifiedPullback`;
+- congelados MNQ vendido, score 5/6, distância máxima de 2 ATR, volume relativo
+  mínimo 1, alvo 1,5R, validade de 12 candles e risco entre USD 5 e USD 50;
+- `EvidencePullback` passa a referência silenciosa;
+- criada rodada `qualified-149d-2026-07-v5`, iniciando em 30/07;
+- versão elevada para `1.1.0-beta.1`;
+- mantida ausência de execução automática e acesso à conta.
+- testes do núcleo concluídos com sucesso;
+- backtest reproduzido deterministicamente e reconciliado com a documentação;
+- 23 arquivos sincronizados com a instalação oficial, sem divergências de hash;
+- projeto real `NinjaTrader.Custom` compilado com zero erros;
+- avisos da compilação pertencem ao conjunto geral de scripts instalado;
+- cache temporário limpo e confirmada ausência de arquivos `.resources.cs`;
+- atualização vinculada ao pull request 4.

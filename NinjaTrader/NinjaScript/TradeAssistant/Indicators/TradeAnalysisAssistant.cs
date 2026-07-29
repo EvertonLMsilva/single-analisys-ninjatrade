@@ -183,7 +183,9 @@ namespace NinjaTrader.NinjaScript.Indicators
             bool baselineActive = signalTracker.HasActiveSignal(SignalSetup.TrendPullback);
             bool contextActive = signalTracker.HasActiveSignal(SignalSetup.ContextPullback);
             bool evidenceActive = signalTracker.HasActiveSignal(SignalSetup.EvidencePullback);
-            if (!EnablePullbackSignals || (baselineActive && contextActive && evidenceActive))
+            bool qualifiedActive = signalTracker.HasActiveSignal(SignalSetup.QualifiedPullback);
+            if (!EnablePullbackSignals
+                || (baselineActive && contextActive && evidenceActive && qualifiedActive))
                 return;
 
             double tolerance = atr[0] * PullbackToleranceAtr;
@@ -205,7 +207,8 @@ namespace NinjaTrader.NinjaScript.Indicators
                     Low[0] - instrumentTickSize,
                     baselineActive,
                     contextActive,
-                    evidenceActive);
+                    evidenceActive,
+                    qualifiedActive);
                 return;
             }
 
@@ -227,7 +230,8 @@ namespace NinjaTrader.NinjaScript.Indicators
                     High[0] + instrumentTickSize,
                     baselineActive,
                     contextActive,
-                    evidenceActive);
+                    evidenceActive,
+                    qualifiedActive);
             }
         }
 
@@ -236,7 +240,8 @@ namespace NinjaTrader.NinjaScript.Indicators
             double technicalStopPrice,
             bool baselineActive,
             bool contextActive,
-            bool evidenceActive)
+            bool evidenceActive,
+            bool qualifiedActive)
         {
             SignalContext context = BuildSignalContext(direction);
 
@@ -297,6 +302,30 @@ namespace NinjaTrader.NinjaScript.Indicators
                         ValidForBars,
                         evidenceContext),
                     ShouldRenderSetup(SignalSetup.EvidencePullback));
+            }
+
+            if (!qualifiedActive
+                && ValidationPlan.MatchesQualifiedRule(
+                    Bars.Instrument.FullName,
+                    direction,
+                    context))
+            {
+                SignalContext qualifiedContext = context.WithDecision(
+                    true,
+                    "REGRA 149D APROVADA");
+                RegisterAndRenderSignal(
+                    signalAnalyzer.CreatePullback(
+                        SignalSetup.QualifiedPullback,
+                        direction,
+                        Close[0],
+                        technicalStopPrice,
+                        ValidationPlan.QualifiedTargetR,
+                        instrumentTickSize,
+                        instrumentPointValue,
+                        Time[0],
+                        ValidationPlan.QualifiedValidForBars,
+                        qualifiedContext),
+                    ShouldRenderSetup(SignalSetup.QualifiedPullback));
             }
         }
 
@@ -410,6 +439,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         private bool ShouldRejectByRisk(TradeSignal signal)
         {
+            if (signal.Setup == SignalSetup.QualifiedPullback
+                && !ValidationPlan.IsQualifiedRiskEligible(signal.RiskCurrency))
+            {
+                return true;
+            }
+
             return RiskLimitPolicy == RiskLimitMode.DescartarAcimaDoLimite
                 && MaximumRiskPerContract > 0
                 && signal.RiskCurrency > MaximumRiskPerContract;
@@ -493,7 +528,8 @@ namespace NinjaTrader.NinjaScript.Indicators
                     GetFirstEventText(lastSignal.FirstEvent));
             if (lastSignal != null
                 && (lastSignal.Signal.Setup == SignalSetup.ContextPullback
-                    || lastSignal.Signal.Setup == SignalSetup.EvidencePullback))
+                    || lastSignal.Signal.Setup == SignalSetup.EvidencePullback
+                    || lastSignal.Signal.Setup == SignalSetup.QualifiedPullback))
             {
                 signalDetails += string.Format(
                     "\nContexto: {0}/6 | VWAP {1} | Dist. {2:N2} ATR | Vol. {3:N2}x\n{4}",
@@ -517,7 +553,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                 statistics.ResultR,
                 statistics.RiskRejected,
                 GetJournalStatus(),
-                GetSetupText(profile.Setup),
+                GetSetupText(profile.Setup, profile.Stage),
                 GetValidationStageText(profile.Stage),
                 profile.TargetR,
                 configurationStatus,
@@ -554,7 +590,7 @@ namespace NinjaTrader.NinjaScript.Indicators
             return journalOk && summaryOk && segmentOk ? "ATIVO" : "ERRO";
         }
 
-        private static string GetSetupText(SignalSetup setup)
+        private static string GetSetupText(SignalSetup setup, ValidationStage stage)
         {
             if (setup == SignalSetup.EmaCrossBaseline)
                 return "CRUZAMENTO EMA";
@@ -562,6 +598,10 @@ namespace NinjaTrader.NinjaScript.Indicators
                 return "PULLBACK CONTEXTUAL";
             if (setup == SignalSetup.EvidencePullback)
                 return "VENDA POR EVIDÊNCIA";
+            if (setup == SignalSetup.QualifiedPullback)
+                return stage == ValidationStage.Candidate
+                    ? "MNQ VENDA VALIDADA 149D"
+                    : "SEM CANDIDATO PARA ESTE ATIVO";
             return "PULLBACK BASE";
         }
 
@@ -591,6 +631,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         private string GetRiskLimitStatus(TradeSignal signal)
         {
+            if (signal.Setup == SignalSetup.QualifiedPullback
+                && signal.RiskCurrency < ValidationPlan.FrozenMinimumRiskPerContract)
+            {
+                return "ABAIXO DO MÍNIMO";
+            }
+
             if (MaximumRiskPerContract <= 0)
                 return "NÃO CONFIGURADO";
 
@@ -805,7 +851,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 
             string entryLabel = "ENTRADA " + FormatPrice(signal.EntryPrice);
             if (signal.Setup == SignalSetup.ContextPullback
-                || signal.Setup == SignalSetup.EvidencePullback)
+                || signal.Setup == SignalSetup.EvidencePullback
+                || signal.Setup == SignalSetup.QualifiedPullback)
                 entryLabel += " | CONTEXTO " + signal.Context.Score + "/6";
             Draw.Text(this, tagPrefix + ".EntryLabel", entryLabel, -signal.ValidForBars, signal.EntryPrice, Brushes.DodgerBlue);
             Draw.Text(this, tagPrefix + ".StopLabel", "STOP " + FormatPrice(signal.StopPrice), -signal.ValidForBars, signal.StopPrice, Brushes.IndianRed);

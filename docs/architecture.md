@@ -78,6 +78,25 @@ O contexto registra e pontua seis componentes: lado da VWAP, inclinação da VWA
 
 O pullback-base continua sendo acompanhado sem desenho para permitir comparação direta. O CSV v8 grava VWAP, inclinações normalizadas por ATR, máxima e mínima da sessão, corpo e localização do fechamento do candle, volume relativo, score, aprovação e justificativa. O resumo `validation_v3` e os segmentos `segments_v2` preservam os formatos anteriores e acrescentam agrupamento por score.
 
+## Candidato qualificado da versão 1.1
+
+`QualifiedPullback` reutiliza o gatilho vendido do pullback-base e o contexto já
+registrado, mas congela a regra selecionada no backtest de 149 dias:
+
+- somente MNQ vendido;
+- score mínimo 5 de 6;
+- distância máxima de 2 ATR até a VWAP;
+- volume relativo mínimo 1;
+- risco técnico entre USD 5 e USD 50;
+- alvo de 1,5R;
+- validade de 12 candles.
+
+O alvo e a validade do setup são constantes da rodada e não dependem dos campos gerais
+do indicador. Apenas um `QualifiedPullback` pode permanecer ativo. Ele é o único setup
+desenhado no modo de validação; `EvidencePullback` e os demais continuam registrados
+silenciosamente para preservar comparações. Não existe integração com conta ou envio
+de ordens.
+
 ## Plano da versão 0.8
 
 `ValidationPlan` mantém a classificação por ativo e setup sem alterar o analisador. `ValidationStatisticsCalculator` calcula as métricas do alvo escolhido, e `CsvValidationSummaryJournal` grava o resumo diário. O sinal bruto continua acompanhando 1R, 1,5R e 2R em paralelo.

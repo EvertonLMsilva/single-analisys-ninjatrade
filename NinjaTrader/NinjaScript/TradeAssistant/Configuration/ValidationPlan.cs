@@ -5,11 +5,17 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Configuration
 {
     public static class ValidationPlan
     {
-        public const string RoundId = "evidence-2026-07-v4";
+        public const string RoundId = "qualified-149d-2026-07-v5";
         public const int EmaSlopeLookbackBars = 3;
         public const int VolumeAveragePeriod = 20;
-        public const int MinimumSessions = 5;
-        public const int MinimumDecidedSignals = 30;
+        public const int MinimumSessions = 10;
+        public const int MinimumDecidedSignals = 20;
+        public const int QualifiedMinimumScore = 5;
+        public const int QualifiedValidForBars = 12;
+        public const double QualifiedMaximumVwapDistanceAtr = 2.0;
+        public const double QualifiedMinimumRelativeVolume = 1.0;
+        public const double QualifiedTargetR = 1.5;
+        public const double FrozenMinimumRiskPerContract = 5.0;
         public const double FrozenMaximumRiskPerContract = 50.0;
         public static readonly DateTime ForwardStartDate = new DateTime(2026, 7, 30);
 
@@ -32,25 +38,34 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Configuration
 
             if (masterInstrument == "MES")
             {
-                return new ValidationProfile(setup, ValidationStage.Reference, 1.0, false);
+                double mesTarget = setup == SignalSetup.QualifiedPullback
+                    ? QualifiedTargetR
+                    : 1.0;
+                return new ValidationProfile(setup, ValidationStage.Reference, mesTarget, false);
             }
 
             if (masterInstrument == "MNQ")
             {
-                if (setup == SignalSetup.EvidencePullback)
-                    return new ValidationProfile(setup, ValidationStage.Candidate, 1.0, true);
+                if (setup == SignalSetup.QualifiedPullback)
+                    return new ValidationProfile(
+                        setup,
+                        ValidationStage.Candidate,
+                        QualifiedTargetR,
+                        true);
 
                 return new ValidationProfile(setup, ValidationStage.Reference, 1.0, false);
             }
 
-            return setup == SignalSetup.EvidencePullback
-                ? new ValidationProfile(setup, ValidationStage.Observation, 1.0, true)
-                : new ValidationProfile(setup, ValidationStage.Reference, 1.0, false);
+            return new ValidationProfile(
+                setup,
+                ValidationStage.Reference,
+                setup == SignalSetup.QualifiedPullback ? QualifiedTargetR : 1.0,
+                false);
         }
 
         public static ValidationProfile GetPrimaryProfile(string instrument, double configuredTargetR)
         {
-            return GetProfile(instrument, SignalSetup.EvidencePullback, configuredTargetR);
+            return GetProfile(instrument, SignalSetup.QualifiedPullback, configuredTargetR);
         }
 
         public static bool MatchesEvidenceRule(
@@ -65,6 +80,25 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Configuration
                 && context.Score >= 4
                 && entryPrice < context.SessionVwap
                 && context.VwapSlopeAtr < 0;
+        }
+
+        public static bool MatchesQualifiedRule(
+            string instrument,
+            SignalDirection direction,
+            SignalContext context)
+        {
+            return GetMasterInstrument(instrument) == "MNQ"
+                && direction == SignalDirection.Short
+                && context != null
+                && context.Score >= QualifiedMinimumScore
+                && context.VwapDistanceAtr <= QualifiedMaximumVwapDistanceAtr
+                && context.RelativeVolume >= QualifiedMinimumRelativeVolume;
+        }
+
+        public static bool IsQualifiedRiskEligible(double riskCurrency)
+        {
+            return riskCurrency >= FrozenMinimumRiskPerContract
+                && riskCurrency <= FrozenMaximumRiskPerContract;
         }
 
         public static double NormalizeMaximumRiskPerContract(
