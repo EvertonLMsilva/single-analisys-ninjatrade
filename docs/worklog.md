@@ -1,5 +1,24 @@
 # Registro de trabalho
 
+## 2026-07-30 - Análise universal durante a sessão
+
+- criada a rodada experimental `universal-realtime-2026-07-v1`;
+- ampliada a observação visual para qualquer instrumento com tick e valor do ponto
+  fornecidos pelo NinjaTrader;
+- definido gráfico obrigatório de 5 minutos e janela configurável, inicialmente
+  10:30-17:00 no fuso do NinjaTrader;
+- reutilizado o pullback contextual simétrico de compra e venda, com EMA 9/21,
+  VWAP de sessão, ATR, candle e volume;
+- mantido no máximo um sinal universal ativo por gráfico;
+- risco acima do antigo teto de USD 50 deixa de ocultar o sinal universal e passa
+  a ser apenas informação para decisão do operador;
+- criado painel específico com identificação explícita de modo experimental,
+  hipotético e sem ordens;
+- separados os arquivos em `TradeAssistant/Realtime`, sem contaminar as rodadas
+  congeladas anteriores;
+- versão elevada para `1.3.0-beta.1`;
+- adicionados testes de janela e metadados do CSV universal.
+
 ## 2026-07-29 - Integracao visual do momentum intradiario
 
 - auditados novos arquivos de um minuto com 177 dias de MNQ e MES;

@@ -1,5 +1,13 @@
 # Roteiro do projeto
 
+## Estado atual - observação universal em tempo real
+
+A versão `1.3.0-beta.1` apresenta sinais durante a sessão em qualquer gráfico de
+5 minutos. Esse modo foi criado para acelerar a coleta comparável entre ativos,
+mas permanece experimental: aparecer no gráfico não significa que a regra tenha
+vantagem estatística naquele instrumento. Os resultados ficam isolados em
+`TradeAssistant/Realtime` e devem ser revisados antes de qualquer automação.
+
 ## Estado atual - momentum intradiario
 
 Implementacao concluida na versao `1.2.0-beta.1`: o candidato roda no MNQ em modo

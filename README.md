@@ -6,11 +6,29 @@ Assistente visual de análise para NinjaTrader 8. A versão experimental identif
 
 ## Versão
 
-Versão atual: `1.2.0-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
+Versão atual: `1.3.0-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
+
+## Análise universal em tempo real
+
+A versão 1.3 adiciona um modo visual para qualquer ativo carregado em um gráfico de
+5 minutos. A cada fechamento de candle, o indicador procura um pullback alinhado
+com EMA 9/21, VWAP da sessão, inclinação, qualidade do candle, distância em ATR e
+volume relativo. Compras e vendas usam os mesmos critérios.
+
+- janela padrão: 10:30 a 17:00 no fuso horário configurado no NinjaTrader;
+- somente um sinal universal fica ativo por vez em cada gráfico;
+- entrada, stop, alvo e risco financeiro usam tick e valor do ponto do instrumento;
+- os sinais são hipotéticos e não enviam ordens;
+- o modo é experimental e ainda não foi validado individualmente em todos os ativos;
+- os CSVs ficam separados em `Documents/NinjaTrader 8/TradeAssistant/Realtime`.
+
+Para usar, mantenha **Análise universal em tempo real** ligada, use gráfico de 5
+minutos e deixe **Momentum intradiário MNQ** desligado. O painel informa quando o
+período ou o horário não permitem a análise.
 
 ## Candidato de momentum intradiario
 
-Versao atual do indicador: `1.2.0-beta.1`.
+Versão do candidato congelado: `1.2.0-beta.1`.
 
 A versao 1.2 integra o candidato congelado `intraday-momentum-2026-07-v1` somente
 para observacao no MNQ. O indicador:

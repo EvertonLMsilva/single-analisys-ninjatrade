@@ -20,6 +20,7 @@ internal static class Program
             ValidateStatistics();
             ValidateCsvOutputs();
             ValidateIntradayMomentum();
+            ValidateUniversalRealtimePlan();
             Console.WriteLine("All Trade Assistant core tests passed.");
             return 0;
         }
@@ -245,6 +246,21 @@ internal static class Program
             Assert(raw.Contains("SessionVwap,VwapSlopeAtr,VwapDistanceAtr"), "CSV v8 context columns are missing.");
             Assert(raw.Contains(ValidationPlan.RoundId + ",Reference,1,HistoricalReference"), "CSV v8 profile was not recorded.");
 
+            string realtimeDirectory = Path.Combine(directory, "Realtime");
+            CsvSignalJournal realtimeJournal = new CsvSignalJournal(
+                realtimeDirectory, "NQ 09-26", "Minute-5", TradeAssistantVersion.Current,
+                9, 21, 14, 1.5, 0.1, 3, "USD", 50, "SomenteAvisar", true);
+            Assert(
+                realtimeJournal.Record(signal),
+                "Universal realtime CSV could not be written: " + realtimeJournal.LastError);
+            string[] realtimeFiles = Directory.GetFiles(realtimeDirectory, "*_v8.csv");
+            Assert(realtimeFiles.Length == 1, "Universal realtime CSV was not created.");
+            string realtimeText = File.ReadAllText(realtimeFiles[0]);
+            Assert(
+                realtimeText.Contains(
+                    UniversalRealtimePlan.RoundId + ",Experimental,2,RealtimeObservation"),
+                "Universal realtime metadata was not isolated from the frozen validation.");
+
             TrackedSignal staleSignal = Tracked("stale", day.AddMinutes(5), 30, ComparisonStatus.StopHit);
             Assert(journal.Record(staleSignal), "Stale test row could not be written: " + journal.LastError);
             Assert(File.ReadAllLines(rawFiles[0]).Length == 3, "Stale test row was not added.");
@@ -366,6 +382,40 @@ internal static class Program
             if (Directory.Exists(directory))
                 Directory.Delete(directory, true);
         }
+    }
+
+    private static void ValidateUniversalRealtimePlan()
+    {
+        Assert(
+            UniversalRealtimePlan.IsInsideWindow(
+                new DateTime(2026, 7, 30, 10, 30, 0),
+                103000,
+                170000),
+            "Realtime analysis must include the configured opening boundary.");
+        Assert(
+            UniversalRealtimePlan.IsInsideWindow(
+                new DateTime(2026, 7, 30, 16, 59, 59),
+                103000,
+                170000),
+            "Realtime analysis must remain active before the closing boundary.");
+        Assert(
+            !UniversalRealtimePlan.IsInsideWindow(
+                new DateTime(2026, 7, 30, 9, 0, 0),
+                103000,
+                170000),
+            "Realtime analysis must reject bars before the configured window.");
+        Assert(
+            !UniversalRealtimePlan.IsInsideWindow(
+                new DateTime(2026, 7, 30, 12, 0, 0),
+                106000,
+                170000),
+            "Invalid HHmmss settings must disable the realtime window.");
+        Assert(
+            !UniversalRealtimePlan.IsInsideWindow(
+                new DateTime(2026, 7, 30, 12, 0, 0),
+                170000,
+                103000),
+            "An inverted realtime window must be rejected.");
     }
 
     private static List<IntradayMomentumUpdate> FeedMomentumDay(
