@@ -1,0 +1,1462 @@
+{
+  "method": {
+    "name": "IntradayEventLogisticWalkForwardV1",
+    "features": [
+      "direction",
+      "opening_alignment",
+      "trend_up",
+      "trend_down",
+      "balance",
+      "transition",
+      "opening_move",
+      "opening_range",
+      "opening_efficiency",
+      "opening_acceptance",
+      "opening_relative_volume",
+      "opening_vwap_slope",
+      "vwap_distance",
+      "momentum_5",
+      "momentum_15",
+      "candle_body",
+      "close_location",
+      "relative_volume",
+      "opening_range_position",
+      "minutes_after_decision",
+      "risk_fraction",
+      "cross_market_aligned"
+    ],
+    "sampling": "Every five minutes from 30 to 210 minutes after RTH open.",
+    "directions": [
+      "Long",
+      "Short"
+    ],
+    "maximum_trades_per_instrument_day": 1,
+    "targets_r": [
+      1.0,
+      1.5,
+      2.0
+    ],
+    "thresholds_considered_in_internal_tuning": [
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75
+    ],
+    "adaptations": {
+      "Frozen": "Refit after validation only when the validation gate passes.",
+      "Rolling40": "Retrain every five sessions using only the previous 40 sessions."
+    },
+    "risk_currency_per_contract": {
+      "minimum": 10.0,
+      "maximum": 75.0
+    },
+    "round_turn_cost_currency": 5.0
+  },
+  "data_audit": {
+    "MNQ": {
+      "path": "NT_Optimizer_Data_MNQ_09-26_1Min_149d.csv",
+      "sha256": "35B48A3DC10225A372564414FA9E7075951F08295B20EF76B10CFB3044307163",
+      "rows": 146890,
+      "first_timestamp": "2026-03-01 20:01:00",
+      "last_timestamp": "2026-07-29 16:50:00",
+      "one_minute_interval_share": 0.999265,
+      "missing_intrahour_minutes": 0
+    },
+    "MES": {
+      "path": "NT_Optimizer_Data_MES_09-26_1Min_149d.csv",
+      "sha256": "A8D6E3898980407223E459925A4BA566017305AD9347BBE694E1425EE1F4EA66",
+      "rows": 147785,
+      "first_timestamp": "2026-03-01 20:01:00",
+      "last_timestamp": "2026-07-29 16:51:00",
+      "one_minute_interval_share": 0.999269,
+      "missing_intrahour_minutes": 1
+    }
+  },
+  "sessions": {
+    "internal_train": [
+      "2026-03-02",
+      "2026-04-20",
+      35
+    ],
+    "internal_tune": [
+      "2026-04-21",
+      "2026-05-14",
+      18
+    ],
+    "validation": [
+      "2026-05-15",
+      "2026-06-22",
+      27
+    ],
+    "confirmation": [
+      "2026-06-23",
+      "2026-07-29",
+      27
+    ]
+  },
+  "models": [
+    {
+      "instrument": "MNQ",
+      "target_r": 1.0,
+      "adaptation": "Frozen",
+      "event_count": 5389,
+      "threshold": 0.7,
+      "internal_tuning": {
+        "trades": 2,
+        "active_sessions": 2,
+        "targets": 2,
+        "stops": 0,
+        "time_exits": 0,
+        "win_rate": 1.0,
+        "net_currency": 89.0,
+        "average_trade_currency": 44.5,
+        "profit_factor": null,
+        "maximum_drawdown_currency": 0.0,
+        "passed": false
+      },
+      "validation": {
+        "trades": 0,
+        "active_sessions": 0,
+        "targets": 0,
+        "stops": 0,
+        "time_exits": 0,
+        "win_rate": null,
+        "net_currency": 0,
+        "average_trade_currency": null,
+        "profit_factor": null,
+        "maximum_drawdown_currency": 0.0
+      },
+      "validation_passed": false,
+      "confirmation": {
+        "trades": 0,
+        "active_sessions": 0,
+        "targets": 0,
+        "stops": 0,
+        "time_exits": 0,
+        "win_rate": null,
+        "net_currency": 0,
+        "average_trade_currency": null,
+        "profit_factor": null,
+        "maximum_drawdown_currency": 0.0
+      },
+      "confirmation_passed": false,
+      "out_of_sample": {
+        "trades": 0,
+        "active_sessions": 0,
+        "targets": 0,
+        "stops": 0,
+        "time_exits": 0,
+        "win_rate": null,
+        "net_currency": 0,
+        "average_trade_currency": null,
+        "profit_factor": null,
+        "maximum_drawdown_currency": 0.0
+      },
+      "economic_gate": null,
+      "top_coefficients": [
+        {
+          "feature": "candle_body",
+          "coefficient": 0.099806
+        },
+        {
+          "feature": "opening_vwap_slope",
+          "coefficient": -0.059737
+        },
+        {
+          "feature": "relative_volume",
+          "coefficient": 0.057073
+        },
+        {
+          "feature": "opening_move",
+          "coefficient": 0.043029
+        },
+        {
+          "feature": "close_location",
+          "coefficient": 0.036039
+        },
+        {
+          "feature": "momentum_5",
+          "coefficient": -0.035252
+        },
+        {
+          "feature": "direction",
+          "coefficient": 0.032445
+        },
+        {
+          "feature": "opening_efficiency",
+          "coefficient": 0.027551
+        },
+        {
+          "feature": "opening_range",
+          "coefficient": 0.027387
+        },
+        {
+          "feature": "trend_up",
+          "coefficient": -0.023819
+        }
+      ]
+    },
+    {
+      "instrument": "MNQ",
+      "target_r": 1.0,
+      "adaptation": "Rolling40",
+      "event_count": 5389,
+      "threshold": 0.7,
+      "internal_tuning": {
+        "trades": 2,
+        "active_sessions": 2,
+        "targets": 2,
+        "stops": 0,
+        "time_exits": 0,
+        "win_rate": 1.0,
+        "net_currency": 89.0,
+        "average_trade_currency": 44.5,
+        "profit_factor": null,
+        "maximum_drawdown_currency": 0.0,
+        "passed": false
+      },
+      "validation": {
+        "trades": 2,
+        "active_sessions": 2,
+        "targets": 0,
+        "stops": 2,
+        "time_exits": 0,
+        "win_rate": 0.0,
+        "net_currency": -92.5,
+        "average_trade_currency": -46.25,
+        "profit_factor": 0.0,
+        "maximum_drawdown_currency": 92.5
+      },
+      "validation_passed": false,
+      "confirmation": {
+        "trades": 0,
+        "active_sessions": 0,
+        "targets": 0,
+        "stops": 0,
+        "time_exits": 0,
+        "win_rate": null,
+        "net_currency": 0,
+        "average_trade_currency": null,
+        "profit_factor": null,
+        "maximum_drawdown_currency": 0.0
+      },
+      "confirmation_passed": false,
+      "out_of_sample": {
+        "trades": 2,
+        "active_sessions": 2,
+        "targets": 0,
+        "stops": 2,
+        "time_exits": 0,
+        "win_rate": 0.0,
+        "net_currency": -92.5,
+        "average_trade_currency": -46.25,
+        "profit_factor": 0.0,
+        "maximum_drawdown_currency": 92.5
+      },
+      "economic_gate": null,
+      "top_coefficients": [
+        {
+          "feature": "candle_body",
+          "coefficient": 0.08613
+        },
+        {
+          "feature": "opening_move",
+          "coefficient": 0.076964
+        },
+        {
+          "feature": "opening_vwap_slope",
+          "coefficient": -0.076929
+        },
+        {
+          "feature": "risk_fraction",
+          "coefficient": 0.074581
+        },
+        {
+          "feature": "momentum_5",
+          "coefficient": 0.055974
+        },
+        {
+          "feature": "cross_market_aligned",
+          "coefficient": -0.048012
+        },
+        {
+          "feature": "trend_down",
+          "coefficient": -0.039486
+        },
+        {
+          "feature": "minutes_after_decision",
+          "coefficient": -0.031424
+        },
+        {
+          "feature": "opening_acceptance",
+          "coefficient": 0.030266
+        },
+        {
+          "feature": "opening_efficiency",
+          "coefficient": 0.026024
+        }
+      ]
+    },
+    {
+      "instrument": "MNQ",
+      "target_r": 1.5,
+      "adaptation": "Frozen",
+      "event_count": 5389,
+      "threshold": 0.55,
+      "internal_tuning": {
+        "trades": 13,
+        "active_sessions": 13,
+        "targets": 6,
+        "stops": 7,
+        "time_exits": 0,
+        "win_rate": 0.461538,
+        "net_currency": 35.5,
+        "average_trade_currency": 2.73,
+        "profit_factor": 1.1079,
+        "maximum_drawdown_currency": 123.0,
+        "passed": true
+      },
+      "validation": {
+        "trades": 13,
+        "active_sessions": 13,
+        "targets": 6,
+        "stops": 7,
+        "time_exits": 0,
+        "win_rate": 0.461538,
+        "net_currency": -30.0,
+        "average_trade_currency": -2.31,
+        "profit_factor": 0.9163,
+        "maximum_drawdown_currency": 119.0
+      },
+      "validation_passed": false,
+      "confirmation": {
+        "trades": 0,
+        "active_sessions": 0,
+        "targets": 0,
+        "stops": 0,
+        "time_exits": 0,
+        "win_rate": null,
+        "net_currency": 0,
+        "average_trade_currency": null,
+        "profit_factor": null,
+        "maximum_drawdown_currency": 0.0
+      },
+      "confirmation_passed": false,
+      "out_of_sample": {
+        "trades": 13,
+        "active_sessions": 13,
+        "targets": 6,
+        "stops": 7,
+        "time_exits": 0,
+        "win_rate": 0.461538,
+        "net_currency": -30.0,
+        "average_trade_currency": -2.31,
+        "profit_factor": 0.9163,
+        "maximum_drawdown_currency": 119.0
+      },
+      "economic_gate": null,
+      "top_coefficients": [
+        {
+          "feature": "opening_vwap_slope",
+          "coefficient": -0.085882
+        },
+        {
+          "feature": "candle_body",
+          "coefficient": 0.079977
+        },
+        {
+          "feature": "opening_move",
+          "coefficient": 0.04712
+        },
+        {
+          "feature": "momentum_15",
+          "coefficient": -0.042962
+        },
+        {
+          "feature": "trend_down",
+          "coefficient": 0.041627
+        },
+        {
+          "feature": "direction",
+          "coefficient": 0.034958
+        },
+        {
+          "feature": "opening_alignment",
+          "coefficient": -0.033828
+        },
+        {
+          "feature": "close_location",
+          "coefficient": 0.024895
+        },
+        {
+          "feature": "opening_range",
+          "coefficient": -0.022626
+        },
+        {
+          "feature": "opening_efficiency",
+          "coefficient": 0.020257
+        }
+      ]
+    },
+    {
+      "instrument": "MNQ",
+      "target_r": 1.5,
+      "adaptation": "Rolling40",
+      "event_count": 5389,
+      "threshold": 0.55,
+      "internal_tuning": {
+        "trades": 13,
+        "active_sessions": 13,
+        "targets": 6,
+        "stops": 7,
+        "time_exits": 0,
+        "win_rate": 0.461538,
+        "net_currency": 35.5,
+        "average_trade_currency": 2.73,
+        "profit_factor": 1.1079,
+        "maximum_drawdown_currency": 123.0,
+        "passed": true
+      },
+      "validation": {
+        "trades": 16,
+        "active_sessions": 16,
+        "targets": 3,
+        "stops": 13,
+        "time_exits": 0,
+        "win_rate": 0.1875,
+        "net_currency": -463.25,
+        "average_trade_currency": -28.95,
+        "profit_factor": 0.2739,
+        "maximum_drawdown_currency": 463.25
+      },
+      "validation_passed": false,
+      "confirmation": {
+        "trades": 0,
+        "active_sessions": 0,
+        "targets": 0,
+        "stops": 0,
+        "time_exits": 0,
+        "win_rate": null,
+        "net_currency": 0,
+        "average_trade_currency": null,
+        "profit_factor": null,
+        "maximum_drawdown_currency": 0.0
+      },
+      "confirmation_passed": false,
+      "out_of_sample": {
+        "trades": 16,
+        "active_sessions": 16,
+        "targets": 3,
+        "stops": 13,
+        "time_exits": 0,
+        "win_rate": 0.1875,
+        "net_currency": -463.25,
+        "average_trade_currency": -28.95,
+        "profit_factor": 0.2739,
+        "maximum_drawdown_currency": 463.25
+      },
+      "economic_gate": null,
+      "top_coefficients": [
+        {
+          "feature": "opening_vwap_slope",
+          "coefficient": -0.091893
+        },
+        {
+          "feature": "opening_move",
+          "coefficient": 0.063724
+        },
+        {
+          "feature": "candle_body",
+          "coefficient": 0.054133
+        },
+        {
+          "feature": "cross_market_aligned",
+          "coefficient": -0.037826
+        },
+        {
+          "feature": "relative_volume",
+          "coefficient": -0.036048
+        },
+        {
+          "feature": "vwap_distance",
+          "coefficient": 0.033155
+        },
+        {
+          "feature": "opening_alignment",
+          "coefficient": -0.032444
+        },
+        {
+          "feature": "minutes_after_decision",
+          "coefficient": -0.032208
+        },
+        {
+          "feature": "opening_range_position",
+          "coefficient": 0.030958
+        },
+        {
+          "feature": "opening_relative_volume",
+          "coefficient": -0.028051
+        }
+      ]
+    },
+    {
+      "instrument": "MNQ",
+      "target_r": 2.0,
+      "adaptation": "Frozen",
+      "event_count": 5389,
+      "threshold": 0.55,
+      "internal_tuning": {
+        "trades": 14,
+        "active_sessions": 14,
+        "targets": 9,
+        "stops": 5,
+        "time_exits": 0,
+        "win_rate": 0.642857,
+        "net_currency": 164.5,
+        "average_trade_currency": 11.75,
+        "profit_factor": 2.3882,
+        "maximum_drawdown_currency": 47.5,
+        "passed": true
+      },
+      "validation": {
+        "trades": 17,
+        "active_sessions": 17,
+        "targets": 8,
+        "stops": 9,
+        "time_exits": 0,
+        "win_rate": 0.470588,
+        "net_currency": 108.5,
+        "average_trade_currency": 6.38,
+        "profit_factor": 1.3253,
+        "maximum_drawdown_currency": 115.0
+      },
+      "validation_passed": true,
+      "confirmation": {
+        "trades": 16,
+        "active_sessions": 16,
+        "targets": 5,
+        "stops": 11,
+        "time_exits": 0,
+        "win_rate": 0.3125,
+        "net_currency": -145.5,
+        "average_trade_currency": -9.09,
+        "profit_factor": 0.6456,
+        "maximum_drawdown_currency": 242.5
+      },
+      "confirmation_passed": false,
+      "out_of_sample": {
+        "trades": 33,
+        "active_sessions": 33,
+        "targets": 13,
+        "stops": 20,
+        "time_exits": 0,
+        "win_rate": 0.393939,
+        "net_currency": -37.0,
+        "average_trade_currency": -1.12,
+        "profit_factor": 0.9503,
+        "maximum_drawdown_currency": 242.5
+      },
+      "economic_gate": {
+        "passed": false,
+        "qualified_micro_contracts": [],
+        "best_scenario": {
+          "micro_contracts": 8,
+          "attempts": 35,
+          "passed": 10,
+          "drawdown_failures": 5,
+          "timeouts": 20,
+          "pass_rate_percent": 28.57,
+          "drawdown_failure_rate_percent": 14.29,
+          "median_sessions_to_pass": 11.0,
+          "median_ending_net_currency": -196.0,
+          "p10_ending_net_currency": -1260.0,
+          "p90_ending_net_currency": 1664.0,
+          "minimum_ending_net_currency": -1684.0,
+          "maximum_ending_net_currency": 1756.0,
+          "median_maximum_drawdown_currency": 920.0,
+          "p90_maximum_drawdown_currency": 1684.0
+        }
+      },
+      "top_coefficients": [
+        {
+          "feature": "opening_vwap_slope",
+          "coefficient": -0.091065
+        },
+        {
+          "feature": "opening_move",
+          "coefficient": 0.065438
+        },
+        {
+          "feature": "minutes_after_decision",
+          "coefficient": -0.057553
+        },
+        {
+          "feature": "risk_fraction",
+          "coefficient": -0.055154
+        },
+        {
+          "feature": "momentum_15",
+          "coefficient": -0.0515
+        },
+        {
+          "feature": "close_location",
+          "coefficient": 0.043999
+        },
+        {
+          "feature": "opening_alignment",
+          "coefficient": -0.028315
+        },
+        {
+          "feature": "candle_body",
+          "coefficient": 0.025028
+        },
+        {
+          "feature": "opening_acceptance",
+          "coefficient": -0.020276
+        },
+        {
+          "feature": "relative_volume",
+          "coefficient": -0.019489
+        }
+      ]
+    },
+    {
+      "instrument": "MNQ",
+      "target_r": 2.0,
+      "adaptation": "Rolling40",
+      "event_count": 5389,
+      "threshold": 0.55,
+      "internal_tuning": {
+        "trades": 14,
+        "active_sessions": 14,
+        "targets": 9,
+        "stops": 5,
+        "time_exits": 0,
+        "win_rate": 0.642857,
+        "net_currency": 164.5,
+        "average_trade_currency": 11.75,
+        "profit_factor": 2.3882,
+        "maximum_drawdown_currency": 47.5,
+        "passed": true
+      },
+      "validation": {
+        "trades": 17,
+        "active_sessions": 17,
+        "targets": 5,
+        "stops": 12,
+        "time_exits": 0,
+        "win_rate": 0.294118,
+        "net_currency": -171.0,
+        "average_trade_currency": -10.06,
+        "profit_factor": 0.6042,
+        "maximum_drawdown_currency": 283.0
+      },
+      "validation_passed": false,
+      "confirmation": {
+        "trades": 0,
+        "active_sessions": 0,
+        "targets": 0,
+        "stops": 0,
+        "time_exits": 0,
+        "win_rate": null,
+        "net_currency": 0,
+        "average_trade_currency": null,
+        "profit_factor": null,
+        "maximum_drawdown_currency": 0.0
+      },
+      "confirmation_passed": false,
+      "out_of_sample": {
+        "trades": 17,
+        "active_sessions": 17,
+        "targets": 5,
+        "stops": 12,
+        "time_exits": 0,
+        "win_rate": 0.294118,
+        "net_currency": -171.0,
+        "average_trade_currency": -10.06,
+        "profit_factor": 0.6042,
+        "maximum_drawdown_currency": 283.0
+      },
+      "economic_gate": null,
+      "top_coefficients": [
+        {
+          "feature": "opening_move",
+          "coefficient": 0.11651
+        },
+        {
+          "feature": "opening_vwap_slope",
+          "coefficient": -0.093537
+        },
+        {
+          "feature": "minutes_after_decision",
+          "coefficient": -0.076989
+        },
+        {
+          "feature": "momentum_15",
+          "coefficient": -0.054197
+        },
+        {
+          "feature": "relative_volume",
+          "coefficient": -0.046102
+        },
+        {
+          "feature": "vwap_distance",
+          "coefficient": 0.043129
+        },
+        {
+          "feature": "opening_alignment",
+          "coefficient": -0.039848
+        },
+        {
+          "feature": "opening_range_position",
+          "coefficient": 0.03864
+        },
+        {
+          "feature": "direction",
+          "coefficient": 0.025517
+        },
+        {
+          "feature": "opening_range",
+          "coefficient": -0.023384
+        }
+      ]
+    },
+    {
+      "instrument": "MES",
+      "target_r": 1.0,
+      "adaptation": "Frozen",
+      "event_count": 578,
+      "threshold": 0.55,
+      "internal_tuning": {
+        "trades": 6,
+        "active_sessions": 6,
+        "targets": 5,
+        "stops": 1,
+        "time_exits": 0,
+        "win_rate": 0.833333,
+        "net_currency": 21.87,
+        "average_trade_currency": 3.65,
+        "profit_factor": 2.4001,
+        "maximum_drawdown_currency": 15.62,
+        "passed": true
+      },
+      "validation": {
+        "trades": 9,
+        "active_sessions": 9,
+        "targets": 3,
+        "stops": 5,
+        "time_exits": 1,
+        "win_rate": 0.444444,
+        "net_currency": -35.92,
+        "average_trade_currency": -3.99,
+        "profit_factor": 0.5474,
+        "maximum_drawdown_currency": 35.92
+      },
+      "validation_passed": false,
+      "confirmation": {
+        "trades": 0,
+        "active_sessions": 0,
+        "targets": 0,
+        "stops": 0,
+        "time_exits": 0,
+        "win_rate": null,
+        "net_currency": 0,
+        "average_trade_currency": null,
+        "profit_factor": null,
+        "maximum_drawdown_currency": 0.0
+      },
+      "confirmation_passed": false,
+      "out_of_sample": {
+        "trades": 9,
+        "active_sessions": 9,
+        "targets": 3,
+        "stops": 5,
+        "time_exits": 1,
+        "win_rate": 0.444444,
+        "net_currency": -35.92,
+        "average_trade_currency": -3.99,
+        "profit_factor": 0.5474,
+        "maximum_drawdown_currency": 35.92
+      },
+      "economic_gate": null,
+      "top_coefficients": [
+        {
+          "feature": "direction",
+          "coefficient": 0.286527
+        },
+        {
+          "feature": "candle_body",
+          "coefficient": -0.22054
+        },
+        {
+          "feature": "opening_alignment",
+          "coefficient": -0.141046
+        },
+        {
+          "feature": "opening_range_position",
+          "coefficient": -0.126343
+        },
+        {
+          "feature": "trend_up",
+          "coefficient": 0.122637
+        },
+        {
+          "feature": "opening_efficiency",
+          "coefficient": 0.098399
+        },
+        {
+          "feature": "trend_down",
+          "coefficient": -0.09494
+        },
+        {
+          "feature": "vwap_distance",
+          "coefficient": 0.087618
+        },
+        {
+          "feature": "cross_market_aligned",
+          "coefficient": 0.076414
+        },
+        {
+          "feature": "momentum_5",
+          "coefficient": -0.074071
+        }
+      ]
+    },
+    {
+      "instrument": "MES",
+      "target_r": 1.0,
+      "adaptation": "Rolling40",
+      "event_count": 578,
+      "threshold": 0.55,
+      "internal_tuning": {
+        "trades": 6,
+        "active_sessions": 6,
+        "targets": 5,
+        "stops": 1,
+        "time_exits": 0,
+        "win_rate": 0.833333,
+        "net_currency": 21.87,
+        "average_trade_currency": 3.65,
+        "profit_factor": 2.4001,
+        "maximum_drawdown_currency": 15.62,
+        "passed": true
+      },
+      "validation": {
+        "trades": 9,
+        "active_sessions": 9,
+        "targets": 2,
+        "stops": 4,
+        "time_exits": 3,
+        "win_rate": 0.333333,
+        "net_currency": -54.07,
+        "average_trade_currency": -6.01,
+        "profit_factor": 0.3754,
+        "maximum_drawdown_currency": 62.19
+      },
+      "validation_passed": false,
+      "confirmation": {
+        "trades": 0,
+        "active_sessions": 0,
+        "targets": 0,
+        "stops": 0,
+        "time_exits": 0,
+        "win_rate": null,
+        "net_currency": 0,
+        "average_trade_currency": null,
+        "profit_factor": null,
+        "maximum_drawdown_currency": 0.0
+      },
+      "confirmation_passed": false,
+      "out_of_sample": {
+        "trades": 9,
+        "active_sessions": 9,
+        "targets": 2,
+        "stops": 4,
+        "time_exits": 3,
+        "win_rate": 0.333333,
+        "net_currency": -54.07,
+        "average_trade_currency": -6.01,
+        "profit_factor": 0.3754,
+        "maximum_drawdown_currency": 62.19
+      },
+      "economic_gate": null,
+      "top_coefficients": [
+        {
+          "feature": "opening_acceptance",
+          "coefficient": -0.266154
+        },
+        {
+          "feature": "risk_fraction",
+          "coefficient": -0.213086
+        },
+        {
+          "feature": "momentum_5",
+          "coefficient": -0.183588
+        },
+        {
+          "feature": "balance",
+          "coefficient": -0.182203
+        },
+        {
+          "feature": "candle_body",
+          "coefficient": 0.174707
+        },
+        {
+          "feature": "close_location",
+          "coefficient": -0.164845
+        },
+        {
+          "feature": "trend_up",
+          "coefficient": 0.157782
+        },
+        {
+          "feature": "momentum_15",
+          "coefficient": 0.131144
+        },
+        {
+          "feature": "opening_efficiency",
+          "coefficient": -0.127582
+        },
+        {
+          "feature": "opening_range_position",
+          "coefficient": -0.116632
+        }
+      ]
+    },
+    {
+      "instrument": "MES",
+      "target_r": 1.5,
+      "adaptation": "Frozen",
+      "event_count": 578,
+      "threshold": 0.7,
+      "internal_tuning": {
+        "trades": 0,
+        "active_sessions": 0,
+        "targets": 0,
+        "stops": 0,
+        "time_exits": 0,
+        "win_rate": null,
+        "net_currency": 0,
+        "average_trade_currency": null,
+        "profit_factor": null,
+        "maximum_drawdown_currency": 0.0,
+        "passed": false
+      },
+      "validation": {
+        "trades": 0,
+        "active_sessions": 0,
+        "targets": 0,
+        "stops": 0,
+        "time_exits": 0,
+        "win_rate": null,
+        "net_currency": 0,
+        "average_trade_currency": null,
+        "profit_factor": null,
+        "maximum_drawdown_currency": 0.0
+      },
+      "validation_passed": false,
+      "confirmation": {
+        "trades": 0,
+        "active_sessions": 0,
+        "targets": 0,
+        "stops": 0,
+        "time_exits": 0,
+        "win_rate": null,
+        "net_currency": 0,
+        "average_trade_currency": null,
+        "profit_factor": null,
+        "maximum_drawdown_currency": 0.0
+      },
+      "confirmation_passed": false,
+      "out_of_sample": {
+        "trades": 0,
+        "active_sessions": 0,
+        "targets": 0,
+        "stops": 0,
+        "time_exits": 0,
+        "win_rate": null,
+        "net_currency": 0,
+        "average_trade_currency": null,
+        "profit_factor": null,
+        "maximum_drawdown_currency": 0.0
+      },
+      "economic_gate": null,
+      "top_coefficients": [
+        {
+          "feature": "opening_acceptance",
+          "coefficient": 0.2527
+        },
+        {
+          "feature": "candle_body",
+          "coefficient": -0.195496
+        },
+        {
+          "feature": "direction",
+          "coefficient": 0.163942
+        },
+        {
+          "feature": "minutes_after_decision",
+          "coefficient": -0.150941
+        },
+        {
+          "feature": "trend_down",
+          "coefficient": -0.111039
+        },
+        {
+          "feature": "opening_alignment",
+          "coefficient": -0.086856
+        },
+        {
+          "feature": "momentum_5",
+          "coefficient": -0.074782
+        },
+        {
+          "feature": "trend_up",
+          "coefficient": 0.073622
+        },
+        {
+          "feature": "balance",
+          "coefficient": 0.049464
+        },
+        {
+          "feature": "close_location",
+          "coefficient": -0.048681
+        }
+      ]
+    },
+    {
+      "instrument": "MES",
+      "target_r": 1.5,
+      "adaptation": "Rolling40",
+      "event_count": 578,
+      "threshold": 0.7,
+      "internal_tuning": {
+        "trades": 0,
+        "active_sessions": 0,
+        "targets": 0,
+        "stops": 0,
+        "time_exits": 0,
+        "win_rate": null,
+        "net_currency": 0,
+        "average_trade_currency": null,
+        "profit_factor": null,
+        "maximum_drawdown_currency": 0.0,
+        "passed": false
+      },
+      "validation": {
+        "trades": 2,
+        "active_sessions": 2,
+        "targets": 1,
+        "stops": 0,
+        "time_exits": 1,
+        "win_rate": 0.5,
+        "net_currency": -1.41,
+        "average_trade_currency": -0.71,
+        "profit_factor": 0.8813,
+        "maximum_drawdown_currency": 11.88
+      },
+      "validation_passed": false,
+      "confirmation": {
+        "trades": 0,
+        "active_sessions": 0,
+        "targets": 0,
+        "stops": 0,
+        "time_exits": 0,
+        "win_rate": null,
+        "net_currency": 0,
+        "average_trade_currency": null,
+        "profit_factor": null,
+        "maximum_drawdown_currency": 0.0
+      },
+      "confirmation_passed": false,
+      "out_of_sample": {
+        "trades": 2,
+        "active_sessions": 2,
+        "targets": 1,
+        "stops": 0,
+        "time_exits": 1,
+        "win_rate": 0.5,
+        "net_currency": -1.41,
+        "average_trade_currency": -0.71,
+        "profit_factor": 0.8813,
+        "maximum_drawdown_currency": 11.88
+      },
+      "economic_gate": null,
+      "top_coefficients": [
+        {
+          "feature": "opening_acceptance",
+          "coefficient": -0.35451
+        },
+        {
+          "feature": "balance",
+          "coefficient": -0.313631
+        },
+        {
+          "feature": "momentum_5",
+          "coefficient": -0.217409
+        },
+        {
+          "feature": "candle_body",
+          "coefficient": 0.182697
+        },
+        {
+          "feature": "opening_range",
+          "coefficient": 0.172608
+        },
+        {
+          "feature": "opening_relative_volume",
+          "coefficient": -0.16859
+        },
+        {
+          "feature": "close_location",
+          "coefficient": -0.153887
+        },
+        {
+          "feature": "vwap_distance",
+          "coefficient": -0.139189
+        },
+        {
+          "feature": "trend_down",
+          "coefficient": 0.134655
+        },
+        {
+          "feature": "momentum_15",
+          "coefficient": 0.130851
+        }
+      ]
+    },
+    {
+      "instrument": "MES",
+      "target_r": 2.0,
+      "adaptation": "Frozen",
+      "event_count": 578,
+      "threshold": 0.75,
+      "internal_tuning": {
+        "trades": 1,
+        "active_sessions": 1,
+        "targets": 0,
+        "stops": 1,
+        "time_exits": 0,
+        "win_rate": 0.0,
+        "net_currency": -15.62,
+        "average_trade_currency": -15.62,
+        "profit_factor": 0.0,
+        "maximum_drawdown_currency": 15.62,
+        "passed": false
+      },
+      "validation": {
+        "trades": 0,
+        "active_sessions": 0,
+        "targets": 0,
+        "stops": 0,
+        "time_exits": 0,
+        "win_rate": null,
+        "net_currency": 0,
+        "average_trade_currency": null,
+        "profit_factor": null,
+        "maximum_drawdown_currency": 0.0
+      },
+      "validation_passed": false,
+      "confirmation": {
+        "trades": 0,
+        "active_sessions": 0,
+        "targets": 0,
+        "stops": 0,
+        "time_exits": 0,
+        "win_rate": null,
+        "net_currency": 0,
+        "average_trade_currency": null,
+        "profit_factor": null,
+        "maximum_drawdown_currency": 0.0
+      },
+      "confirmation_passed": false,
+      "out_of_sample": {
+        "trades": 0,
+        "active_sessions": 0,
+        "targets": 0,
+        "stops": 0,
+        "time_exits": 0,
+        "win_rate": null,
+        "net_currency": 0,
+        "average_trade_currency": null,
+        "profit_factor": null,
+        "maximum_drawdown_currency": 0.0
+      },
+      "economic_gate": null,
+      "top_coefficients": [
+        {
+          "feature": "minutes_after_decision",
+          "coefficient": -0.371796
+        },
+        {
+          "feature": "direction",
+          "coefficient": 0.196361
+        },
+        {
+          "feature": "trend_down",
+          "coefficient": -0.164374
+        },
+        {
+          "feature": "candle_body",
+          "coefficient": -0.15328
+        },
+        {
+          "feature": "opening_vwap_slope",
+          "coefficient": -0.119429
+        },
+        {
+          "feature": "opening_move",
+          "coefficient": -0.114172
+        },
+        {
+          "feature": "opening_alignment",
+          "coefficient": -0.104131
+        },
+        {
+          "feature": "vwap_distance",
+          "coefficient": -0.069876
+        },
+        {
+          "feature": "opening_acceptance",
+          "coefficient": 0.067051
+        },
+        {
+          "feature": "trend_up",
+          "coefficient": 0.061406
+        }
+      ]
+    },
+    {
+      "instrument": "MES",
+      "target_r": 2.0,
+      "adaptation": "Rolling40",
+      "event_count": 578,
+      "threshold": 0.75,
+      "internal_tuning": {
+        "trades": 1,
+        "active_sessions": 1,
+        "targets": 0,
+        "stops": 1,
+        "time_exits": 0,
+        "win_rate": 0.0,
+        "net_currency": -15.62,
+        "average_trade_currency": -15.62,
+        "profit_factor": 0.0,
+        "maximum_drawdown_currency": 15.62,
+        "passed": false
+      },
+      "validation": {
+        "trades": 4,
+        "active_sessions": 4,
+        "targets": 0,
+        "stops": 2,
+        "time_exits": 2,
+        "win_rate": 0.0,
+        "net_currency": -120.63,
+        "average_trade_currency": -30.16,
+        "profit_factor": 0.0,
+        "maximum_drawdown_currency": 120.63
+      },
+      "validation_passed": false,
+      "confirmation": {
+        "trades": 0,
+        "active_sessions": 0,
+        "targets": 0,
+        "stops": 0,
+        "time_exits": 0,
+        "win_rate": null,
+        "net_currency": 0,
+        "average_trade_currency": null,
+        "profit_factor": null,
+        "maximum_drawdown_currency": 0.0
+      },
+      "confirmation_passed": false,
+      "out_of_sample": {
+        "trades": 4,
+        "active_sessions": 4,
+        "targets": 0,
+        "stops": 2,
+        "time_exits": 2,
+        "win_rate": 0.0,
+        "net_currency": -120.63,
+        "average_trade_currency": -30.16,
+        "profit_factor": 0.0,
+        "maximum_drawdown_currency": 120.63
+      },
+      "economic_gate": null,
+      "top_coefficients": [
+        {
+          "feature": "opening_acceptance",
+          "coefficient": -0.466888
+        },
+        {
+          "feature": "balance",
+          "coefficient": -0.297856
+        },
+        {
+          "feature": "opening_efficiency",
+          "coefficient": -0.282537
+        },
+        {
+          "feature": "close_location",
+          "coefficient": -0.26592
+        },
+        {
+          "feature": "opening_range",
+          "coefficient": 0.229287
+        },
+        {
+          "feature": "momentum_15",
+          "coefficient": 0.179735
+        },
+        {
+          "feature": "momentum_5",
+          "coefficient": -0.171124
+        },
+        {
+          "feature": "trend_down",
+          "coefficient": 0.156111
+        },
+        {
+          "feature": "trend_up",
+          "coefficient": -0.132883
+        },
+        {
+          "feature": "candle_body",
+          "coefficient": 0.132056
+        }
+      ]
+    }
+  ],
+  "best_observed": {
+    "instrument": "MNQ",
+    "target_r": 2.0,
+    "adaptation": "Frozen",
+    "event_count": 5389,
+    "threshold": 0.55,
+    "internal_tuning": {
+      "trades": 14,
+      "active_sessions": 14,
+      "targets": 9,
+      "stops": 5,
+      "time_exits": 0,
+      "win_rate": 0.642857,
+      "net_currency": 164.5,
+      "average_trade_currency": 11.75,
+      "profit_factor": 2.3882,
+      "maximum_drawdown_currency": 47.5,
+      "passed": true
+    },
+    "validation": {
+      "trades": 17,
+      "active_sessions": 17,
+      "targets": 8,
+      "stops": 9,
+      "time_exits": 0,
+      "win_rate": 0.470588,
+      "net_currency": 108.5,
+      "average_trade_currency": 6.38,
+      "profit_factor": 1.3253,
+      "maximum_drawdown_currency": 115.0
+    },
+    "validation_passed": true,
+    "confirmation": {
+      "trades": 16,
+      "active_sessions": 16,
+      "targets": 5,
+      "stops": 11,
+      "time_exits": 0,
+      "win_rate": 0.3125,
+      "net_currency": -145.5,
+      "average_trade_currency": -9.09,
+      "profit_factor": 0.6456,
+      "maximum_drawdown_currency": 242.5
+    },
+    "confirmation_passed": false,
+    "out_of_sample": {
+      "trades": 33,
+      "active_sessions": 33,
+      "targets": 13,
+      "stops": 20,
+      "time_exits": 0,
+      "win_rate": 0.393939,
+      "net_currency": -37.0,
+      "average_trade_currency": -1.12,
+      "profit_factor": 0.9503,
+      "maximum_drawdown_currency": 242.5
+    },
+    "economic_gate": {
+      "passed": false,
+      "qualified_micro_contracts": [],
+      "best_scenario": {
+        "micro_contracts": 8,
+        "attempts": 35,
+        "passed": 10,
+        "drawdown_failures": 5,
+        "timeouts": 20,
+        "pass_rate_percent": 28.57,
+        "drawdown_failure_rate_percent": 14.29,
+        "median_sessions_to_pass": 11.0,
+        "median_ending_net_currency": -196.0,
+        "p10_ending_net_currency": -1260.0,
+        "p90_ending_net_currency": 1664.0,
+        "minimum_ending_net_currency": -1684.0,
+        "maximum_ending_net_currency": 1756.0,
+        "median_maximum_drawdown_currency": 920.0,
+        "p90_maximum_drawdown_currency": 1684.0
+      }
+    },
+    "top_coefficients": [
+      {
+        "feature": "opening_vwap_slope",
+        "coefficient": -0.091065
+      },
+      {
+        "feature": "opening_move",
+        "coefficient": 0.065438
+      },
+      {
+        "feature": "minutes_after_decision",
+        "coefficient": -0.057553
+      },
+      {
+        "feature": "risk_fraction",
+        "coefficient": -0.055154
+      },
+      {
+        "feature": "momentum_15",
+        "coefficient": -0.0515
+      },
+      {
+        "feature": "close_location",
+        "coefficient": 0.043999
+      },
+      {
+        "feature": "opening_alignment",
+        "coefficient": -0.028315
+      },
+      {
+        "feature": "candle_body",
+        "coefficient": 0.025028
+      },
+      {
+        "feature": "opening_acceptance",
+        "coefficient": -0.020276
+      },
+      {
+        "feature": "relative_volume",
+        "coefficient": -0.019489
+      }
+    ]
+  },
+  "approved": false,
+  "decision": "Do not change the indicator; no model passed the complete gate.",
+  "limitations": [
+    "The confirmation block was already viewed in prior studies and is not pristine.",
+    "Logistic relationships are linear and cannot represent every market interaction.",
+    "OHLCV bars do not provide order-flow delta, imbalance or absorption.",
+    "Only data after 2026-07-29 can provide untouched prospective evidence."
+  ]
+}

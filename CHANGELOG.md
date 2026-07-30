@@ -1,5 +1,27 @@
 # Histórico de versões
 
+## 1.3.1-beta.1 — 2026-07-30
+
+- todos os sinais universais dos dias carregados permanecem desenhados no gráfico;
+- removido o limite visual antigo de cinco ou vinte sinais no modo universal;
+- painel identifica uma única estratégia visível: `PULLBACK CONTEXTUAL`;
+- painel informa explicitamente que nenhum ativo está aprovado nessa estratégia;
+- comparação EMA continua desativada por padrão e momentum não é misturado ao modo
+  universal;
+- mantida a avaliação a cada fechamento de candle de 5 minutos, sem ordens.
+
+## 1.3.0-beta.1 — 2026-07-30
+
+- adicionado modo universal experimental para qualquer instrumento carregado;
+- avaliação acontece durante a sessão, no fechamento de cada candle de 5 minutos;
+- compras e vendas exigem pullback contextual com EMA, VWAP, ATR, candle e volume;
+- entrada, stop, alvo e valor financeiro usam tick e valor do ponto do ativo;
+- bloqueada sobreposição de sinais universais no mesmo gráfico;
+- painel mostra ativo, período, janela, estado atual e resultado hipotético diário;
+- registros universais isolados em `TradeAssistant/Realtime`, com rodada própria;
+- candidato de momentum MNQ preservado, mas desligado por padrão no modo universal;
+- mantida a ausência total de chamadas de execução de ordens.
+
 ## Pesquisa de portfólios — 2026-07-29 (sem alteração de versão)
 
 - adicionadas rejeição da VWAP, rompimento da abertura e retorno à VWAP à pesquisa

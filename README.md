@@ -6,7 +6,55 @@ Assistente visual de análise para NinjaTrader 8. A versão experimental identif
 
 ## Versão
 
-Versão atual: `1.1.0-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
+Versão atual: `1.3.1-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
+
+## Análise universal em tempo real
+
+A versão 1.3 adiciona um modo visual para qualquer ativo carregado em um gráfico de
+5 minutos. A cada fechamento de candle, o indicador procura um pullback alinhado
+com EMA 9/21, VWAP da sessão, inclinação, qualidade do candle, distância em ATR e
+volume relativo. Compras e vendas usam os mesmos critérios.
+
+- janela padrão: 10:30 a 17:00 no fuso horário configurado no NinjaTrader;
+- somente um sinal universal fica ativo por vez em cada gráfico;
+- todos os sinais dos dias efetivamente carregados permanecem desenhados;
+- entrada, stop, alvo e risco financeiro usam tick e valor do ponto do instrumento;
+- os sinais são hipotéticos e não enviam ordens;
+- o modo é experimental e ainda não foi validado individualmente em todos os ativos;
+- os CSVs ficam separados em `Documents/NinjaTrader 8/TradeAssistant/Realtime`.
+
+Para usar, mantenha **Análise universal em tempo real** ligada, use gráfico de 5
+minutos e deixe **Momentum intradiário MNQ** desligado. O painel informa quando o
+período ou o horário não permitem a análise.
+
+O modo universal usa somente a estratégia `PULLBACK CONTEXTUAL`. Ela ainda não
+possui ativo aprovado: o painel mostra `NÃO APROVADA - EM VALIDAÇÃO` até existir
+evidência histórica e prospectiva suficiente. Aceitar um ativo para análise não é
+o mesmo que aprovar a estratégia para operar esse ativo.
+
+## Candidato de momentum intradiario
+
+Versão do candidato congelado: `1.2.0-beta.1`.
+
+A versao 1.2 integra o candidato congelado `intraday-momentum-2026-07-v1` somente
+para observacao no MNQ. O indicador:
+
+- carrega internamente barras de um minuto;
+- usa 20 sessoes completas para aquecer a mediana de volatilidade da abertura;
+- cria no maximo uma analise hipotetica na ultima meia hora da sessao regular;
+- acompanha stop fixo de USD 75 por micro e encerra no fechamento regular;
+- considera USD 5 de custo hipotetico de ida e volta;
+- salva um CSV separado em
+  `Documents/NinjaTrader 8/TradeAssistant/IntradayMomentum`;
+- desativa a geracao dos sinais antigos no MNQ enquanto este candidato estiver
+  ligado, evitando operacoes hipoteticas simultaneas.
+
+O campo **Momentum intradiario MNQ** vem ligado. Ele nao envia ordens, nao define
+quantidade real e nao acessa conta. A rodada prospectiva usa apenas um micro
+hipotetico e nao deve ter parametros alterados durante os 20 pregoes de observacao.
+Configure o grafico para carregar 60 dias, garantindo o fechamento anterior e os
+20 sinais usados no aquecimento mesmo com fins de semana e feriados. Com apenas
+cinco dias carregados, o indicador permanece em aquecimento e nao desenha operacoes.
 
 ## Primeira entrega
 
@@ -171,6 +219,67 @@ python research/prop_strategy_search.py `
 ```
 
 Consulte `docs/data-audits/2026-07-29-prop-strategy-redesign.md`.
+
+Uma nova linha de pesquisa usa barras de um minuto para classificar a abertura como
+tendência, equilíbrio ou transição antes de procurar um gatilho. Ela combina faixa de
+abertura, VWAP, eficiência direcional, volume relativo e concordância MNQ/MES.
+
+```powershell
+python research/regime_structure_backtest.py `
+  --mnq CAMINHO_DO_MNQ_1MIN.csv `
+  --mes CAMINHO_DO_MES_1MIN.csv `
+  --output research/results/resultado-regime.json `
+  --self-test
+```
+
+A primeira hipótese (`TrendRetest` e `BalanceRejection`) foi reprovada e não foi
+publicada no indicador. Consulte
+`docs/data-audits/2026-07-29-regime-structure-1m.md`.
+
+A continuação da pesquisa comparou gatilhos manuais, portfólios pequenos e um modelo
+logístico de eventos em walk-forward:
+
+```powershell
+python research/regime_trigger_walkforward.py `
+  --mnq CAMINHO_DO_MNQ_1MIN.csv `
+  --mes CAMINHO_DO_MES_1MIN.csv `
+  --output research/results/resultado-gatilhos.json `
+  --self-test
+
+python research/event_model_walkforward.py `
+  --mnq CAMINHO_DO_MNQ_1MIN.csv `
+  --mes CAMINHO_DO_MES_1MIN.csv `
+  --output research/results/resultado-modelo.json `
+  --self-test
+```
+
+O melhor cenário observado foi MNQ com alvo 2R: +USD 108,50 na validação e
+-USD 145,50 na confirmação. Ele foi reprovado e não alterou o indicador. Consulte
+`docs/data-audits/2026-07-29-trigger-and-event-model-search.md`.
+
+Uma pesquisa posterior mudou a hipótese para momentum intradiário, overnight, gap e
+força relativa. Os quatro meses foram usados integralmente como desenvolvimento:
+
+```powershell
+python research/alternative_market_methods.py `
+  --mnq CAMINHO_DO_MNQ_1MIN.csv `
+  --mes CAMINHO_DO_MES_1MIN.csv `
+  --output research/results/resultado-metodos-alternativos.json `
+  --self-test
+```
+
+O candidato congelado opera MNQ na última meia hora conforme o retorno da primeira
+meia hora, usando a penúltima meia hora como informação adicional em baixa
+volatilidade. O resultado de desenvolvimento foi 81 operações, +USD 1.244, PF 1,416
+e drawdown de USD 621 por micro. Ele ainda não está validado e precisa de 20 pregões
+posteriores a 29/07. Consulte
+`docs/data-audits/2026-07-29-alternative-market-methods.md`.
+
+Uma extensão posterior para 177 dias preservou a regra sem novos ajustes. A amostra
+passou a 100 operações, +USD 1.633, PF 1,4746 e o mesmo drawdown de USD 621 por
+micro. O portão econômico continuou reprovado, com 45,68% de aprovação na melhor
+configuração limitada a USD 300 de risco. Consulte
+`docs/data-audits/2026-07-29-alternative-market-methods-177d.md`.
 
 ## Documentação
 

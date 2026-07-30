@@ -25,6 +25,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
         private readonly string riskLimitMode;
         private readonly int slowEmaPeriod;
         private readonly double stopAtrMultiplier;
+        private readonly bool universalRealtimeMode;
         private readonly string version;
 
         public CsvSignalJournal(
@@ -40,7 +41,8 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
             int pullbackCooldownBars,
             string currency,
             double maximumRiskPerContract,
-            string riskLimitMode)
+            string riskLimitMode,
+            bool universalRealtimeMode = false)
         {
             this.directory = directory;
             this.instrument = instrument;
@@ -55,6 +57,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
             this.currency = currency;
             this.maximumRiskPerContract = maximumRiskPerContract;
             this.riskLimitMode = riskLimitMode;
+            this.universalRealtimeMode = universalRealtimeMode;
         }
 
         public string LastError { get; private set; }
@@ -160,6 +163,18 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 instrument,
                 signal.Setup,
                 signal.RiskRewardRatio);
+            string validationRound = universalRealtimeMode
+                ? UniversalRealtimePlan.RoundId
+                : ValidationPlan.RoundId;
+            string validationStage = universalRealtimeMode
+                ? "Experimental"
+                : validationProfile.Stage.ToString();
+            double validationTargetR = universalRealtimeMode
+                ? signal.RiskRewardRatio
+                : validationProfile.TargetR;
+            string validationSample = universalRealtimeMode
+                ? "RealtimeObservation"
+                : ValidationPlan.GetSamplePhase(signal.CreatedAt);
             string closedAt = trackedSignal.ClosedAt.HasValue
                 ? trackedSignal.ClosedAt.Value.ToString("O", CultureInfo.InvariantCulture)
                 : string.Empty;
@@ -176,10 +191,10 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 Csv("Hypothetical"),
                 Csv("SignalBarClose"),
                 Csv("FollowingBarsHighLow"),
-                Csv(ValidationPlan.RoundId),
-                Csv(validationProfile.Stage.ToString()),
-                Number(validationProfile.TargetR),
-                Csv(ValidationPlan.GetSamplePhase(signal.CreatedAt)),
+                Csv(validationRound),
+                Csv(validationStage),
+                Number(validationTargetR),
+                Csv(validationSample),
                 Csv(signal.Setup.ToString()),
                 Csv(signal.Direction.ToString()),
                 Number(signal.EntryPrice),

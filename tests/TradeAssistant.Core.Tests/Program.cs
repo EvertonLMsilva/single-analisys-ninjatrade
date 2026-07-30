@@ -6,6 +6,7 @@ using NinjaTrader.NinjaScript.TradeAssistant.Analysis;
 using NinjaTrader.NinjaScript.TradeAssistant.Configuration;
 using NinjaTrader.NinjaScript.TradeAssistant.Models;
 using NinjaTrader.NinjaScript.TradeAssistant.Persistence;
+using NinjaTrader.NinjaScript.TradeAssistant.Tracking;
 
 internal static class Program
 {
@@ -18,6 +19,8 @@ internal static class Program
             ValidateMarketContext();
             ValidateStatistics();
             ValidateCsvOutputs();
+            ValidateIntradayMomentum();
+            ValidateUniversalRealtimePlan();
             Console.WriteLine("All Trade Assistant core tests passed.");
             return 0;
         }
@@ -243,6 +246,21 @@ internal static class Program
             Assert(raw.Contains("SessionVwap,VwapSlopeAtr,VwapDistanceAtr"), "CSV v8 context columns are missing.");
             Assert(raw.Contains(ValidationPlan.RoundId + ",Reference,1,HistoricalReference"), "CSV v8 profile was not recorded.");
 
+            string realtimeDirectory = Path.Combine(directory, "Realtime");
+            CsvSignalJournal realtimeJournal = new CsvSignalJournal(
+                realtimeDirectory, "NQ 09-26", "Minute-5", TradeAssistantVersion.Current,
+                9, 21, 14, 1.5, 0.1, 3, "USD", 50, "SomenteAvisar", true);
+            Assert(
+                realtimeJournal.Record(signal),
+                "Universal realtime CSV could not be written: " + realtimeJournal.LastError);
+            string[] realtimeFiles = Directory.GetFiles(realtimeDirectory, "*_v8.csv");
+            Assert(realtimeFiles.Length == 1, "Universal realtime CSV was not created.");
+            string realtimeText = File.ReadAllText(realtimeFiles[0]);
+            Assert(
+                realtimeText.Contains(
+                    UniversalRealtimePlan.RoundId + ",Experimental,2,RealtimeObservation"),
+                "Universal realtime metadata was not isolated from the frozen validation.");
+
             TrackedSignal staleSignal = Tracked("stale", day.AddMinutes(5), 30, ComparisonStatus.StopHit);
             Assert(journal.Record(staleSignal), "Stale test row could not be written: " + journal.LastError);
             Assert(File.ReadAllLines(rawFiles[0]).Length == 3, "Stale test row was not added.");
@@ -279,6 +297,195 @@ internal static class Program
             if (Directory.Exists(directory))
                 Directory.Delete(directory, true);
         }
+    }
+
+    private static void ValidateIntradayMomentum()
+    {
+        Assert(
+            IntradayMomentumPlan.IsEligibleInstrument("MNQ 09-26"),
+            "MNQ must be eligible for intraday momentum.");
+        Assert(
+            !IntradayMomentumPlan.IsEligibleInstrument("MES 09-26"),
+            "MES must remain outside this frozen candidate.");
+        Assert(
+            IntradayMomentumPlan.GetRegularOpen(new DateTime(2026, 7, 30)).Hour == 10,
+            "US daylight-saving session must open at 10:30 BRT.");
+        Assert(
+            IntradayMomentumPlan.GetRegularOpen(new DateTime(2026, 12, 1)).Hour == 11,
+            "US standard-time session must open at 11:30 BRT.");
+
+        IntradayMomentumTracker tracker =
+            new IntradayMomentumTracker(0.25, 2.0);
+        DateTime start = new DateTime(2026, 6, 1);
+        for (int dayIndex = 0; dayIndex < 21; dayIndex++)
+        {
+            FeedMomentumDay(
+                tracker,
+                start.AddDays(dayIndex),
+                1.0,
+                100 + (dayIndex % 3),
+                100,
+                100,
+                false);
+        }
+
+        List<IntradayMomentumUpdate> stopDay = FeedMomentumDay(
+            tracker,
+            start.AddDays(21),
+            2.0,
+            110,
+            108,
+            110,
+            true);
+        IntradayMomentumTrade opened = FindOpened(stopDay);
+        IntradayMomentumTrade stopped = FindClosed(stopDay);
+        Assert(opened != null, "The first session after warmup must open a candidate.");
+        Assert(opened.Direction == SignalDirection.Long, "High-volatility direction must follow the opening return.");
+        Assert(opened.Regime == IntradayMomentumRegime.HighOpeningVolatility, "Opening volatility regime is incorrect.");
+        Assert(stopped != null && stopped.Status == IntradayMomentumStatus.StopHit, "The fixed hypothetical stop must be tracked.");
+        Assert(stopped.ResultCurrency == -80, "MNQ stop result must include the USD 5 round-turn cost.");
+
+        List<IntradayMomentumUpdate> closeDay = FeedMomentumDay(
+            tracker,
+            start.AddDays(22),
+            0.5,
+            102,
+            101,
+            103,
+            false,
+            110);
+        IntradayMomentumTrade timeExit = FindClosed(closeDay);
+        Assert(timeExit != null && timeExit.Status == IntradayMomentumStatus.TimeExit, "An active candidate must exit at the regular close.");
+        Assert(timeExit.ResultCurrency == 9, "Time-exit result must use MNQ point value and include costs.");
+
+        string directory = Path.Combine(
+            Path.GetTempPath(),
+            "trade-assistant-momentum-tests-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            CsvIntradayMomentumJournal journal =
+                new CsvIntradayMomentumJournal(
+                    directory,
+                    "MNQ 09-26",
+                    "Minute-1",
+                    TradeAssistantVersion.Current);
+            Assert(journal.Record(timeExit), "Momentum CSV could not be written: " + journal.LastError);
+            string[] files = Directory.GetFiles(directory, "*_intraday_momentum_v1.csv");
+            Assert(files.Length == 1, "Momentum CSV was not created.");
+            string text = File.ReadAllText(files[0]);
+            Assert(text.Contains("RoundTurnCost,Status,ResultCurrency,ResultR"), "Momentum result columns are missing.");
+            Assert(text.Contains(IntradayMomentumPlan.RoundId), "Frozen momentum round was not recorded.");
+            Assert(File.ReadAllLines(files[0]).Length == 2, "Momentum journal must keep one row per session.");
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+                Directory.Delete(directory, true);
+        }
+    }
+
+    private static void ValidateUniversalRealtimePlan()
+    {
+        Assert(
+            UniversalRealtimePlan.ApprovalStatus.Contains("NAO APROVADA"),
+            "Universal strategy must not claim approval before validation.");
+        Assert(
+            UniversalRealtimePlan.IsInsideWindow(
+                new DateTime(2026, 7, 30, 10, 30, 0),
+                103000,
+                170000),
+            "Realtime analysis must include the configured opening boundary.");
+        Assert(
+            UniversalRealtimePlan.IsInsideWindow(
+                new DateTime(2026, 7, 30, 16, 59, 59),
+                103000,
+                170000),
+            "Realtime analysis must remain active before the closing boundary.");
+        Assert(
+            !UniversalRealtimePlan.IsInsideWindow(
+                new DateTime(2026, 7, 30, 9, 0, 0),
+                103000,
+                170000),
+            "Realtime analysis must reject bars before the configured window.");
+        Assert(
+            !UniversalRealtimePlan.IsInsideWindow(
+                new DateTime(2026, 7, 30, 12, 0, 0),
+                106000,
+                170000),
+            "Invalid HHmmss settings must disable the realtime window.");
+        Assert(
+            !UniversalRealtimePlan.IsInsideWindow(
+                new DateTime(2026, 7, 30, 12, 0, 0),
+                170000,
+                103000),
+            "An inverted realtime window must be rejected.");
+    }
+
+    private static List<IntradayMomentumUpdate> FeedMomentumDay(
+        IntradayMomentumTracker tracker,
+        DateTime day,
+        double openingRange,
+        double firstHalfClose,
+        double penultimateStart,
+        double entryPrice,
+        bool hitStop,
+        double regularClosePrice = 100)
+    {
+        List<IntradayMomentumUpdate> updates =
+            new List<IntradayMomentumUpdate>();
+        DateTime regularOpen = IntradayMomentumPlan.GetRegularOpen(day);
+        for (int minute = 1; minute <= 390; minute++)
+        {
+            double open = 100;
+            double close = 100;
+            double range = minute <= 30 ? openingRange : 0.5;
+            if (minute == 30)
+                close = firstHalfClose;
+            if (minute == 330)
+                open = penultimateStart;
+            if (minute == 360)
+                open = entryPrice;
+            if (minute == 390)
+                close = regularClosePrice;
+
+            double high = Math.Max(open, close) + (range / 2.0);
+            double low = Math.Min(open, close) - (range / 2.0);
+            if (hitStop && minute == 361)
+                low = entryPrice - 38;
+
+            IntradayMomentumUpdate update = tracker.Update(
+                regularOpen.AddMinutes(minute),
+                open,
+                high,
+                low,
+                close,
+                1000);
+            if (update.HasChanges)
+                updates.Add(update);
+        }
+        return updates;
+    }
+
+    private static IntradayMomentumTrade FindOpened(
+        IList<IntradayMomentumUpdate> updates)
+    {
+        foreach (IntradayMomentumUpdate update in updates)
+        {
+            if (update.OpenedTrade != null)
+                return update.OpenedTrade;
+        }
+        return null;
+    }
+
+    private static IntradayMomentumTrade FindClosed(
+        IList<IntradayMomentumUpdate> updates)
+    {
+        foreach (IntradayMomentumUpdate update in updates)
+        {
+            if (update.ClosedTrade != null)
+                return update.ClosedTrade;
+        }
+        return null;
     }
 
     private static TrackedSignal Tracked(string id, DateTime time, double riskCurrency, ComparisonStatus status)
