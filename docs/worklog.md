@@ -2,6 +2,21 @@
 
 ## 2026-07-29 - Integracao visual do momentum intradiario
 
+- auditados novos arquivos de um minuto com 177 dias de MNQ e MES;
+- confirmadas 174.229 barras de MNQ, 175.183 de MES e 120 pregoes compartilhados;
+- confirmada rejeicao da mesma regra no MES: -USD 204,73 e PF 0,7075;
+- identificado no workspace que MNQ e MES carregavam somente cinco dias, abaixo do
+  aquecimento exigido; documentada configuracao recomendada de 60 dias;
+- reexecutada a regra congelada sem ajuste de parametros;
+- resultado ampliado: 100 operacoes, +USD 1.633, PF 1,4746 e drawdown de USD 621;
+- melhor dimensionamento sob USD 300 permaneceu em 2/4 micros, com 45,68% de
+  aprovacao e drawdown P90 de USD 1.223;
+- portao economico permaneceu reprovado e coleta prospectiva de um micro mantida;
+- duas execucoes produziram JSON identico;
+- auditoria registrada em
+  `docs/data-audits/2026-07-29-alternative-market-methods-177d.md`;
+- decisao registrada em
+  `docs/decisions/0017-retain-frozen-momentum-after-177d.md`;
 - corrigida contaminacao da compilacao interna por arquivos temporarios criados
   em `Custom/obj` durante a validacao externa;
 - confirmado no CSV de erros que todos os registros eram `CS0579` de atributos

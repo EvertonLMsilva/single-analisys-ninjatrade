@@ -28,8 +28,9 @@ para observacao no MNQ. O indicador:
 O campo **Momentum intradiario MNQ** vem ligado. Ele nao envia ordens, nao define
 quantidade real e nao acessa conta. A rodada prospectiva usa apenas um micro
 hipotetico e nao deve ter parametros alterados durante os 20 pregoes de observacao.
-Configure o grafico para carregar pelo menos 30 dias, garantindo o fechamento
-anterior e os 20 sinais usados no aquecimento.
+Configure o grafico para carregar 60 dias, garantindo o fechamento anterior e os
+20 sinais usados no aquecimento mesmo com fins de semana e feriados. Com apenas
+cinco dias carregados, o indicador permanece em aquecimento e nao desenha operacoes.
 
 ## Primeira entrega
 
@@ -249,6 +250,12 @@ volatilidade. O resultado de desenvolvimento foi 81 operações, +USD 1.244, PF 
 e drawdown de USD 621 por micro. Ele ainda não está validado e precisa de 20 pregões
 posteriores a 29/07. Consulte
 `docs/data-audits/2026-07-29-alternative-market-methods.md`.
+
+Uma extensão posterior para 177 dias preservou a regra sem novos ajustes. A amostra
+passou a 100 operações, +USD 1.633, PF 1,4746 e o mesmo drawdown de USD 621 por
+micro. O portão econômico continuou reprovado, com 45,68% de aprovação na melhor
+configuração limitada a USD 300 de risco. Consulte
+`docs/data-audits/2026-07-29-alternative-market-methods-177d.md`.
 
 ## Documentação
 

@@ -5,7 +5,7 @@ Este protocolo evita comparar resultados produzidos com configurações diferent
 ## Protocolo do momentum intradiario 1.2
 
 1. usar MNQ com pelo menos 22 sessoes anteriores carregadas; por seguranca,
-   configurar o grafico para 30 dias;
+   configurar o grafico para 60 dias;
 2. confirmar `1.2.0-beta.1`, rodada `intraday-momentum-2026-07-v1` e
    `SOMENTE OBSERVACAO`;
 3. manter **Momentum intradiario MNQ** ligado e nao alterar a regra;
