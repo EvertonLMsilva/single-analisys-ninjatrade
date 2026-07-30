@@ -6,7 +6,7 @@ Assistente visual de análise para NinjaTrader 8. A versão experimental identif
 
 ## Versão
 
-Versão atual: `1.3.0-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
+Versão atual: `1.3.1-beta.1`. A versão em execução aparece no cabeçalho do painel do indicador.
 
 ## Análise universal em tempo real
 
@@ -17,6 +17,7 @@ volume relativo. Compras e vendas usam os mesmos critérios.
 
 - janela padrão: 10:30 a 17:00 no fuso horário configurado no NinjaTrader;
 - somente um sinal universal fica ativo por vez em cada gráfico;
+- todos os sinais dos dias efetivamente carregados permanecem desenhados;
 - entrada, stop, alvo e risco financeiro usam tick e valor do ponto do instrumento;
 - os sinais são hipotéticos e não enviam ordens;
 - o modo é experimental e ainda não foi validado individualmente em todos os ativos;
@@ -25,6 +26,11 @@ volume relativo. Compras e vendas usam os mesmos critérios.
 Para usar, mantenha **Análise universal em tempo real** ligada, use gráfico de 5
 minutos e deixe **Momentum intradiário MNQ** desligado. O painel informa quando o
 período ou o horário não permitem a análise.
+
+O modo universal usa somente a estratégia `PULLBACK CONTEXTUAL`. Ela ainda não
+possui ativo aprovado: o painel mostra `NÃO APROVADA - EM VALIDAÇÃO` até existir
+evidência histórica e prospectiva suficiente. Aceitar um ativo para análise não é
+o mesmo que aprovar a estratégia para operar esse ativo.
 
 ## Candidato de momentum intradiario
 

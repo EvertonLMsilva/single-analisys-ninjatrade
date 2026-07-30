@@ -1,5 +1,18 @@
 # Registro de trabalho
 
+## 2026-07-30 - Correção do histórico visual universal
+
+- diagnosticado no workspace salvo `DaysBack=5`, histórico visual desligado e
+  limite antigo de cinco sinais;
+- confirmado pelos CSVs que os sinais eram intradiários, entre 10:30 e 16:40, e
+  não exclusivos do fechamento;
+- removido o descarte de desenhos antigos no modo universal;
+- mantida uma única estratégia visível, `PULLBACK CONTEXTUAL`;
+- painel passa a separar elegibilidade do ativo de aprovação estatística;
+- nenhum ativo foi marcado como aprovado: MNQ acumulava 19 sinais e -3R, enquanto
+  MES acumulava cinco sinais e 0R nos registros universais disponíveis;
+- versão elevada para `1.3.1-beta.1`.
+
 ## 2026-07-30 - Análise universal durante a sessão
 
 - criada a rodada experimental `universal-realtime-2026-07-v1`;

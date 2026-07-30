@@ -387,6 +387,9 @@ internal static class Program
     private static void ValidateUniversalRealtimePlan()
     {
         Assert(
+            UniversalRealtimePlan.ApprovalStatus.Contains("NAO APROVADA"),
+            "Universal strategy must not claim approval before validation.");
+        Assert(
             UniversalRealtimePlan.IsInsideWindow(
                 new DateTime(2026, 7, 30, 10, 30, 0),
                 103000,

@@ -1,5 +1,15 @@
 # Histórico de versões
 
+## 1.3.1-beta.1 — 2026-07-30
+
+- todos os sinais universais dos dias carregados permanecem desenhados no gráfico;
+- removido o limite visual antigo de cinco ou vinte sinais no modo universal;
+- painel identifica uma única estratégia visível: `PULLBACK CONTEXTUAL`;
+- painel informa explicitamente que nenhum ativo está aprovado nessa estratégia;
+- comparação EMA continua desativada por padrão e momentum não é misturado ao modo
+  universal;
+- mantida a avaliação a cada fechamento de candle de 5 minutos, sem ordens.
+
 ## 1.3.0-beta.1 — 2026-07-30
 
 - adicionado modo universal experimental para qualquer instrumento carregado;

@@ -2,11 +2,14 @@
 
 ## Estado atual - observação universal em tempo real
 
-A versão `1.3.0-beta.1` apresenta sinais durante a sessão em qualquer gráfico de
+A versão `1.3.1-beta.1` apresenta sinais durante a sessão em qualquer gráfico de
 5 minutos. Esse modo foi criado para acelerar a coleta comparável entre ativos,
 mas permanece experimental: aparecer no gráfico não significa que a regra tenha
 vantagem estatística naquele instrumento. Os resultados ficam isolados em
 `TradeAssistant/Realtime` e devem ser revisados antes de qualquer automação.
+Todos os sinais dos dias carregados ficam visíveis, porém nenhum ativo está
+aprovado para essa estratégia enquanto os critérios de validação não forem
+cumpridos.
 
 ## Estado atual - momentum intradiario
 

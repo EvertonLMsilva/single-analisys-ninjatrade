@@ -61,7 +61,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                 EnableLongSignals = true;
                 EnableShortSignals = true;
                 EnablePullbackSignals = true;
-                EnableBaselineComparison = true;
+                EnableBaselineComparison = false;
                 FastEmaPeriod = 9;
                 SlowEmaPeriod = 21;
                 AtrPeriod = 14;
@@ -792,9 +792,9 @@ namespace NinjaTrader.NinjaScript.Indicators
                     FormatPrice(lastSignal.Signal.Context.SessionVwap),
                     lastSignal.Signal.Context.Summary);
             string panelText = string.Format(
-                "TRADE ASSISTANT v{0} | TEMPO REAL | SEM ORDENS\nMODO UNIVERSAL EXPERIMENTAL | {1}\nAtivo: {2} | Grafico: {3}-{4}\nJanela: {5:00}:{6:00} - {7:00}:{8:00} BRT\nStatus: {9}\n\n{10}\n\nHoje: {11} sinais | {12} ativos | Alvos {13} | Stops {14} | Expirados {15}\nResultado hipotetico: {16:+0.00;-0.00;0.00} R | {17}\nCSV: {18}",
+                "TRADE ASSISTANT v{0} | TEMPO REAL | SEM ORDENS\nESTRATEGIA UNICA: PULLBACK CONTEXTUAL\nAprovacao deste ativo: {1}\nAtivo: {2} | Grafico: {3}-{4}\nJanela: {5:00}:{6:00} - {7:00}:{8:00} BRT\nStatus: {9}\n\n{10}\n\nHoje: {11} sinais | {12} ativos | Alvos {13} | Stops {14} | Expirados {15}\nResultado hipotetico: {16:+0.00;-0.00;0.00} R | {17}\nCSV: {18}",
                 TradeAssistantVersion.Current,
-                "NAO VALIDADO PARA ESTE ATIVO",
+                UniversalRealtimePlan.ApprovalStatus,
                 Bars.Instrument.FullName,
                 BarsPeriod.BarsPeriodType,
                 BarsPeriod.Value,
@@ -1323,7 +1323,11 @@ namespace NinjaTrader.NinjaScript.Indicators
             visualSignalIds.Enqueue(signalId);
             visibleSignalIds.Add(signalId);
 
-            int visualLimit = ShowHistoricalSignals ? MaxHistoricalSignals : 1;
+            int visualLimit = EnableUniversalRealtimeAnalysis
+                ? int.MaxValue
+                : ShowHistoricalSignals
+                    ? MaxHistoricalSignals
+                    : 1;
             while (visualSignalIds.Count > visualLimit)
                 RemoveSignalVisuals(visualSignalIds.Dequeue());
         }
@@ -1420,7 +1424,7 @@ namespace NinjaTrader.NinjaScript.Indicators
         public int ValidForBars { get; set; }
 
         [NinjaScriptProperty]
-        [Display(Name = "Exibir sinais anteriores", GroupName = "Visual", Order = 1)]
+        [Display(Name = "Exibir sinais anteriores", Description = "No modo universal, todos os sinais dos dias carregados permanecem visiveis.", GroupName = "Visual", Order = 1)]
         public bool ShowHistoricalSignals { get; set; }
 
         [NinjaScriptProperty]

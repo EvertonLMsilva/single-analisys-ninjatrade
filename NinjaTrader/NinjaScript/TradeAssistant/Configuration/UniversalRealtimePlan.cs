@@ -8,6 +8,8 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Configuration
         public const int DefaultStartTime = 103000;
         public const int DefaultEndTime = 170000;
         public const int RequiredMinutePeriod = 5;
+        public const string ApprovalStatus =
+            "NAO APROVADA - EM VALIDACAO";
 
         public static bool IsInsideWindow(
             DateTime time,
