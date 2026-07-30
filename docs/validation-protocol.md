@@ -2,6 +2,25 @@
 
 Este protocolo evita comparar resultados produzidos com configurações diferentes ou tirar conclusões a partir de poucos sinais.
 
+## Protocolo do momentum intradiario 1.2
+
+1. usar MNQ com pelo menos 22 sessoes anteriores carregadas; por seguranca,
+   configurar o grafico para 60 dias;
+2. confirmar `1.2.0-beta.1`, rodada `intraday-momentum-2026-07-v1` e
+   `SOMENTE OBSERVACAO`;
+3. manter **Momentum intradiario MNQ** ligado e nao alterar a regra;
+4. confirmar que os sinais antigos nao aparecem em paralelo no MNQ;
+5. conferir uma unica analise na ultima meia hora da sessao regular;
+6. comparar entrada e stop do grafico com o CSV em
+   `TradeAssistant/IntradayMomentum`;
+7. confirmar risco de USD 75, custo de USD 5 e encerramento por `StopHit` ou
+   `TimeExit`;
+8. recarregar o grafico e confirmar uma unica linha por dia;
+9. coletar 20 sessoes posteriores a 29/07 sem remover dias ou resultados;
+10. avaliar somente depois de pelo menos 12 operacoes: lucro positivo, PF minimo
+    1,20, drawdown maximo de USD 500 e intervalo sem sinal de no maximo cinco
+    sessoes.
+
 ## 1. Identificação da execução
 
 Antes de iniciar o Playback, registrar:

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Windows.Media;
+using NinjaTrader.Data;
 using NinjaTrader.Gui;
 using NinjaTrader.Gui.Chart;
 using NinjaTrader.Gui.Tools;
@@ -38,8 +39,10 @@ namespace NinjaTrader.NinjaScript.Indicators
         private Queue<string> visualSignalIds;
         private SignalAnalyzer signalAnalyzer;
         private CsvSignalJournal signalJournal;
+        private CsvIntradayMomentumJournal intradayMomentumJournal;
         private CsvValidationSegmentJournal validationSegmentJournal;
         private CsvValidationSummaryJournal validationSummaryJournal;
+        private IntradayMomentumTracker intradayMomentumTracker;
         private SignalTracker signalTracker;
         private bool validationConfigurationMatches;
 
@@ -58,7 +61,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                 EnableLongSignals = true;
                 EnableShortSignals = true;
                 EnablePullbackSignals = true;
-                EnableBaselineComparison = true;
+                EnableBaselineComparison = false;
                 FastEmaPeriod = 9;
                 SlowEmaPeriod = 21;
                 AtrPeriod = 14;
@@ -67,13 +70,27 @@ namespace NinjaTrader.NinjaScript.Indicators
                 StopAtrMultiplier = 1.5;
                 RiskRewardRatio = 2.0;
                 ValidForBars = 3;
-                ShowHistoricalSignals = false;
-                MaxHistoricalSignals = 5;
+                ShowHistoricalSignals = true;
+                MaxHistoricalSignals = 20;
                 ZoneOpacity = 14;
                 EnableCsvJournal = true;
                 EnableValidationMode = true;
+                EnableUniversalRealtimeAnalysis = true;
+                EnableIntradayMomentumCandidate = false;
+                RealtimeStartTime =
+                    UniversalRealtimePlan.DefaultStartTime;
+                RealtimeEndTime =
+                    UniversalRealtimePlan.DefaultEndTime;
                 MaximumRiskPerContract = 50;
                 RiskLimitPolicy = RiskLimitMode.DescartarAcimaDoLimite;
+            }
+            else if (State == State.Configure)
+            {
+                if (!EnableUniversalRealtimeAnalysis
+                    && EnableIntradayMomentumCandidate)
+                {
+                    AddDataSeries(BarsPeriodType.Minute, 1);
+                }
             }
             else if (State == State.DataLoaded)
             {
@@ -87,6 +104,15 @@ namespace NinjaTrader.NinjaScript.Indicators
                 signalAnalyzer = new SignalAnalyzer();
                 marketContextAnalyzer = new MarketContextAnalyzer();
                 signalTracker = new SignalTracker();
+                if (!EnableUniversalRealtimeAnalysis
+                    && EnableIntradayMomentumCandidate
+                    && IntradayMomentumPlan.IsEligibleInstrument(
+                        Bars.Instrument.FullName))
+                {
+                    intradayMomentumTracker = new IntradayMomentumTracker(
+                        instrumentTickSize,
+                        instrumentPointValue);
+                }
                 if (EnableValidationMode)
                 {
                     MaximumRiskPerContract = ValidationPlan.NormalizeMaximumRiskPerContract(
@@ -111,7 +137,9 @@ namespace NinjaTrader.NinjaScript.Indicators
                     string journalDirectory = System.IO.Path.Combine(
                         NinjaTrader.Core.Globals.UserDataDir,
                         "TradeAssistant",
-                        "Data");
+                        EnableUniversalRealtimeAnalysis
+                            ? "Realtime"
+                            : "Data");
                     string barsPeriodDescription = BarsPeriod.BarsPeriodType + "-" + BarsPeriod.Value;
                     signalJournal = new CsvSignalJournal(
                         journalDirectory,
@@ -126,27 +154,43 @@ namespace NinjaTrader.NinjaScript.Indicators
                         PullbackCooldownBars,
                         instrumentCurrency,
                         MaximumRiskPerContract,
-                        RiskLimitPolicy.ToString());
-                    validationSummaryJournal = new CsvValidationSummaryJournal(
-                        System.IO.Path.Combine(
-                            NinjaTrader.Core.Globals.UserDataDir,
-                            "TradeAssistant",
-                            "Summaries"),
-                        Bars.Instrument.FullName,
-                        barsPeriodDescription,
-                        TradeAssistantVersion.Current,
-                        instrumentCurrency,
-                        RiskRewardRatio);
-                    validationSegmentJournal = new CsvValidationSegmentJournal(
-                        System.IO.Path.Combine(
-                            NinjaTrader.Core.Globals.UserDataDir,
-                            "TradeAssistant",
-                            "Analysis"),
-                        Bars.Instrument.FullName,
-                        barsPeriodDescription,
-                        TradeAssistantVersion.Current,
-                        instrumentCurrency,
-                        RiskRewardRatio);
+                        RiskLimitPolicy.ToString(),
+                        EnableUniversalRealtimeAnalysis);
+                    if (!EnableUniversalRealtimeAnalysis)
+                    {
+                        validationSummaryJournal = new CsvValidationSummaryJournal(
+                            System.IO.Path.Combine(
+                                NinjaTrader.Core.Globals.UserDataDir,
+                                "TradeAssistant",
+                                "Summaries"),
+                            Bars.Instrument.FullName,
+                            barsPeriodDescription,
+                            TradeAssistantVersion.Current,
+                            instrumentCurrency,
+                            RiskRewardRatio);
+                        validationSegmentJournal = new CsvValidationSegmentJournal(
+                            System.IO.Path.Combine(
+                                NinjaTrader.Core.Globals.UserDataDir,
+                                "TradeAssistant",
+                                "Analysis"),
+                            Bars.Instrument.FullName,
+                            barsPeriodDescription,
+                            TradeAssistantVersion.Current,
+                            instrumentCurrency,
+                            RiskRewardRatio);
+                    }
+                    if (intradayMomentumTracker != null)
+                    {
+                        intradayMomentumJournal =
+                            new CsvIntradayMomentumJournal(
+                                System.IO.Path.Combine(
+                                    NinjaTrader.Core.Globals.UserDataDir,
+                                    "TradeAssistant",
+                                    "IntradayMomentum"),
+                                Bars.Instrument.FullName,
+                                "Minute-1",
+                                TradeAssistantVersion.Current);
+                    }
                 }
                 visibleSignalIds = new HashSet<string>();
                 visualSignalIds = new Queue<string>();
@@ -155,6 +199,15 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         protected override void OnBarUpdate()
         {
+            if (BarsInProgress > 0)
+            {
+                EvaluateIntradayMomentum();
+                return;
+            }
+
+            if (BarsInProgress != 0)
+                return;
+
             UpdateSessionContext();
 
             int requiredBars = Math.Max(
@@ -169,13 +222,61 @@ namespace NinjaTrader.NinjaScript.Indicators
                 RenderOutcome(closedSignal);
             }
 
-            if (!EnableValidationMode || validationConfigurationMatches)
+            if (EnableUniversalRealtimeAnalysis)
+            {
+                if (IsUniversalRealtimeTimeframe()
+                    && IsInsideRealtimeWindow(Time[0]))
+                {
+                    EvaluatePullbackSetup();
+                }
+            }
+            else if (intradayMomentumTracker == null
+                && (!EnableValidationMode || validationConfigurationMatches))
             {
                 EvaluatePullbackSetup();
                 EvaluateBaselineSetup();
             }
 
             RenderModePanel();
+        }
+
+        private void EvaluateIntradayMomentum()
+        {
+            if (intradayMomentumTracker == null || CurrentBars[1] < 1)
+                return;
+
+            IntradayMomentumUpdate update = intradayMomentumTracker.Update(
+                Times[1][0],
+                Opens[1][0],
+                Highs[1][0],
+                Lows[1][0],
+                Closes[1][0],
+                Volumes[1][0]);
+            if (!update.HasChanges)
+                return;
+
+            if (update.OpenedTrade != null)
+            {
+                RecordIntradayMomentum(update.OpenedTrade);
+                RenderIntradayMomentum(update.OpenedTrade);
+            }
+
+            if (update.ClosedTrade != null)
+            {
+                RecordIntradayMomentum(update.ClosedTrade);
+                RenderIntradayMomentumOutcome(update.ClosedTrade);
+            }
+        }
+
+        private void RecordIntradayMomentum(IntradayMomentumTrade trade)
+        {
+            if (intradayMomentumJournal != null
+                && !intradayMomentumJournal.Record(trade))
+            {
+                Print(
+                    "Trade Assistant: nao foi possivel gravar o momentum intradiario. "
+                    + intradayMomentumJournal.LastError);
+            }
         }
 
         private void EvaluatePullbackSetup()
@@ -244,6 +345,30 @@ namespace NinjaTrader.NinjaScript.Indicators
             bool qualifiedActive)
         {
             SignalContext context = BuildSignalContext(direction);
+
+            if (EnableUniversalRealtimeAnalysis)
+            {
+                if (context.Passed && !contextActive)
+                {
+                    SignalContext realtimeContext = context.WithDecision(
+                        true,
+                        "ANALISE UNIVERSAL EXPERIMENTAL");
+                    RegisterAndRenderSignal(
+                        signalAnalyzer.CreatePullback(
+                            SignalSetup.ContextPullback,
+                            direction,
+                            Close[0],
+                            technicalStopPrice,
+                            RiskRewardRatio,
+                            instrumentTickSize,
+                            instrumentPointValue,
+                            Time[0],
+                            ValidForBars,
+                            realtimeContext),
+                        true);
+                }
+                return;
+            }
 
             if (!baselineActive)
             {
@@ -439,6 +564,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         private bool ShouldRejectByRisk(TradeSignal signal)
         {
+            if (EnableUniversalRealtimeAnalysis
+                && signal.Setup == SignalSetup.ContextPullback)
+            {
+                return false;
+            }
+
             if (signal.Setup == SignalSetup.QualifiedPullback
                 && !ValidationPlan.IsQualifiedRiskEligible(signal.RiskCurrency))
             {
@@ -476,6 +607,9 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         private bool ShouldRenderSetup(SignalSetup setup)
         {
+            if (EnableUniversalRealtimeAnalysis)
+                return setup == SignalSetup.ContextPullback;
+
             if (!EnableValidationMode)
                 return setup == SignalSetup.TrendPullback;
 
@@ -485,8 +619,49 @@ namespace NinjaTrader.NinjaScript.Indicators
                 RiskRewardRatio).RenderOnChart;
         }
 
+        private bool IsUniversalRealtimeTimeframe()
+        {
+            return BarsPeriod.BarsPeriodType == BarsPeriodType.Minute
+                && BarsPeriod.Value
+                    == UniversalRealtimePlan.RequiredMinutePeriod;
+        }
+
+        private bool IsInsideRealtimeWindow(DateTime time)
+        {
+            return UniversalRealtimePlan.IsInsideWindow(
+                time,
+                RealtimeStartTime,
+                RealtimeEndTime);
+        }
+
         private void RenderModePanel()
         {
+            if (EnableUniversalRealtimeAnalysis)
+            {
+                RenderUniversalRealtimePanel();
+                return;
+            }
+
+            if (intradayMomentumTracker != null)
+            {
+                string momentumPanel =
+                    "TRADE ASSISTANT v"
+                    + TradeAssistantVersion.Current
+                    + " | RESULTADO HIPOTETICO | SEM ORDENS"
+                    + GetIntradayMomentumPanelText();
+                Draw.TextFixed(
+                    this,
+                    "TradeAssistant.Mode",
+                    momentumPanel,
+                    TextPosition.TopRight,
+                    Brushes.WhiteSmoke,
+                    new SimpleFont("Segoe UI Semibold", 12),
+                    Brushes.SlateGray,
+                    Brushes.Black,
+                    78);
+                return;
+            }
+
             ValidationProfile profile = ValidationPlan.GetPrimaryProfile(
                 Bars.Instrument.FullName,
                 RiskRewardRatio);
@@ -563,6 +738,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                 statistics.MaximumDrawdownR,
                 FormatCurrency(statistics.MaximumDrawdownCurrency),
                 sampleStatus);
+            panelText += GetIntradayMomentumPanelText();
 
             Draw.TextFixed(
                 this,
@@ -576,6 +752,153 @@ namespace NinjaTrader.NinjaScript.Indicators
                 78);
         }
 
+        private void RenderUniversalRealtimePanel()
+        {
+            bool supportedTimeframe = IsUniversalRealtimeTimeframe();
+            bool insideWindow = IsInsideRealtimeWindow(Time[0]);
+            ValidationStatistics statistics =
+                ValidationStatisticsCalculator.Calculate(
+                    signalTracker.GetSignals(),
+                    SignalSetup.ContextPullback,
+                    RiskRewardRatio,
+                    Time[0].Date);
+            TrackedSignal lastSignal =
+                signalTracker.GetLastSignal(SignalSetup.ContextPullback);
+            string status = !supportedTimeframe
+                ? "USE GRAFICO DE 5 MINUTOS"
+                : !insideWindow
+                    ? "FORA DA JANELA DE ANALISE"
+                    : lastSignal == null
+                        ? "ANALISANDO EM TEMPO REAL"
+                        : GetValidationStatusText(
+                            lastSignal,
+                            RiskRewardRatio);
+            string details = lastSignal == null
+                ? "Aguardando tendencia, retorno a EMA, VWAP, candle e volume"
+                : string.Format(
+                    "{0}\nEntrada: {1}\nStop: {2}\nAlvo: {3} ({4:N1}R)\nRisco de 1 contrato: {5} | {6}\nContexto: {7}/6 | VWAP {8}\n{9}",
+                    lastSignal.Signal.Direction == SignalDirection.Long
+                        ? "COMPRA"
+                        : "VENDA",
+                    FormatPrice(lastSignal.Signal.EntryPrice),
+                    FormatPrice(lastSignal.Signal.StopPrice),
+                    FormatPrice(GetValidationTargetPrice(
+                        lastSignal.Signal,
+                        RiskRewardRatio)),
+                    RiskRewardRatio,
+                    FormatCurrency(lastSignal.Signal.RiskCurrency),
+                    GetRiskLimitStatus(lastSignal.Signal),
+                    lastSignal.Signal.Context.Score,
+                    FormatPrice(lastSignal.Signal.Context.SessionVwap),
+                    lastSignal.Signal.Context.Summary);
+            string panelText = string.Format(
+                "TRADE ASSISTANT v{0} | TEMPO REAL | SEM ORDENS\nESTRATEGIA UNICA: PULLBACK CONTEXTUAL\nAprovacao deste ativo: {1}\nAtivo: {2} | Grafico: {3}-{4}\nJanela: {5:00}:{6:00} - {7:00}:{8:00} BRT\nStatus: {9}\n\n{10}\n\nHoje: {11} sinais | {12} ativos | Alvos {13} | Stops {14} | Expirados {15}\nResultado hipotetico: {16:+0.00;-0.00;0.00} R | {17}\nCSV: {18}",
+                TradeAssistantVersion.Current,
+                UniversalRealtimePlan.ApprovalStatus,
+                Bars.Instrument.FullName,
+                BarsPeriod.BarsPeriodType,
+                BarsPeriod.Value,
+                RealtimeStartTime / 10000,
+                (RealtimeStartTime / 100) % 100,
+                RealtimeEndTime / 10000,
+                (RealtimeEndTime / 100) % 100,
+                status,
+                details,
+                statistics.Total,
+                statistics.Active,
+                statistics.TargetHits,
+                statistics.StopHits,
+                statistics.Expired,
+                statistics.ResultR,
+                FormatCurrency(statistics.ResultCurrency),
+                GetJournalStatus());
+
+            Draw.TextFixed(
+                this,
+                "TradeAssistant.Mode",
+                panelText,
+                TextPosition.TopRight,
+                Brushes.WhiteSmoke,
+                new SimpleFont("Segoe UI Semibold", 12),
+                Brushes.DarkSlateGray,
+                Brushes.Black,
+                78);
+        }
+
+        private string GetIntradayMomentumPanelText()
+        {
+            if (!EnableIntradayMomentumCandidate)
+                return "\n\nMOMENTUM INTRADIARIO: DESLIGADO";
+            if (intradayMomentumTracker == null)
+                return "\n\nMOMENTUM INTRADIARIO: DISPONIVEL SOMENTE PARA MNQ";
+
+            IList<IntradayMomentumTrade> trades =
+                intradayMomentumTracker.GetTrades();
+            int active = 0;
+            int completed = 0;
+            double resultCurrency = 0;
+            foreach (IntradayMomentumTrade trade in trades)
+            {
+                if (trade.IsActive)
+                    active++;
+                else
+                {
+                    completed++;
+                    resultCurrency += trade.ResultCurrency;
+                }
+            }
+
+            IntradayMomentumTrade lastTrade =
+                intradayMomentumTracker.LastTrade;
+            string status = lastTrade == null
+                ? "AQUECIMENTO / AGUARDANDO 20 SESSOES"
+                : lastTrade.IsActive
+                    ? (lastTrade.Direction == SignalDirection.Long
+                        ? "COMPRA HIPOTETICA ATIVA"
+                        : "VENDA HIPOTETICA ATIVA")
+                    : lastTrade.Status == IntradayMomentumStatus.StopHit
+                        ? "ULTIMA ANALISE: STOP"
+                        : "ULTIMA ANALISE: FECHAMENTO";
+            string details = lastTrade == null
+                ? "Sem operacao registrada"
+                : string.Format(
+                    "{0} | Entrada {1} | Stop {2}\nRegime: {3} | Sinal: {4:+0.00;-0.00;0.00} pts",
+                    lastTrade.Direction == SignalDirection.Long
+                        ? "COMPRA"
+                        : "VENDA",
+                    FormatPrice(lastTrade.EntryPrice),
+                    FormatPrice(lastTrade.StopPrice),
+                    lastTrade.Regime == IntradayMomentumRegime.HighOpeningVolatility
+                        ? "VOLATILIDADE ALTA"
+                        : "VOLATILIDADE BAIXA",
+                    lastTrade.CompositeSignal);
+
+            return string.Format(
+                "\n\nMOMENTUM INTRADIARIO | 1 MICRO MNQ | SOMENTE OBSERVACAO\nRodada: {0} | Risco: USD {1:N2} + custo USD {2:N2}\nFase atual: {10}\nStatus: {3}\n{4}\nAmostra carregada: {5} | Ativas: {6} | Encerradas: {7} | Resultado: USD {8:+0.00;-0.00;0.00}\nCSV proprio: {9}",
+                IntradayMomentumPlan.RoundId,
+                IntradayMomentumPlan.RiskCurrencyPerMicro,
+                IntradayMomentumPlan.RoundTurnCostCurrency,
+                status,
+                details,
+                trades.Count,
+                active,
+                completed,
+                resultCurrency,
+                GetIntradayMomentumJournalStatus(),
+                IntradayMomentumPlan.GetSamplePhase(Time[0]));
+        }
+
+        private string GetIntradayMomentumJournalStatus()
+        {
+            if (!EnableCsvJournal)
+                return "DESLIGADO";
+            if (intradayMomentumJournal == null)
+                return "INDISPONIVEL";
+            return string.IsNullOrEmpty(intradayMomentumJournal.LastError)
+                ? "ATIVO"
+                : "ERRO";
+        }
+
         private string GetJournalStatus()
         {
             if (!EnableCsvJournal)
@@ -583,6 +906,8 @@ namespace NinjaTrader.NinjaScript.Indicators
             if (signalJournal == null)
                 return "INDISPONÍVEL";
             bool journalOk = string.IsNullOrEmpty(signalJournal.LastError);
+            if (EnableUniversalRealtimeAnalysis)
+                return journalOk ? "ATIVO" : "ERRO";
             bool summaryOk = validationSummaryJournal != null
                 && string.IsNullOrEmpty(validationSummaryJournal.LastError);
             bool segmentOk = validationSegmentJournal != null
@@ -626,7 +951,12 @@ namespace NinjaTrader.NinjaScript.Indicators
                 return signal.TargetOneRPrice;
             if (Math.Abs(targetR - 1.5) < 0.0000001)
                 return signal.TargetOnePointFiveRPrice;
-            return signal.TargetTwoRPrice;
+            if (Math.Abs(targetR - 2.0) < 0.0000001)
+                return signal.TargetTwoRPrice;
+
+            return signal.Direction == SignalDirection.Long
+                ? signal.EntryPrice + (signal.Risk * targetR)
+                : signal.EntryPrice - (signal.Risk * targetR);
         }
 
         private string GetRiskLimitStatus(TradeSignal signal)
@@ -716,9 +1046,13 @@ namespace NinjaTrader.NinjaScript.Indicators
                 Bars.Instrument.FullName,
                 trackedSignal.Signal.Setup,
                 RiskRewardRatio);
+            double displayTargetR = EnableUniversalRealtimeAnalysis
+                && trackedSignal.Signal.Setup == SignalSetup.ContextPullback
+                    ? RiskRewardRatio
+                    : profile.TargetR;
             ComparisonStatus validationStatus = ValidationStatisticsCalculator.GetStatus(
                 trackedSignal,
-                profile.TargetR);
+                displayTargetR);
             string text;
             Brush brush;
             double price;
@@ -728,7 +1062,9 @@ namespace NinjaTrader.NinjaScript.Indicators
                 case ComparisonStatus.TargetHit:
                     text = "ALVO";
                     brush = Brushes.ForestGreen;
-                    price = GetValidationTargetPrice(trackedSignal.Signal, profile.TargetR);
+                    price = GetValidationTargetPrice(
+                        trackedSignal.Signal,
+                        displayTargetR);
                     break;
                 case ComparisonStatus.StopHit:
                     text = "STOP";
@@ -754,6 +1090,118 @@ namespace NinjaTrader.NinjaScript.Indicators
                 0,
                 price,
                 brush);
+        }
+
+        private void RenderIntradayMomentum(IntradayMomentumTrade trade)
+        {
+            bool isLong = trade.Direction == SignalDirection.Long;
+            Brush directionBrush = isLong
+                ? Brushes.DeepSkyBlue
+                : Brushes.DarkOrange;
+            double markerPrice = isLong
+                ? trade.EntryPrice - (instrumentTickSize * 2)
+                : trade.EntryPrice + (instrumentTickSize * 2);
+            string tagPrefix = "TradeAssistant." + trade.Id;
+
+            PrepareVisualHistory(trade.Id);
+
+            if (isLong)
+            {
+                Draw.ArrowUp(
+                    this,
+                    tagPrefix + ".Arrow",
+                    false,
+                    trade.SignalTime,
+                    markerPrice,
+                    directionBrush);
+            }
+            else
+            {
+                Draw.ArrowDown(
+                    this,
+                    tagPrefix + ".Arrow",
+                    false,
+                    trade.SignalTime,
+                    markerPrice,
+                    directionBrush);
+            }
+
+            Draw.Rectangle(
+                this,
+                tagPrefix + ".RiskZone",
+                false,
+                trade.SignalTime,
+                trade.EntryPrice,
+                trade.ScheduledExitTime,
+                trade.StopPrice,
+                Brushes.Transparent,
+                Brushes.IndianRed,
+                ZoneOpacity);
+            Draw.Line(
+                this,
+                tagPrefix + ".Entry",
+                false,
+                trade.SignalTime,
+                trade.EntryPrice,
+                trade.ScheduledExitTime,
+                trade.EntryPrice,
+                Brushes.DodgerBlue,
+                DashStyleHelper.Solid,
+                2);
+            Draw.Line(
+                this,
+                tagPrefix + ".Stop",
+                false,
+                trade.SignalTime,
+                trade.StopPrice,
+                trade.ScheduledExitTime,
+                trade.StopPrice,
+                Brushes.IndianRed,
+                DashStyleHelper.Dash,
+                2);
+            Draw.Text(
+                this,
+                tagPrefix + ".EntryLabel",
+                (isLong ? "COMPRA" : "VENDA")
+                    + " MOMENTUM "
+                    + FormatPrice(trade.EntryPrice),
+                0,
+                trade.EntryPrice,
+                directionBrush);
+            Draw.Text(
+                this,
+                tagPrefix + ".StopLabel",
+                "STOP USD "
+                    + trade.RiskCurrency.ToString("N2")
+                    + " "
+                    + FormatPrice(trade.StopPrice),
+                0,
+                trade.StopPrice,
+                Brushes.IndianRed);
+        }
+
+        private void RenderIntradayMomentumOutcome(
+            IntradayMomentumTrade trade)
+        {
+            if (!visibleSignalIds.Contains(trade.Id)
+                || !trade.ExitTime.HasValue
+                || !trade.ExitPrice.HasValue)
+            {
+                return;
+            }
+
+            bool profitable = trade.ResultCurrency > 0;
+            string text = trade.Status == IntradayMomentumStatus.StopHit
+                ? "STOP USD " + trade.ResultCurrency.ToString("N2")
+                : "FECHAMENTO USD "
+                    + trade.ResultCurrency.ToString("+0.00;-0.00;0.00");
+            Draw.Text(
+                this,
+                "TradeAssistant." + trade.Id + ".Outcome",
+                text,
+                0,
+                trade.ExitPrice.Value,
+                profitable ? Brushes.ForestGreen : Brushes.Firebrick);
         }
 
         private static string GetValidationStatusText(TrackedSignal trackedSignal, double targetR)
@@ -827,7 +1275,13 @@ namespace NinjaTrader.NinjaScript.Indicators
                 Bars.Instrument.FullName,
                 signal.Setup,
                 RiskRewardRatio);
-            double validationTargetPrice = GetValidationTargetPrice(signal, profile.TargetR);
+            double displayTargetR = EnableUniversalRealtimeAnalysis
+                && signal.Setup == SignalSetup.ContextPullback
+                    ? RiskRewardRatio
+                    : profile.TargetR;
+            double validationTargetPrice = GetValidationTargetPrice(
+                signal,
+                displayTargetR);
             bool isLong = signal.Direction == SignalDirection.Long;
             Brush directionBrush = isLong ? Brushes.DeepSkyBlue : Brushes.DarkOrange;
             double markerPrice = isLong
@@ -856,7 +1310,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                 entryLabel += " | CONTEXTO " + signal.Context.Score + "/6";
             Draw.Text(this, tagPrefix + ".EntryLabel", entryLabel, -signal.ValidForBars, signal.EntryPrice, Brushes.DodgerBlue);
             Draw.Text(this, tagPrefix + ".StopLabel", "STOP " + FormatPrice(signal.StopPrice), -signal.ValidForBars, signal.StopPrice, Brushes.IndianRed);
-            Draw.Text(this, tagPrefix + ".TargetLabel", "ALVO " + profile.TargetR.ToString("N1") + "R " + FormatPrice(validationTargetPrice), -signal.ValidForBars, validationTargetPrice, Brushes.MediumSeaGreen);
+            Draw.Text(this, tagPrefix + ".TargetLabel", "ALVO " + displayTargetR.ToString("N1") + "R " + FormatPrice(validationTargetPrice), -signal.ValidForBars, validationTargetPrice, Brushes.MediumSeaGreen);
         }
 
         private string FormatPrice(double price)
@@ -869,7 +1323,11 @@ namespace NinjaTrader.NinjaScript.Indicators
             visualSignalIds.Enqueue(signalId);
             visibleSignalIds.Add(signalId);
 
-            int visualLimit = ShowHistoricalSignals ? MaxHistoricalSignals : 1;
+            int visualLimit = EnableUniversalRealtimeAnalysis
+                ? int.MaxValue
+                : ShowHistoricalSignals
+                    ? MaxHistoricalSignals
+                    : 1;
             while (visualSignalIds.Count > visualLimit)
                 RemoveSignalVisuals(visualSignalIds.Dequeue());
         }
@@ -966,7 +1424,7 @@ namespace NinjaTrader.NinjaScript.Indicators
         public int ValidForBars { get; set; }
 
         [NinjaScriptProperty]
-        [Display(Name = "Exibir sinais anteriores", GroupName = "Visual", Order = 1)]
+        [Display(Name = "Exibir sinais anteriores", Description = "No modo universal, todos os sinais dos dias carregados permanecem visiveis.", GroupName = "Visual", Order = 1)]
         public bool ShowHistoricalSignals { get; set; }
 
         [NinjaScriptProperty]
@@ -986,6 +1444,24 @@ namespace NinjaTrader.NinjaScript.Indicators
         [NinjaScriptProperty]
         [Display(Name = "Modo de validação 0.8", Description = "Aplica o plano congelado por ativo e bloqueia novos sinais se a configuração divergir.", GroupName = "Validação", Order = 1)]
         public bool EnableValidationMode { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Analise universal em tempo real", Description = "Analisa qualquer futuro em grafico de 5 minutos. Modo experimental, hipotetico e sem ordens.", GroupName = "Tempo real", Order = 1)]
+        public bool EnableUniversalRealtimeAnalysis { get; set; }
+
+        [NinjaScriptProperty]
+        [Range(0, 235959)]
+        [Display(Name = "Inicio da analise (HHmmss)", GroupName = "Tempo real", Order = 2)]
+        public int RealtimeStartTime { get; set; }
+
+        [NinjaScriptProperty]
+        [Range(0, 235959)]
+        [Display(Name = "Fim da analise (HHmmss)", GroupName = "Tempo real", Order = 3)]
+        public int RealtimeEndTime { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Momentum intradiario MNQ", Description = "Ativa o novo candidato somente visual, sem enviar ordens. Usa uma serie interna de 1 minuto.", GroupName = "Validacao", Order = 2)]
+        public bool EnableIntradayMomentumCandidate { get; set; }
 
         #endregion
     }

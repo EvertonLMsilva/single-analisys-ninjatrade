@@ -1,5 +1,77 @@
 # Registro de trabalho
 
+## 2026-07-30 - Correção do histórico visual universal
+
+- diagnosticado no workspace salvo `DaysBack=5`, histórico visual desligado e
+  limite antigo de cinco sinais;
+- confirmado pelos CSVs que os sinais eram intradiários, entre 10:30 e 16:40, e
+  não exclusivos do fechamento;
+- removido o descarte de desenhos antigos no modo universal;
+- mantida uma única estratégia visível, `PULLBACK CONTEXTUAL`;
+- painel passa a separar elegibilidade do ativo de aprovação estatística;
+- nenhum ativo foi marcado como aprovado: MNQ acumulava 19 sinais e -3R, enquanto
+  MES acumulava cinco sinais e 0R nos registros universais disponíveis;
+- versão elevada para `1.3.1-beta.1`.
+
+## 2026-07-30 - Análise universal durante a sessão
+
+- criada a rodada experimental `universal-realtime-2026-07-v1`;
+- ampliada a observação visual para qualquer instrumento com tick e valor do ponto
+  fornecidos pelo NinjaTrader;
+- definido gráfico obrigatório de 5 minutos e janela configurável, inicialmente
+  10:30-17:00 no fuso do NinjaTrader;
+- reutilizado o pullback contextual simétrico de compra e venda, com EMA 9/21,
+  VWAP de sessão, ATR, candle e volume;
+- mantido no máximo um sinal universal ativo por gráfico;
+- risco acima do antigo teto de USD 50 deixa de ocultar o sinal universal e passa
+  a ser apenas informação para decisão do operador;
+- criado painel específico com identificação explícita de modo experimental,
+  hipotético e sem ordens;
+- separados os arquivos em `TradeAssistant/Realtime`, sem contaminar as rodadas
+  congeladas anteriores;
+- versão elevada para `1.3.0-beta.1`;
+- adicionados testes de janela e metadados do CSV universal.
+
+## 2026-07-29 - Integracao visual do momentum intradiario
+
+- auditados novos arquivos de um minuto com 177 dias de MNQ e MES;
+- confirmadas 174.229 barras de MNQ, 175.183 de MES e 120 pregoes compartilhados;
+- confirmada rejeicao da mesma regra no MES: -USD 204,73 e PF 0,7075;
+- identificado no workspace que MNQ e MES carregavam somente cinco dias, abaixo do
+  aquecimento exigido; documentada configuracao recomendada de 60 dias;
+- reexecutada a regra congelada sem ajuste de parametros;
+- resultado ampliado: 100 operacoes, +USD 1.633, PF 1,4746 e drawdown de USD 621;
+- melhor dimensionamento sob USD 300 permaneceu em 2/4 micros, com 45,68% de
+  aprovacao e drawdown P90 de USD 1.223;
+- portao economico permaneceu reprovado e coleta prospectiva de um micro mantida;
+- duas execucoes produziram JSON identico;
+- auditoria registrada em
+  `docs/data-audits/2026-07-29-alternative-market-methods-177d.md`;
+- decisao registrada em
+  `docs/decisions/0017-retain-frozen-momentum-after-177d.md`;
+- corrigida contaminacao da compilacao interna por arquivos temporarios criados
+  em `Custom/obj` durante a validacao externa;
+- confirmado no CSV de erros que todos os registros eram `CS0579` de atributos
+  duplicados e nenhum apontava para o indicador;
+- pasta `obj` retirada da arvore compilada e preservada temporariamente fora do
+  NinjaTrader para recuperacao;
+- processo alterado para proibir `dotnet build` diretamente na pasta ativa
+  `NinjaTrader 8/bin/Custom`;
+- versao elevada para `1.2.0-beta.1`;
+- adicionada serie interna de um minuto ao indicador;
+- implementado aquecimento de 20 sessoes e mediana movel da volatilidade de abertura;
+- implementada a regra congelada para MNQ, com uma analise por sessao;
+- adicionado stop de USD 75 por micro, saida no fechamento e custo hipotetico de USD 5;
+- criados desenho de entrada/stop, resultado no grafico e painel exclusivo;
+- desativada a geracao dos setups antigos enquanto o novo candidato estiver ativo;
+- criado CSV diario separado em `TradeAssistant/IntradayMomentum`;
+- adicionados testes de horario BRT, elegibilidade, aquecimento, stop, fechamento e CSV;
+- confirmada compilacao do projeto real do NinjaTrader sem erros;
+- confirmada ausencia de chamadas de envio de ordens;
+- arquivos sincronizados com a instalacao local do NinjaTrader;
+- decisao registrada em
+  `docs/decisions/0016-integrate-intraday-momentum-shadow-mode.md`.
+
 ## 2026-07-20
 
 ### Preparação do repositório
@@ -451,3 +523,90 @@
   `docs/data-audits/2026-07-29-prop-evaluation-20d.md`;
 - decisão registrada em
   `docs/decisions/0011-reject-qualified-pullback-for-prop-goal.md`.
+
+### Redesenho de estratégias orientado à aprovação
+
+- criada branch `agent/prop-strategy-redesign` sobre o incremento econômico anterior;
+- criado `research/prop_strategy_search.py`, sem integração com NinjaTrader ou conta;
+- adicionadas seis famílias: pullback, retomada da VWAP, rompimento de sessão,
+  rejeição da VWAP, rompimento da abertura e retorno à VWAP;
+- avaliadas compras e vendas em MNQ e MES;
+- mantida somente uma posição hipotética simultânea entre todos os componentes;
+- adicionada deduplicação de regras e portfólios pelas operações da seleção;
+- avaliados 4.224 componentes, 192 componentes lucrativos únicos e 1.099 portfólios
+  únicos;
+- aplicado portão de 60% de aprovação, até 15% de falha por drawdown e drawdown P90
+  máximo de USD 1.000;
+- 60 portfólios passaram na seleção e nenhum passou na validação;
+- melhor aproximação atingiu 95,24% na seleção e 50% na validação com cinco micros;
+- nenhum candidato recebeu acesso ao teste final na execução canônica;
+- registrado que o trecho final foi consultado durante desenvolvimento preliminar e
+  não pode mais ser considerado inédito;
+- indicador, versão e instalação mantidos sem alteração;
+- análise registrada em
+  `docs/data-audits/2026-07-29-prop-strategy-redesign.md`;
+- decisão registrada em
+  `docs/decisions/0012-reject-prop-portfolio-search.md`.
+
+### Pesquisa por regime e estrutura em um minuto
+
+- exportados MNQ e MES 09-26 em barras de um minuto para 149 dias corridos;
+- auditadas 146.890 barras de MNQ e 147.785 de MES;
+- confirmados 107 pregões compartilhados entre 02/03 e 29/07;
+- criado `research/regime_structure_backtest.py`;
+- congelada a classificação após os primeiros 30 minutos em tendência, equilíbrio
+  ou transição;
+- adicionadas faixa de abertura, VWAP, eficiência direcional, volume relativo e
+  confirmação cruzada MNQ/MES;
+- testados somente dois playbooks explicáveis: reteste em tendência e rejeição da
+  faixa em equilíbrio;
+- MNQ terminou com 30 operações, -USD 846,76, PF 0,355 e drawdown de USD 1.008,44;
+- MES terminou com seis operações, +USD 36,02 e amostra insuficiente;
+- nenhuma quantidade de 1 a 30 micros passou pelo portão de USD 1.500 em 20 pregões;
+- primeiro gatilho reprovado sem alteração do indicador ou do NinjaTrader;
+- próximo experimento limitado a diagnóstico MFE/MAE e um gatilho estrutural
+  qualitativamente diferente;
+- análise registrada em
+  `docs/data-audits/2026-07-29-regime-structure-1m.md`;
+- decisão registrada em
+  `docs/decisions/0013-reject-first-regime-structure-trigger.md`.
+
+### Ajustes de gatilho e modelo de eventos
+
+- adicionados 12 mecanismos manuais com alvos de 1R, 1,5R e 2R;
+- avaliados 36 candidatos por ativo em seleção, validação e confirmação;
+- adicionados MFE e MAE de 60 minutos para todos os eventos;
+- um candidato individual passou na seleção e nenhum passou na validação;
+- formadas 71 combinações de até dois playbooks; nenhuma passou seleção e validação;
+- criado `research/event_model_walkforward.py` com 22 variáveis e amostragem de cinco
+  minutos;
+- testados MNQ, MES, 1R, 1,5R e 2R com modelo congelado e adaptação móvel de 40
+  pregões;
+- somente MNQ 2R congelado passou a validação: 17 operações, +USD 108,50 e PF 1,325;
+- o mesmo cenário falhou na confirmação: 16 operações, -USD 145,50 e PF 0,646;
+- com oito micros, o melhor portão econômico atingiu 28,57% de aprovação e drawdown
+  P90 de USD 1.684;
+- nenhum cenário aprovado e indicador preservado sem alterações;
+- análise registrada em
+  `docs/data-audits/2026-07-29-trigger-and-event-model-search.md`;
+- decisão registrada em
+  `docs/decisions/0014-reject-best-observed-event-model.md`.
+
+### Métodos alternativos e candidato de momentum intradiário
+
+- pesquisada evidência acadêmica sobre momentum da primeira para a última meia hora;
+- adicionados momentum/reversão intradiária, overnight, gap-fill e força relativa;
+- avaliados 270 candidatos individuais e 984 combinações de regimes;
+- corrigido vazamento preliminar do filtro de 30 minutos na entrada de gap-fill;
+- congelado candidato MNQ de momentum no fechamento condicionado pela volatilidade da
+  abertura;
+- resultado de desenvolvimento: 81 operações, +USD 1.244, PF 1,416 e drawdown de
+  USD 621 por micro;
+- quatro de cinco meses positivos e sinal em todos os pregões após aquecimento;
+- melhor dimensionamento histórico chegou a 50% de aprovação, ainda abaixo de 60%;
+- definido teste prospectivo de 20 pregões com um micro e parâmetros imutáveis;
+- indicador mantido sem alterações nesta etapa;
+- análise registrada em
+  `docs/data-audits/2026-07-29-alternative-market-methods.md`;
+- decisão registrada em
+  `docs/decisions/0015-freeze-intraday-momentum-candidate.md`.
