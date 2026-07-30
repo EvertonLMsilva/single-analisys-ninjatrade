@@ -5,10 +5,19 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Configuration
 {
     public static class ValidationPlan
     {
-        public const string RoundId = "forward-2026-07-v1";
-        public const int MinimumSessions = 5;
-        public const int MinimumDecidedSignals = 30;
-        public static readonly DateTime ForwardStartDate = new DateTime(2026, 7, 23);
+        public const string RoundId = "qualified-149d-2026-07-v5";
+        public const int EmaSlopeLookbackBars = 3;
+        public const int VolumeAveragePeriod = 20;
+        public const int MinimumSessions = 10;
+        public const int MinimumDecidedSignals = 20;
+        public const int QualifiedMinimumScore = 5;
+        public const int QualifiedValidForBars = 12;
+        public const double QualifiedMaximumVwapDistanceAtr = 2.0;
+        public const double QualifiedMinimumRelativeVolume = 1.0;
+        public const double QualifiedTargetR = 1.5;
+        public const double FrozenMinimumRiskPerContract = 5.0;
+        public const double FrozenMaximumRiskPerContract = 50.0;
+        public static readonly DateTime ForwardStartDate = new DateTime(2026, 7, 30);
 
         public static bool IsForwardSample(DateTime signalTime)
         {
@@ -29,30 +38,80 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Configuration
 
             if (masterInstrument == "MES")
             {
-                if (setup == SignalSetup.EmaCrossBaseline)
-                    return new ValidationProfile(setup, ValidationStage.Candidate, 1.0, true);
-
-                return new ValidationProfile(setup, ValidationStage.Paused, 1.0, false);
+                double mesTarget = setup == SignalSetup.QualifiedPullback
+                    ? QualifiedTargetR
+                    : 1.0;
+                return new ValidationProfile(setup, ValidationStage.Reference, mesTarget, false);
             }
 
             if (masterInstrument == "MNQ")
             {
-                if (setup == SignalSetup.TrendPullback)
-                    return new ValidationProfile(setup, ValidationStage.Observation, 1.5, true);
+                if (setup == SignalSetup.QualifiedPullback)
+                    return new ValidationProfile(
+                        setup,
+                        ValidationStage.Candidate,
+                        QualifiedTargetR,
+                        true);
 
                 return new ValidationProfile(setup, ValidationStage.Reference, 1.0, false);
             }
 
-            return setup == SignalSetup.TrendPullback
-                ? new ValidationProfile(setup, ValidationStage.Observation, configuredTargetR, true)
-                : new ValidationProfile(setup, ValidationStage.Reference, 1.0, false);
+            return new ValidationProfile(
+                setup,
+                ValidationStage.Reference,
+                setup == SignalSetup.QualifiedPullback ? QualifiedTargetR : 1.0,
+                false);
         }
 
         public static ValidationProfile GetPrimaryProfile(string instrument, double configuredTargetR)
         {
-            return GetMasterInstrument(instrument) == "MES"
-                ? GetProfile(instrument, SignalSetup.EmaCrossBaseline, configuredTargetR)
-                : GetProfile(instrument, SignalSetup.TrendPullback, configuredTargetR);
+            return GetProfile(instrument, SignalSetup.QualifiedPullback, configuredTargetR);
+        }
+
+        public static bool MatchesEvidenceRule(
+            string instrument,
+            SignalDirection direction,
+            double entryPrice,
+            SignalContext context)
+        {
+            return GetMasterInstrument(instrument) == "MNQ"
+                && direction == SignalDirection.Short
+                && context != null
+                && context.Score >= 4
+                && entryPrice < context.SessionVwap
+                && context.VwapSlopeAtr < 0;
+        }
+
+        public static bool MatchesQualifiedRule(
+            string instrument,
+            SignalDirection direction,
+            SignalContext context)
+        {
+            return GetMasterInstrument(instrument) == "MNQ"
+                && direction == SignalDirection.Short
+                && context != null
+                && context.Score >= QualifiedMinimumScore
+                && context.VwapDistanceAtr <= QualifiedMaximumVwapDistanceAtr
+                && context.RelativeVolume >= QualifiedMinimumRelativeVolume;
+        }
+
+        public static bool IsQualifiedRiskEligible(double riskCurrency)
+        {
+            return riskCurrency >= FrozenMinimumRiskPerContract
+                && riskCurrency <= FrozenMaximumRiskPerContract;
+        }
+
+        public static double NormalizeMaximumRiskPerContract(
+            double configuredMaximumRiskPerContract,
+            RiskLimitMode riskLimitMode)
+        {
+            if (riskLimitMode == RiskLimitMode.DescartarAcimaDoLimite
+                && configuredMaximumRiskPerContract > FrozenMaximumRiskPerContract)
+            {
+                return FrozenMaximumRiskPerContract;
+            }
+
+            return configuredMaximumRiskPerContract;
         }
 
         public static bool MatchesFrozenConfiguration(
@@ -75,7 +134,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Configuration
                 && NearlyEqual(stopAtrMultiplier, 1.5)
                 && NearlyEqual(configuredTargetR, 2.0)
                 && validForBars == 3
-                && NearlyEqual(maximumRiskPerContract, 75.0)
+                && NearlyEqual(maximumRiskPerContract, FrozenMaximumRiskPerContract)
                 && riskLimitMode == RiskLimitMode.DescartarAcimaDoLimite;
         }
 

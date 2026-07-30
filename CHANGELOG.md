@@ -1,5 +1,113 @@
 # Histórico de versões
 
+## 1.3.1-beta.1 — 2026-07-30
+
+- todos os sinais universais dos dias carregados permanecem desenhados no gráfico;
+- removido o limite visual antigo de cinco ou vinte sinais no modo universal;
+- painel identifica uma única estratégia visível: `PULLBACK CONTEXTUAL`;
+- painel informa explicitamente que nenhum ativo está aprovado nessa estratégia;
+- comparação EMA continua desativada por padrão e momentum não é misturado ao modo
+  universal;
+- mantida a avaliação a cada fechamento de candle de 5 minutos, sem ordens.
+
+## 1.3.0-beta.1 — 2026-07-30
+
+- adicionado modo universal experimental para qualquer instrumento carregado;
+- avaliação acontece durante a sessão, no fechamento de cada candle de 5 minutos;
+- compras e vendas exigem pullback contextual com EMA, VWAP, ATR, candle e volume;
+- entrada, stop, alvo e valor financeiro usam tick e valor do ponto do ativo;
+- bloqueada sobreposição de sinais universais no mesmo gráfico;
+- painel mostra ativo, período, janela, estado atual e resultado hipotético diário;
+- registros universais isolados em `TradeAssistant/Realtime`, com rodada própria;
+- candidato de momentum MNQ preservado, mas desligado por padrão no modo universal;
+- mantida a ausência total de chamadas de execução de ordens.
+
+## Pesquisa de portfólios — 2026-07-29 (sem alteração de versão)
+
+- adicionadas rejeição da VWAP, rompimento da abertura e retorno à VWAP à pesquisa
+  offline, além das três famílias existentes;
+- pesquisadas compras e vendas em MNQ e MES, com uma única posição hipotética por
+  vez;
+- avaliados 4.224 componentes e 1.099 portfólios únicos de dois ou três setups;
+- removidas configurações e composições que produziam operações idênticas;
+- adicionado teto obrigatório de USD 1.000 para o drawdown P90;
+- 60 portfólios passaram na seleção e nenhum passou na validação;
+- trecho final marcado como contaminado após acesso durante desenvolvimento
+  preliminar e bloqueado na execução canônica;
+- todos os candidatos reprovados e indicador mantido sem alteração.
+
+## Pesquisa econômica — 2026-07-29 (sem alteração de versão)
+
+- criado simulador da avaliação de 25k com meta de USD 1.500 em até 20 pregões;
+- aplicados trailing drawdown de USD 1.500, cinco dias ativos e consistência abaixo
+  de 50%;
+- avaliadas todas as 84 janelas históricas e 10.000 reamostragens em blocos para
+  cada quantidade de 1 a 30 micros;
+- nenhuma quantidade atingiu o portão de 60% de aprovação e no máximo 15% de falha
+  por drawdown;
+- `QualifiedPullback` reprovado como estratégia principal da avaliação e preservado
+  somente para pesquisa;
+- indicador, versão e comportamento no gráfico mantidos sem alteração.
+
+## 1.1.0-beta.1 — 2026-07-29
+
+- criada a rodada `qualified-149d-2026-07-v5`, com início prospectivo em 30/07;
+- adicionado `QualifiedPullback` como único candidato visível no MNQ;
+- congelados venda, score mínimo 5/6, distância máxima de 2 ATR da VWAP, volume
+  relativo mínimo 1, alvo de 1,5R e validade de 12 candles;
+- definido risco técnico aceito entre USD 5 e USD 50 por contrato;
+- `EvidencePullback`, compras, MES e demais setups passam a referências silenciosas;
+- painel identifica o setup como `MNQ VENDA VALIDADA 149D`;
+- corrigido o backtest para tratar expiração como 0R bruto, igual ao acompanhamento
+  do NinjaTrader;
+- seleção ampliada validada em 103 sessões de MNQ, com +USD 216,25 e PF 1,877 no
+  teste final separado;
+- mantida ausência total de execução automática e acesso à conta.
+
+## 1.0.0-beta.1 — 2026-07-29
+
+- adotada seleção offline da estratégia em vez de ajustes sucessivos no gráfico;
+- analisados 531 registros v8 e 380 candidatos de pullback entre 22 e 29/07;
+- criado `EvidencePullback` para MNQ vendido, abaixo de VWAP descendente, score mínimo 4/6 e risco máximo de USD 50;
+- definido alvo de 1R e rodada `evidence-2026-07-v4`, iniciando em 30/07;
+- MES, compras e setups anteriores permanecem registrados silenciosamente, mas deixam de aparecer como recomendação;
+- regra congelada por pelo menos dez resultados decididos;
+- análise e decisão registradas na documentação;
+- mantida ausência total de execução automática e acesso à conta.
+
+## 0.9.1-beta.1 — 2026-07-29
+
+- corrigida a migração de indicadores já salvos no workspace com limite de risco de USD 75;
+- no modo de validação, limites antigos acima de USD 50 passam a ser reduzidos automaticamente para o valor congelado da rodada;
+- a divergência antiga deixa de bloquear toda a avaliação de tendência e contexto;
+- limites mais restritivos e políticas diferentes continuam preservados e sinalizados como configuração divergente;
+- mantidos os critérios do `ContextPullback`, a rodada `context-2026-07-v3` e o formato CSV v8.
+
+## 0.9.0-beta.1 — 2026-07-28
+
+- criada a rodada `context-2026-07-v3`, com início prospectivo em 29/07;
+- adicionada regra experimental `ContextPullback`, sem remover o pullback anterior usado como referência;
+- criada VWAP aproximada de sessão com preço típico e volume dos candles, reiniciada conforme o template de horário do gráfico;
+- contexto passa a avaliar lado e inclinação da VWAP, inclinação das EMAs, força do candle, extensão em ATR e volume relativo;
+- compras e vendas usam critérios simétricos e precisam atingir pelo menos 5 de 6 confirmações, além dos critérios obrigatórios;
+- máximo de risco reduzido de USD 75 para USD 50 por contrato;
+- alvo visual e de validação do novo setup definido em 1R;
+- painel passa a mostrar score, VWAP, distância em ATR e volume relativo;
+- criado CSV v8 com os valores completos do contexto;
+- criados resumo `validation_v3` e segmentos `segments_v2`, incluindo agrupamento por score;
+- mantida ausência total de execução automática e acesso à conta.
+
+## 0.8.1-beta.1 — 2026-07-28
+
+- encerrada sem aprovação operacional a rodada `forward-2026-07-v1`;
+- iniciada a rodada diagnóstica `diagnostic-2026-07-v2`, sem alterar entradas, stops, alvos ou limite de risco;
+- criado CSV bruto v7 para preservar integralmente os arquivos v6 da rodada encerrada;
+- o CSV bruto passa a substituir o retrato completo do dia durante um reprocessamento, removendo registros órfãos;
+- criado resumo diário `validation_v2`, separado dos resumos anteriores;
+- criada análise automática em `TradeAssistant/Analysis` por direção, hora e faixa de risco;
+- adicionados testes para remoção de registros órfãos e para os novos segmentos;
+- custos permanecem excluídos e nenhuma execução automática foi adicionada.
+
 Todas as mudanças relevantes do projeto são registradas neste arquivo. Enquanto o indicador estiver em validação, as versões usarão o sufixo `beta`.
 
 ## 0.8.0-beta.1 — 2026-07-22

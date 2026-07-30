@@ -74,7 +74,14 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
             List<string> lines = new List<string>();
             lines.Add(Header);
 
-            foreach (SignalSetup setup in new[] { SignalSetup.EmaCrossBaseline, SignalSetup.TrendPullback })
+            foreach (SignalSetup setup in new[]
+            {
+                SignalSetup.EmaCrossBaseline,
+                SignalSetup.TrendPullback,
+                SignalSetup.ContextPullback,
+                SignalSetup.EvidencePullback,
+                SignalSetup.QualifiedPullback
+            })
             {
                 bool hasSetup = false;
                 foreach (TrackedSignal signal in signals)
@@ -144,7 +151,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
         {
             string fileName = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}_{1}_{2}_validation_v1.csv",
+                "{0}_{1}_{2}_validation_v3.csv",
                 day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 Sanitize(instrument),
                 Sanitize(barsPeriod));

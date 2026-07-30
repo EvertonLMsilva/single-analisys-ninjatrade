@@ -10,7 +10,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
 {
     public sealed class CsvSignalJournal
     {
-        private const string Header = "RecordKey,SignalId,SignalTime,ClosedAt,Instrument,BarsPeriod,Version,EvaluationType,EntryAssumption,OutcomeBasis,ValidationRound,ValidationStage,ValidationTargetR,ValidationSample,Setup,Direction,EntryPrice,StopPrice,TargetPrice,TickSize,PointValue,Currency,RiskPoints,RiskTicks,RiskCurrency,RewardCurrency,MaximumRiskPerContract,RiskLimitMode,RiskLimitStatus,RiskReward,ValidForBars,FastEmaPeriod,SlowEmaPeriod,AtrPeriod,StopAtrMultiplier,PullbackToleranceAtr,PullbackCooldownBars,Status,ResultR,MfeR,MaeR,BarsElapsed,FirstEvent,FirstEventAt,Target1RPrice,Target1RStatus,Target1RAt,Target1_5RPrice,Target1_5RStatus,Target1_5RAt,Target2RPrice,Target2RStatus,Target2RAt,Reason";
+        private const string Header = "RecordKey,SignalId,SignalTime,ClosedAt,Instrument,BarsPeriod,Version,EvaluationType,EntryAssumption,OutcomeBasis,ValidationRound,ValidationStage,ValidationTargetR,ValidationSample,Setup,Direction,EntryPrice,StopPrice,TargetPrice,TickSize,PointValue,Currency,RiskPoints,RiskTicks,RiskCurrency,RewardCurrency,MaximumRiskPerContract,RiskLimitMode,RiskLimitStatus,RiskReward,ValidForBars,FastEmaPeriod,SlowEmaPeriod,AtrPeriod,StopAtrMultiplier,PullbackToleranceAtr,PullbackCooldownBars,Status,ResultR,MfeR,MaeR,BarsElapsed,FirstEvent,FirstEventAt,Target1RPrice,Target1RStatus,Target1RAt,Target1_5RPrice,Target1_5RStatus,Target1_5RAt,Target2RPrice,Target2RStatus,Target2RAt,Reason,SessionVwap,VwapSlopeAtr,VwapDistanceAtr,FastEmaSlopeAtr,SlowEmaSlopeAtr,SessionHigh,SessionLow,CandleBodyAtr,CloseLocation,RelativeVolume,ContextScore,ContextPassed,ContextSummary";
         private static readonly object FileLock = new object();
 
         private readonly int atrPeriod;
@@ -25,6 +25,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
         private readonly string riskLimitMode;
         private readonly int slowEmaPeriod;
         private readonly double stopAtrMultiplier;
+        private readonly bool universalRealtimeMode;
         private readonly string version;
 
         public CsvSignalJournal(
@@ -40,7 +41,8 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
             int pullbackCooldownBars,
             string currency,
             double maximumRiskPerContract,
-            string riskLimitMode)
+            string riskLimitMode,
+            bool universalRealtimeMode = false)
         {
             this.directory = directory;
             this.instrument = instrument;
@@ -55,6 +57,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
             this.currency = currency;
             this.maximumRiskPerContract = maximumRiskPerContract;
             this.riskLimitMode = riskLimitMode;
+            this.universalRealtimeMode = universalRealtimeMode;
         }
 
         public string LastError { get; private set; }
@@ -71,6 +74,49 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 {
                     Directory.CreateDirectory(directory);
                     UpsertRow(filePath, recordKey, row);
+                }
+
+                LastError = null;
+                return true;
+            }
+            catch (Exception exception)
+            {
+                LastError = exception.Message;
+                return false;
+            }
+        }
+
+        public bool SynchronizeDay(IList<TrackedSignal> signals, DateTime day)
+        {
+            try
+            {
+                List<TrackedSignal> dailySignals = new List<TrackedSignal>();
+                foreach (TrackedSignal trackedSignal in signals)
+                {
+                    if (trackedSignal.Signal.CreatedAt.Date == day.Date)
+                        dailySignals.Add(trackedSignal);
+                }
+
+                dailySignals.Sort(delegate(TrackedSignal left, TrackedSignal right)
+                {
+                    return left.Signal.CreatedAt.CompareTo(right.Signal.CreatedAt);
+                });
+
+                List<string> lines = new List<string>();
+                lines.Add(Header);
+                foreach (TrackedSignal trackedSignal in dailySignals)
+                {
+                    string recordKey = BuildRecordKey(trackedSignal.Signal);
+                    lines.Add(BuildRow(recordKey, trackedSignal));
+                }
+
+                lock (FileLock)
+                {
+                    Directory.CreateDirectory(directory);
+                    File.WriteAllLines(
+                        GetFilePath(day),
+                        lines.ToArray(),
+                        new UTF8Encoding(true));
                 }
 
                 LastError = null;
@@ -117,6 +163,18 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 instrument,
                 signal.Setup,
                 signal.RiskRewardRatio);
+            string validationRound = universalRealtimeMode
+                ? UniversalRealtimePlan.RoundId
+                : ValidationPlan.RoundId;
+            string validationStage = universalRealtimeMode
+                ? "Experimental"
+                : validationProfile.Stage.ToString();
+            double validationTargetR = universalRealtimeMode
+                ? signal.RiskRewardRatio
+                : validationProfile.TargetR;
+            string validationSample = universalRealtimeMode
+                ? "RealtimeObservation"
+                : ValidationPlan.GetSamplePhase(signal.CreatedAt);
             string closedAt = trackedSignal.ClosedAt.HasValue
                 ? trackedSignal.ClosedAt.Value.ToString("O", CultureInfo.InvariantCulture)
                 : string.Empty;
@@ -133,10 +191,10 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 Csv("Hypothetical"),
                 Csv("SignalBarClose"),
                 Csv("FollowingBarsHighLow"),
-                Csv(ValidationPlan.RoundId),
-                Csv(validationProfile.Stage.ToString()),
-                Number(validationProfile.TargetR),
-                Csv(ValidationPlan.GetSamplePhase(signal.CreatedAt)),
+                Csv(validationRound),
+                Csv(validationStage),
+                Number(validationTargetR),
+                Csv(validationSample),
                 Csv(signal.Setup.ToString()),
                 Csv(signal.Direction.ToString()),
                 Number(signal.EntryPrice),
@@ -176,14 +234,27 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
                 Number(signal.TargetTwoRPrice),
                 Csv(trackedSignal.TargetTwoRStatus.ToString()),
                 Csv(Iso(trackedSignal.TargetTwoRAt)),
-                Csv(signal.Reason));
+                Csv(signal.Reason),
+                Number(signal.Context.SessionVwap),
+                Number(signal.Context.VwapSlopeAtr),
+                Number(signal.Context.VwapDistanceAtr),
+                Number(signal.Context.FastEmaSlopeAtr),
+                Number(signal.Context.SlowEmaSlopeAtr),
+                Number(signal.Context.SessionHigh),
+                Number(signal.Context.SessionLow),
+                Number(signal.Context.CandleBodyAtr),
+                Number(signal.Context.CloseLocation),
+                Number(signal.Context.RelativeVolume),
+                signal.Context.Score.ToString(CultureInfo.InvariantCulture),
+                Csv(signal.Context.Passed ? "Yes" : "No"),
+                Csv(signal.Context.Summary));
         }
 
         private string GetFilePath(DateTime signalTime)
         {
             string fileName = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}_{1}_{2}_v6.csv",
+                "{0}_{1}_{2}_v8.csv",
                 signalTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 Sanitize(instrument),
                 Sanitize(barsPeriod));
@@ -192,6 +263,12 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Persistence
 
         private string GetRiskLimitStatus(TradeSignal signal)
         {
+            if (signal.Setup == SignalSetup.QualifiedPullback
+                && signal.RiskCurrency < ValidationPlan.FrozenMinimumRiskPerContract)
+            {
+                return "BelowMinimum";
+            }
+
             if (maximumRiskPerContract <= 0)
                 return "NotConfigured";
 

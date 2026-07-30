@@ -17,6 +17,37 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Models
             int validForBars,
             int score,
             string reason)
+            : this(
+                id,
+                setup,
+                direction,
+                entryPrice,
+                stopPrice,
+                targetPrice,
+                tickSize,
+                pointValue,
+                createdAt,
+                validForBars,
+                score,
+                reason,
+                SignalContext.Empty)
+        {
+        }
+
+        public TradeSignal(
+            string id,
+            SignalSetup setup,
+            SignalDirection direction,
+            double entryPrice,
+            double stopPrice,
+            double targetPrice,
+            double tickSize,
+            double pointValue,
+            DateTime createdAt,
+            int validForBars,
+            int score,
+            string reason,
+            SignalContext context)
         {
             Id = id;
             Setup = setup;
@@ -30,6 +61,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Models
             ValidForBars = validForBars;
             Score = score;
             Reason = reason;
+            Context = context ?? SignalContext.Empty;
         }
 
         public string Id { get; private set; }
@@ -44,6 +76,7 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Models
         public int ValidForBars { get; private set; }
         public int Score { get; private set; }
         public string Reason { get; private set; }
+        public SignalContext Context { get; private set; }
 
         public double Risk
         {
