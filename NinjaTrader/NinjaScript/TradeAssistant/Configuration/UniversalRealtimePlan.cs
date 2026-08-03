@@ -8,8 +8,33 @@ namespace NinjaTrader.NinjaScript.TradeAssistant.Configuration
         public const int DefaultStartTime = 103000;
         public const int DefaultEndTime = 170000;
         public const int RequiredMinutePeriod = 5;
+
+        public const long MinimumClassifiedDeltaVolume = 25;
+
+        public const double MinimumAbsoluteDeltaPercentage = 8.0;
         public const string ApprovalStatus =
             "NAO APROVADA - EM VALIDACAO";
+
+        public static bool IsDeltaConfirmed(
+            bool isLong,
+            long classifiedVolume,
+            double deltaPercentage)
+        {
+            if (classifiedVolume
+                < MinimumClassifiedDeltaVolume)
+            {
+                return false;
+            }
+
+            if (isLong)
+            {
+                return deltaPercentage
+                    >= MinimumAbsoluteDeltaPercentage;
+            }
+
+            return deltaPercentage
+                <= -MinimumAbsoluteDeltaPercentage;
+        }
 
         public static bool IsInsideWindow(
             DateTime time,
